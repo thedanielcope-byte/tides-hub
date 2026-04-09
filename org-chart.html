@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Organization Chart — Tides Hub</title>
+  <link rel="stylesheet" href="hub.css">
+  <style>
+    /* ---- Org chart overrides ---- */
+    .tree { overflow-x: auto; padding-bottom: 16px; }
+    .tree > ul { min-width: 900px; }
+    .tree-node { min-width: 110px; max-width: 160px; }
+    .tree li { padding: 20px 4px 0; }
+  </style>
+</head>
+<body>
+
+<div class="main-content">
+  <div class="topbar">
+    <button class="topbar-hamburger" id="hubHamburger" aria-label="Open menu">&#9776;</button>
+    <span class="topbar-crumb">Tides Bookkeeping</span>
+    <span class="topbar-sep">/</span>
+    <span class="topbar-title">Organization Chart</span>
+  </div>
+
+  <div class="page-content">
+    <div class="page-header">
+      <div class="page-icon">🏢</div>
+      <h1 class="page-title">Organization Chart</h1>
+      <p class="page-subtitle">Company structure and reporting lines across all departments.</p>
+    </div>
+
+    <div class="section-label">Full Org Chart</div>
+    <div class="card" style="overflow-x:auto;padding:32px 16px;">
+      <div class="tree">
+        <ul>
+          <li>
+            <div class="tree-node root">
+              <div class="tn-title">CEO</div>
+              <div class="tn-name">Joe Cope</div>
+            </div>
+            <ul>
+
+              <!-- COO -->
+              <li>
+                <div class="tree-node chief">
+                  <div class="tn-title">COO</div>
+                  <div class="tn-name">Chief Operations Officer</div>
+                </div>
+                <ul>
+                  <li>
+                    <div class="tree-node">
+                      <div class="tn-title">Operations Manager</div>
+                    </div>
+                    <ul>
+                      <li>
+                        <div class="tree-node">
+                          <div class="tn-title">Customer Support Lead</div>
+                        </div>
+                        <ul>
+                          <li><div class="tree-node"><div class="tn-title">Support Specialist</div></div></li>
+                          <li><div class="tree-node"><div class="tn-title">Support Specialist</div></div></li>
+                          <li><div class="tree-node"><div class="tn-title">Logistics Coordinator</div></div></li>
+                        </ul>
+                      </li>
+                      <li>
+                        <div class="tree-node">
+                          <div class="tn-title">HR Manager</div>
+                        </div>
+                        <ul>
+                          <li><div class="tree-node"><div class="tn-title">Recruiter</div></div></li>
+                          <li><div class="tree-node"><div class="tn-title">HR Assistant</div></div></li>
+                        </ul>
+                      </li>
+                    </ul>
+                  </li>
+                </ul>
+              </li>
+
+              <!-- CMO -->
+              <li>
+                <div class="tree-node chief">
+                  <div class="tn-title">CMO</div>
+                  <div class="tn-name">Chief Marketing Officer</div>
+                </div>
+                <ul>
+                  <li><div class="tree-node"><div class="tn-title">Social Media Specialist</div></div></li>
+                  <li><div class="tree-node"><div class="tn-title">Content Creator</div></div></li>
+                  <li><div class="tree-node"><div class="tn-title">SEO &amp; Ads Manager</div></div></li>
+                  <li><div class="tree-node"><div class="tn-title">Brand Manager</div></div></li>
+                </ul>
+              </li>
+
+              <!-- CTO -->
+              <li>
+                <div class="tree-node chief">
+                  <div class="tn-title">CTO</div>
+                  <div class="tn-name">Chief Technology Officer</div>
+                </div>
+                <ul>
+                  <li>
+                    <div class="tree-node">
+                      <div class="tn-title">Product Manager</div>
+                    </div>
+                  </li>
+                  <li><div class="tree-node"><div class="tn-title">UI/UX Designer</div></div></li>
+                  <li><div class="tree-node"><div class="tn-title">UI/UX Designer</div></div></li>
+                  <li>
+                    <div class="tree-node">
+                      <div class="tn-title">QA Lead</div>
+                    </div>
+                    <ul>
+                      <li><div class="tree-node"><div class="tn-title">QA Tester</div></div></li>
+                    </ul>
+                  </li>
+                  <li>
+                    <div class="tree-node">
+                      <div class="tn-title">Dev Team Lead</div>
+                    </div>
+                    <ul>
+                      <li><div class="tree-node"><div class="tn-title">Frontend Developer</div></div></li>
+                      <li><div class="tree-node"><div class="tn-title">Backend Developer</div></div></li>
+                    </ul>
+                  </li>
+                </ul>
+              </li>
+
+              <!-- CFO -->
+              <li>
+                <div class="tree-node chief">
+                  <div class="tn-title">CFO</div>
+                  <div class="tn-name">Chief Financial Officer</div>
+                </div>
+                <ul>
+                  <li><div class="tree-node"><div class="tn-title">Accountant</div></div></li>
+                  <li><div class="tree-node"><div class="tn-title">Financial Analyst</div></div></li>
+                </ul>
+              </li>
+
+              <!-- CGO -->
+              <li>
+                <div class="tree-node chief">
+                  <div class="tn-title">CGO</div>
+                  <div class="tn-name">Chief Growth Officer</div>
+                </div>
+                <ul>
+                  <li>
+                    <div class="tree-node">
+                      <div class="tn-title">Business Dev Manager</div>
+                    </div>
+                  </li>
+                  <li><div class="tree-node"><div class="tn-title">Sales Executive</div></div></li>
+                  <li><div class="tree-node"><div class="tn-title">Sales Executive</div></div></li>
+                  <li><div class="tree-node"><div class="tn-title">Partnerships Manager</div></div></li>
+                </ul>
+              </li>
+
+            </ul>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Department summary cards -->
+    <div class="section-label" style="margin-top:32px;">Departments at a Glance</div>
+    <div class="card-grid g3">
+      <div class="card">
+        <p style="font-size:13px;font-weight:700;color:var(--primary);margin-bottom:8px;">⚙️ Operations (COO)</p>
+        <p style="font-size:12.5px;color:var(--text-2);line-height:1.6;">Operations Manager · Customer Support Lead · Support Specialists · Logistics Coordinator · HR Manager · Recruiter · HR Assistant</p>
+      </div>
+      <div class="card">
+        <p style="font-size:13px;font-weight:700;color:var(--primary);margin-bottom:8px;">📣 Marketing (CMO)</p>
+        <p style="font-size:12.5px;color:var(--text-2);line-height:1.6;">Social Media Specialist · Content Creator · SEO &amp; Ads Manager · Brand Manager</p>
+      </div>
+      <div class="card">
+        <p style="font-size:13px;font-weight:700;color:var(--primary);margin-bottom:8px;">💻 Technology (CTO)</p>
+        <p style="font-size:12.5px;color:var(--text-2);line-height:1.6;">Product Manager · UI/UX Designers · QA Lead &amp; Tester · Dev Team Lead · Frontend &amp; Backend Developers</p>
+      </div>
+      <div class="card">
+        <p style="font-size:13px;font-weight:700;color:var(--primary);margin-bottom:8px;">💰 Finance (CFO)</p>
+        <p style="font-size:12.5px;color:var(--text-2);line-height:1.6;">Accountant · Financial Analyst</p>
+      </div>
+      <div class="card">
+        <p style="font-size:13px;font-weight:700;color:var(--primary);margin-bottom:8px;">📈 Growth (CGO)</p>
+        <p style="font-size:12.5px;color:var(--text-2);line-height:1.6;">Business Development Manager · Sales Executives (×2) · Partnerships Manager</p>
+      </div>
+      <div class="card" style="border-left:3px solid var(--teal);">
+        <p style="font-size:13px;font-weight:700;color:var(--primary);margin-bottom:8px;">👑 Leadership</p>
+        <p style="font-size:12.5px;color:var(--text-2);line-height:1.6;">Joe Cope — CEO<br>Dan Cope — CFO</p>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script src="hub.js"></script>
+</body>
+</html>

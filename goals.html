@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Yearly Goals — Tides Hub</title>
+  <link rel="stylesheet" href="hub.css">
+</head>
+<body>
+
+<div class="main-content">
+  <div class="topbar">
+    <button class="topbar-hamburger" id="hubHamburger" aria-label="Open menu">&#9776;</button>
+    <span class="topbar-crumb">Tides Bookkeeping</span>
+    <span class="topbar-sep">/</span>
+    <span class="topbar-title">Yearly Goals</span>
+  </div>
+
+  <div class="page-content">
+    <div class="page-header">
+      <div class="page-icon">🎯</div>
+      <h1 class="page-title">Yearly Goals — 2026</h1>
+      <p class="page-subtitle">Company-wide targets guiding our focus and decisions this year.</p>
+    </div>
+
+    <div class="section-label">2026 Goals</div>
+    <div class="card-grid g3" style="margin-bottom:32px;">
+
+      <!-- Customer Goal -->
+      <div class="goal-card">
+        <div class="goal-icon">📈</div>
+        <div class="goal-type">Customer Goal</div>
+        <div class="goal-title">Reach $12,000 Monthly Sales</div>
+        <div class="goal-target">
+          Grow monthly recurring revenue to $12,000 by acquiring and retaining high-value bookkeeping clients.
+        </div>
+        <div class="progress-bar">
+          <!-- Update data-pct (0–100) to reflect current progress -->
+          <div class="progress-fill" data-pct="0"></div>
+        </div>
+        <div class="progress-meta">
+          <span>$0 current</span>
+          <span>$12,000 target</span>
+        </div>
+      </div>
+
+      <!-- Retention Goal -->
+      <div class="goal-card">
+        <div class="goal-icon">🤝</div>
+        <div class="goal-type">PR Retention Goal</div>
+        <div class="goal-title">Achieve 83% Client Retention</div>
+        <div class="goal-target">
+          Maintain at least 83% client retention ratio through excellent service, proactive communication, and consistent delivery.
+        </div>
+        <div class="progress-bar">
+          <!-- Update data-pct (0–100) to reflect current progress -->
+          <div class="progress-fill" data-pct="0"></div>
+        </div>
+        <div class="progress-meta">
+          <span>0% current</span>
+          <span>83% target</span>
+        </div>
+      </div>
+
+      <!-- Marketing Goal -->
+      <div class="goal-card">
+        <div class="goal-icon">📣</div>
+        <div class="goal-type">Marketing Goal</div>
+        <div class="goal-title">Grow to 1,000 Local Followers</div>
+        <div class="goal-target">
+          Build local business presence to 1,000 followers across social platforms to increase brand awareness in the Greenville, SC market.
+        </div>
+        <div class="progress-bar">
+          <!-- Update data-pct (0–100) to reflect current progress -->
+          <div class="progress-fill" data-pct="0"></div>
+        </div>
+        <div class="progress-meta">
+          <span>0 current</span>
+          <span>1,000 target</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- How to update -->
+    <div class="card" style="border-left:3px solid var(--teal);background:rgba(65,211,208,.05);box-shadow:none;">
+      <p style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted);margin-bottom:6px;">📝 How to update progress</p>
+      <p style="font-size:13px;color:var(--text-2);line-height:1.6;">
+        Edit <code style="background:#f3f4f6;padding:1px 6px;border-radius:3px;font-size:12px;">goals.html</code> and change the <code style="background:#f3f4f6;padding:1px 6px;border-radius:3px;font-size:12px;">data-pct</code> value on each <code style="background:#f3f4f6;padding:1px 6px;border-radius:3px;font-size:12px;">.progress-fill</code> element to a number between 0–100. Also update the "current" label in the <code style="background:#f3f4f6;padding:1px 6px;border-radius:3px;font-size:12px;">.progress-meta</code> row below each bar.
+      </p>
+    </div>
+
+  </div>
+</div>
+
+<script src="hub.js"></script>
+</body>
+</html>

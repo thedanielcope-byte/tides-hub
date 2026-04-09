@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Coming Soon — Tides Hub</title>
+  <link rel="stylesheet" href="hub.css">
+</head>
+<body>
+
+<div class="main-content">
+  <div class="topbar">
+    <button class="topbar-hamburger" id="hubHamburger" aria-label="Open menu">&#9776;</button>
+    <span class="topbar-crumb">Tides Bookkeeping</span>
+    <span class="topbar-sep">/</span>
+    <span class="topbar-title" id="topbar-page-name">Coming Soon</span>
+  </div>
+
+  <div class="page-content">
+    <div class="coming-soon-wrap">
+      <div class="coming-soon-emoji">🚧</div>
+      <h1 class="coming-soon-title" id="cs-title">Coming Soon</h1>
+      <p class="coming-soon-sub" id="cs-sub">
+        This section is being built out. Check back soon — it will be added to the hub shortly.
+      </p>
+      <a href="index.html" class="coming-soon-back">← Back to Dashboard</a>
+    </div>
+  </div>
+</div>
+
+<script src="hub.js"></script>
+<script>
+  // Read ?page= from URL and display the page name
+  const params = new URLSearchParams(window.location.search);
+  const pageName = params.get('page');
+  if (pageName) {
+    const decoded = decodeURIComponent(pageName);
+    document.getElementById('cs-title').textContent = decoded;
+    document.getElementById('topbar-page-name').textContent = decoded;
+    document.getElementById('cs-sub').textContent =
+      decoded + ' is being built out. Check back soon — it will be added to the hub shortly.';
+    document.title = decoded + ' — Tides Hub';
+  }
+</script>
+</body>
+</html>
