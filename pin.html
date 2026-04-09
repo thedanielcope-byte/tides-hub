@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tides Bookkeeping — Employee Hub</title>
+  <link rel="stylesheet" href="hub.css">
+  <style>
+    body {
+      background: linear-gradient(135deg, #046c6e 0%, #3a6958 55%, #213197 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+
+    .pin-card {
+      background: #ffffff;
+      border-radius: 16px;
+      padding: 48px 44px;
+      width: 340px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+      text-align: center;
+    }
+
+    .pin-logo {
+      height: 48px;
+      width: auto;
+      margin: 0 auto 20px;
+      display: block;
+    }
+
+    .pin-title {
+      font-size: 20px;
+      font-weight: 700;
+      color: #111827;
+      margin-bottom: 4px;
+    }
+
+    .pin-sub {
+      font-size: 13px;
+      color: #6b7280;
+      margin-bottom: 32px;
+    }
+
+    .pin-dots {
+      display: flex;
+      justify-content: center;
+      gap: 14px;
+      margin-bottom: 28px;
+    }
+
+    .pin-dot {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: #e5e7eb;
+      transition: background 0.15s;
+    }
+
+    .pin-dot.filled {
+      background: #046c6e;
+    }
+
+    .pin-dot.error {
+      background: #ef4444;
+    }
+
+    .pin-keypad {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+
+    .pin-key {
+      background: #f9fafb;
+      border: 1px solid #e5e7eb;
+      border-radius: 10px;
+      padding: 16px 8px;
+      font-size: 20px;
+      font-weight: 600;
+      color: #111827;
+      cursor: pointer;
+      transition: background 0.1s, transform 0.08s;
+      user-select: none;
+    }
+
+    .pin-key:hover { background: #f3f4f6; }
+    .pin-key:active { background: #e5e7eb; transform: scale(0.96); }
+
+    .pin-key.backspace {
+      font-size: 18px;
+      color: #6b7280;
+    }
+
+    .pin-key.empty {
+      background: transparent;
+      border-color: transparent;
+      cursor: default;
+    }
+    .pin-key.empty:hover { background: transparent; }
+
+    .pin-error {
+      font-size: 12.5px;
+      color: #ef4444;
+      margin-top: 16px;
+      min-height: 18px;
+      font-weight: 500;
+    }
+  </style>
+</head>
+<body>
+
+<div class="pin-card">
+  <img src="logo.png" alt="Tides Bookkeeping" class="pin-logo">
+  <div class="pin-title">Employee Hub</div>
+  <div class="pin-sub">Enter your 4-digit PIN to continue</div>
+
+  <div class="pin-dots">
+    <div class="pin-dot" id="d0"></div>
+    <div class="pin-dot" id="d1"></div>
+    <div class="pin-dot" id="d2"></div>
+    <div class="pin-dot" id="d3"></div>
+  </div>
+
+  <div class="pin-keypad">
+    <button class="pin-key" onclick="enter('1')">1</button>
+    <button class="pin-key" onclick="enter('2')">2</button>
+    <button class="pin-key" onclick="enter('3')">3</button>
+    <button class="pin-key" onclick="enter('4')">4</button>
+    <button class="pin-key" onclick="enter('5')">5</button>
+    <button class="pin-key" onclick="enter('6')">6</button>
+    <button class="pin-key" onclick="enter('7')">7</button>
+    <button class="pin-key" onclick="enter('8')">8</button>
+    <button class="pin-key" onclick="enter('9')">9</button>
+    <div class="pin-key empty"></div>
+    <button class="pin-key" onclick="enter('0')">0</button>
+    <button class="pin-key backspace" onclick="del()">⌫</button>
+  </div>
+
+  <div class="pin-error" id="pinError"></div>
+</div>
+
+<script>
+  const CORRECT = '2277';
+  const KEY     = 'tides_hub_auth';
+  let current   = '';
+
+  // Already authenticated? Skip straight to dashboard
+  if (localStorage.getItem(KEY) === CORRECT) {
+    window.location.replace('index.html');
+  }
+
+  function updateDots() {
+    for (let i = 0; i < 4; i++) {
+      const dot = document.getElementById('d' + i);
+      dot.classList.toggle('filled', i < current.length);
+      dot.classList.remove('error');
+    }
+    document.getElementById('pinError').textContent = '';
+  }
+
+  function enter(digit) {
+    if (current.length >= 4) return;
+    current += digit;
+    updateDots();
+    if (current.length === 4) check();
+  }
+
+  function del() {
+    current = current.slice(0, -1);
+    updateDots();
+  }
+
+  function check() {
+    if (current === CORRECT) {
+      localStorage.setItem(KEY, CORRECT);
+      // Redirect to intended page or dashboard
+      const dest = sessionStorage.getItem('tides_redirect') || 'index.html';
+      sessionStorage.removeItem('tides_redirect');
+      window.location.replace(dest);
+    } else {
+      // Shake dots red
+      for (let i = 0; i < 4; i++) {
+        document.getElementById('d' + i).classList.add('error');
+      }
+      document.getElementById('pinError').textContent = 'Incorrect PIN. Try again.';
+      setTimeout(() => {
+        current = '';
+        updateDots();
+      }, 900);
+    }
+  }
+
+  // Physical keyboard support
+  document.addEventListener('keydown', e => {
+    if (e.key >= '0' && e.key <= '9') enter(e.key);
+    if (e.key === 'Backspace') del();
+  });
+</script>
+
+</body>
+</html>

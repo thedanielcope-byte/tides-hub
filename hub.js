@@ -126,6 +126,17 @@ function initProgress() {
   });
 }
 
+/* ---- PIN auth guard ---- */
+(function () {
+  const CORRECT = '2277';
+  const KEY     = 'tides_hub_auth';
+  const page    = window.location.pathname.split('/').pop();
+  if (page !== 'pin.html' && localStorage.getItem(KEY) !== CORRECT) {
+    sessionStorage.setItem('tides_redirect', window.location.href);
+    window.location.replace('pin.html');
+  }
+})();
+
 document.addEventListener('DOMContentLoaded', () => {
   buildSidebar();
   initTabs();
