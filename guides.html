@@ -97,6 +97,80 @@
       color: var(--text-2);
     }
 
+    /* ---- Tile in edit mode (clickable to edit) ---- */
+    .guide-tile.editable {
+      cursor: pointer;
+      border-color: #c7d2fe;
+    }
+    .guide-tile.editable:hover {
+      border-color: var(--primary);
+      box-shadow: 0 2px 8px rgba(33,81,151,.15);
+    }
+    .edit-hint {
+      font-size: 10px;
+      color: var(--text-muted);
+      font-style: italic;
+      margin-top: 2px;
+    }
+
+    /* ---- Tile being edited (expanded inline form) ---- */
+    .guide-tile-editing {
+      background: var(--white);
+      border: 1.5px solid var(--primary);
+      border-radius: var(--radius);
+      padding: 12px 14px;
+      box-shadow: 0 2px 10px rgba(33,81,151,.12);
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .tile-edit-label {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      color: var(--primary);
+      margin-bottom: 1px;
+    }
+    .tile-edit-input {
+      width: 100%;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 6px 9px;
+      font-size: 13px;
+      font-family: var(--font);
+      color: var(--text);
+    }
+    .tile-edit-input:focus { outline: none; border-color: var(--primary); }
+    .tile-edit-input::placeholder { color: var(--text-muted); }
+    .tile-edit-actions {
+      display: flex;
+      gap: 6px;
+      margin-top: 2px;
+    }
+    .btn-tile-save {
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius-sm);
+      padding: 6px 13px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .btn-tile-save:hover { background: #1a3f78; }
+    .btn-tile-cancel {
+      background: none;
+      color: var(--text-muted);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 6px 11px;
+      font-size: 12px;
+      cursor: pointer;
+    }
+    .btn-tile-cancel:hover { background: #f3f4f6; }
+
     /* ---- Badges ---- */
     .badge-coming {
       font-size: 10px;
@@ -140,6 +214,7 @@
       box-shadow: 0 1px 4px rgba(0,0,0,.2);
       transition: background .12s;
       flex-shrink: 0;
+      z-index: 2;
     }
     .btn-del-tile:hover { background: #b91c1c; }
 
@@ -205,11 +280,6 @@
       font-family: var(--font);
     }
     .btn-add-guide-open:hover { background: rgba(33,81,151,.13); }
-
-    /* ---- Edit mode: tile border highlight ---- */
-    .edit-mode-active .guide-tile {
-      border-color: #c7d2fe;
-    }
   </style>
 </head>
 <body>
@@ -249,18 +319,17 @@
 
 const GUIDES_KEY = 'guides-state';
 
-/* Default categories + tiles — initialized on first load if Supabase has nothing */
 const DEFAULT_STATE = {
   categories: [
     {
       id: 'software',
       name: '💻 Software',
       guides: [
-        { id: 'sw1', title: 'QuickBooks Online',        link: null },
+        { id: 'sw1', title: 'QuickBooks Online',           link: null },
         { id: 'sw2', title: 'Puzzle (Accounting Platform)', link: null },
-        { id: 'sw3', title: 'GoHighLevel',              link: null },
-        { id: 'sw4', title: 'SharePoint / Client Portal', link: null },
-        { id: 'sw5', title: 'Notion',                   link: null },
+        { id: 'sw3', title: 'GoHighLevel',                 link: null },
+        { id: 'sw4', title: 'SharePoint / Client Portal',  link: null },
+        { id: 'sw5', title: 'Notion',                      link: null },
       ]
     },
     {
@@ -269,59 +338,58 @@ const DEFAULT_STATE = {
       guides: [
         { id: 'bk1', title: 'Bookkeeping Essentials', link: null },
         { id: 'bk2', title: 'Chart of Accounts',      link: null },
-        { id: 'bk3', title: 'Financial Reports',       link: null },
+        { id: 'bk3', title: 'Financial Reports',      link: null },
       ]
     },
     {
       id: 'client-ops',
       name: '🤝 Client Operations',
       guides: [
-        { id: 'co1', title: 'Onboarding Procedures',  link: null },
-        { id: 'co2', title: 'Monthly Close Process',   link: null },
-        { id: 'co3', title: 'Client Communication',    link: null },
+        { id: 'co1', title: 'Onboarding Procedures', link: null },
+        { id: 'co2', title: 'Monthly Close Process',  link: null },
+        { id: 'co3', title: 'Client Communication',   link: null },
       ]
     },
     {
       id: 'industry',
       name: '🏭 Industry-Specific',
       guides: [
-        { id: 'in1',  title: 'Other Bookkeepers',          link: null },
-        { id: 'in2',  title: 'CPAs',                        link: null },
-        { id: 'in3',  title: 'Real Estate',                 link: null },
-        { id: 'in4',  title: 'Contractors & Trades',        link: null },
-        { id: 'in5',  title: 'Restaurants & Bars',          link: null },
-        { id: 'in6',  title: 'Healthcare Practices',        link: null },
-        { id: 'in7',  title: 'Professional Services',       link: null },
-        { id: 'in8',  title: 'E-Commerce & Retail',         link: null },
-        { id: 'in9',  title: 'Solo Entrepreneurs',          link: null },
-        { id: 'in10', title: 'Small Businesses',            link: null },
-        { id: 'in11', title: 'Automotive Services',         link: null },
-        { id: 'in12', title: 'Logistics & Transportation',  link: null },
-        { id: 'in13', title: 'Non-Profit Organizations',    link: null },
-        { id: 'in14', title: 'Tech & Startups',             link: null },
+        { id: 'in1',  title: 'Other Bookkeepers',         link: null },
+        { id: 'in2',  title: 'CPAs',                       link: null },
+        { id: 'in3',  title: 'Real Estate',                link: null },
+        { id: 'in4',  title: 'Contractors & Trades',       link: null },
+        { id: 'in5',  title: 'Restaurants & Bars',         link: null },
+        { id: 'in6',  title: 'Healthcare Practices',       link: null },
+        { id: 'in7',  title: 'Professional Services',      link: null },
+        { id: 'in8',  title: 'E-Commerce & Retail',        link: null },
+        { id: 'in9',  title: 'Solo Entrepreneurs',         link: null },
+        { id: 'in10', title: 'Small Businesses',           link: null },
+        { id: 'in11', title: 'Automotive Services',        link: null },
+        { id: 'in12', title: 'Logistics & Transportation', link: null },
+        { id: 'in13', title: 'Non-Profit Organizations',   link: null },
+        { id: 'in14', title: 'Tech & Startups',            link: null },
       ]
     },
     {
       id: 'policies',
       name: '📋 Company Policies',
       guides: [
-        { id: 'po1', title: 'Employee Handbook',        link: null },
-        { id: 'po2', title: 'Code of Conduct',          link: null },
-        { id: 'po3', title: 'Remote Work Policy',       link: null },
-        { id: 'po4', title: 'Data & Confidentiality',   link: null },
+        { id: 'po1', title: 'Employee Handbook',      link: null },
+        { id: 'po2', title: 'Code of Conduct',        link: null },
+        { id: 'po3', title: 'Remote Work Policy',     link: null },
+        { id: 'po4', title: 'Data & Confidentiality', link: null },
       ]
     },
   ]
 };
 
-let guidesState = null;
-let editMode    = false;
-let addingIn    = null; /* { catId } when the add-form is open */
+let guidesState  = null;
+let editMode     = false;
+let addingIn     = null;   /* catId when + Add Guide form is open */
+let editingTile  = null;   /* { catId, guideId } when a tile edit form is open */
 
 /* ---- Utilities ---- */
-function uid() {
-  return Math.random().toString(36).slice(2, 9);
-}
+function uid() { return Math.random().toString(36).slice(2, 9); }
 function esc(s) {
   return String(s || '')
     .replace(/&/g,'&amp;').replace(/</g,'&lt;')
@@ -351,10 +419,11 @@ async function persistGuides() {
   }
 }
 
-/* ---- Edit toggle ---- */
+/* ---- Edit mode toggle ---- */
 function toggleEditMode() {
-  editMode = !editMode;
-  addingIn = null;
+  editMode    = !editMode;
+  addingIn    = null;
+  editingTile = null;
   const btn = document.getElementById('btnEditGuides');
   if (editMode) {
     btn.textContent = '✕ Done Editing';
@@ -372,38 +441,75 @@ function render() {
   if (!guidesState) { container.innerHTML = '<p style="color:var(--text-muted);font-size:13px;">Loading…</p>'; return; }
 
   let html = '';
+
   guidesState.categories.forEach(cat => {
     const isAddingHere = addingIn === cat.id;
 
-    html += `<div class="guide-section ${editMode ? 'edit-mode-active' : ''}">
+    html += `<div class="guide-section">
       <div class="guide-section-header">
         <div class="section-label" style="margin-bottom:0;">${esc(cat.name)}</div>
       </div>
       <div class="guide-grid">`;
 
     cat.guides.forEach(guide => {
-      const hasLink = guide.link && guide.link.trim();
-      const tag     = hasLink ? 'a' : 'div';
-      const href    = hasLink ? ` href="${esc(guide.link)}" target="_blank" rel="noopener"` : '';
-      const badge   = hasLink
-        ? `<span class="badge-available">Available</span>`
-        : `<span class="badge-coming">Coming Soon</span>`;
-      const delBtn  = editMode
-        ? `<button class="btn-del-tile" onclick="deleteTile('${cat.id}','${guide.id}')" title="Remove tile">&times;</button>`
-        : '';
+      const isEditingThis = editingTile && editingTile.catId === cat.id && editingTile.guideId === guide.id;
 
-      html += `<${tag} class="guide-tile"${href}>${delBtn}<span>${esc(guide.title)}</span>${badge}</${tag}>`;
+      if (editMode && isEditingThis) {
+        /* ---- Inline edit form ---- */
+        html += `<div class="guide-tile-editing">
+          <button class="btn-del-tile" onclick="deleteTile('${cat.id}','${guide.id}')" title="Remove tile">&times;</button>
+          <div>
+            <div class="tile-edit-label">Title</div>
+            <input class="tile-edit-input" id="editTitle-${guide.id}" type="text" value="${esc(guide.title)}" placeholder="Guide title">
+          </div>
+          <div>
+            <div class="tile-edit-label">Document Link <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--text-muted);">(optional)</span></div>
+            <input class="tile-edit-input" id="editLink-${guide.id}" type="url" value="${esc(guide.link || '')}" placeholder="Paste OneDrive or SharePoint link…">
+          </div>
+          <div class="tile-edit-actions">
+            <button class="btn-tile-save" onclick="saveEditTile('${cat.id}','${guide.id}')">Save</button>
+            <button class="btn-tile-cancel" onclick="cancelTileEdit()">Cancel</button>
+          </div>
+        </div>`;
+
+      } else if (editMode) {
+        /* ---- Normal tile in edit mode (clickable to edit) ---- */
+        const hasLink = guide.link && guide.link.trim();
+        const badge   = hasLink
+          ? `<span class="badge-available">Available</span>`
+          : `<span class="badge-coming">Coming Soon</span>`;
+
+        html += `<div class="guide-tile editable" onclick="openTileEdit('${cat.id}','${guide.id}')">
+          <button class="btn-del-tile" onclick="event.stopPropagation();deleteTile('${cat.id}','${guide.id}')" title="Remove tile">&times;</button>
+          <div style="flex:1;min-width:0;">
+            <div style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${esc(guide.title)}</div>
+            <div class="edit-hint">Click to edit</div>
+          </div>
+          ${badge}
+        </div>`;
+
+      } else {
+        /* ---- Read-only tile ---- */
+        const hasLink = guide.link && guide.link.trim();
+        const tag     = hasLink ? 'a' : 'div';
+        const href    = hasLink ? ` href="${esc(guide.link)}" target="_blank" rel="noopener"` : '';
+        const badge   = hasLink
+          ? `<span class="badge-available">Available</span>`
+          : `<span class="badge-coming">Coming Soon</span>`;
+
+        html += `<${tag} class="guide-tile"${href}><span>${esc(guide.title)}</span>${badge}</${tag}>`;
+      }
     });
 
     html += `</div>`; /* /guide-grid */
 
-    /* Add Guide button / inline form */
+    /* Add Guide button / form */
     if (editMode) {
       if (isAddingHere) {
         html += `<div class="add-guide-row">
           <input class="add-guide-input" id="addTitle-${cat.id}" type="text" placeholder="Guide title (required)" autocomplete="off">
-          <input class="add-guide-input" id="addLink-${cat.id}"  type="url"  placeholder="OneDrive link (optional)" autocomplete="off">
-          <button class="btn-add-guide-save"   onclick="saveNewTile('${cat.id}')">Add</button>
+          <input class="add-guide-input" id="addLink-${cat.id}" type="url" placeholder="OneDrive link (optional)" autocomplete="off">
+          <button class="btn-add-guide-save" onclick="saveNewTile('${cat.id}')">Add</button>
           <button class="btn-add-guide-cancel" onclick="cancelAdd()">Cancel</button>
         </div>`;
       } else {
@@ -416,24 +522,65 @@ function render() {
 
   container.innerHTML = html;
 
-  /* Focus first input if add form just opened */
-  if (addingIn) {
+  /* Auto-focus the right input */
+  if (editingTile) {
+    const inp = document.getElementById('editTitle-' + editingTile.guideId);
+    if (inp) { inp.focus(); inp.select(); }
+  } else if (addingIn) {
     const inp = document.getElementById('addTitle-' + addingIn);
     if (inp) inp.focus();
   }
 }
 
-/* ---- Tile actions ---- */
-function deleteTile(catId, guideId) {
+/* ---- Tile edit actions ---- */
+function openTileEdit(catId, guideId) {
+  addingIn    = null;
+  editingTile = { catId, guideId };
+  render();
+}
+
+function cancelTileEdit() {
+  editingTile = null;
+  render();
+}
+
+function saveEditTile(catId, guideId) {
+  const titleEl = document.getElementById('editTitle-' + guideId);
+  const linkEl  = document.getElementById('editLink-'  + guideId);
+  const title   = titleEl ? titleEl.value.trim() : '';
+  const link    = linkEl  ? linkEl.value.trim()  : '';
+
+  if (!title) {
+    if (titleEl) { titleEl.style.borderColor = '#ef4444'; titleEl.focus(); }
+    return;
+  }
+
   const cat = guidesState.categories.find(c => c.id === catId);
   if (!cat) return;
-  cat.guides = cat.guides.filter(g => g.id !== guideId);
+  const guide = cat.guides.find(g => g.id === guideId);
+  if (!guide) return;
+
+  guide.title = title;
+  guide.link  = link || null;
+  editingTile = null;
   persistGuides();
   render();
 }
 
+/* ---- Delete tile ---- */
+function deleteTile(catId, guideId) {
+  const cat = guidesState.categories.find(c => c.id === catId);
+  if (!cat) return;
+  cat.guides = cat.guides.filter(g => g.id !== guideId);
+  if (editingTile && editingTile.guideId === guideId) editingTile = null;
+  persistGuides();
+  render();
+}
+
+/* ---- Add tile ---- */
 function openAddForm(catId) {
-  addingIn = catId;
+  editingTile = null;
+  addingIn    = catId;
   render();
 }
 
@@ -444,7 +591,7 @@ function cancelAdd() {
 
 function saveNewTile(catId) {
   const titleEl = document.getElementById('addTitle-' + catId);
-  const linkEl  = document.getElementById('addLink-' + catId);
+  const linkEl  = document.getElementById('addLink-'  + catId);
   const title   = titleEl ? titleEl.value.trim() : '';
   const link    = linkEl  ? linkEl.value.trim()  : '';
 
@@ -456,21 +603,22 @@ function saveNewTile(catId) {
   const cat = guidesState.categories.find(c => c.id === catId);
   if (!cat) return;
 
-  cat.guides.push({
-    id:    uid(),
-    title: title,
-    link:  link || null
-  });
-
+  cat.guides.push({ id: uid(), title, link: link || null });
   addingIn = null;
   persistGuides();
   render();
 }
 
-/* ---- Enter key in add form ---- */
+/* ---- Keyboard shortcuts ---- */
 document.addEventListener('keydown', e => {
-  if (e.key === 'Enter' && addingIn) saveNewTile(addingIn);
-  if (e.key === 'Escape' && addingIn) cancelAdd();
+  if (e.key === 'Escape') {
+    if (editingTile) { cancelTileEdit(); return; }
+    if (addingIn)    { cancelAdd();      return; }
+  }
+  if (e.key === 'Enter') {
+    if (editingTile) { saveEditTile(editingTile.catId, editingTile.guideId); return; }
+    if (addingIn)    { saveNewTile(addingIn); return; }
+  }
 });
 
 document.addEventListener('DOMContentLoaded', initGuides);
