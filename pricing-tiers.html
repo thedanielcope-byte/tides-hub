@@ -15,8 +15,8 @@
     }
     .tier-grid {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 18px;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
       margin-bottom: 32px;
     }
     .tier-card {
@@ -146,7 +146,8 @@
       font-family: var(--font);
     }
     .btn-add-feature:hover { background: rgba(33,81,151,.15); }
-    @media (max-width: 900px) { .tier-grid { grid-template-columns: 1fr; } }
+    @media (max-width: 1100px) { .tier-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 700px)  { .tier-grid { grid-template-columns: 1fr; } }
   </style>
 </head>
 <body>
@@ -183,26 +184,34 @@ const DEFAULT_TIERS = [
   {
     name: 'Starter',
     price: '$299',
-    period: '/month',
+    period: '/mo',
     description: 'Perfect for small businesses just getting started with clean books.',
     popular: false,
-    features: ['Monthly bookkeeping', 'Bank reconciliation', 'Basic financial reports', 'Email support', 'Up to 100 transactions/mo']
+    features: ['Up to $25,000 monthly expenses', 'Up to 2 bank/credit card accounts', 'Weekly bookkeeping', 'Dedicated bookkeeping team', 'Current bookkeeping system integration included (QBO & all major platforms)', 'Monthly software subscription covered — one payment, no extras', 'Client portal — reports & communication']
+  },
+  {
+    name: 'Essential',
+    price: '$395',
+    period: '/mo',
+    description: 'Perfect for growing businesses keeping clean books from day one.',
+    popular: false,
+    features: ['Up to $50,000 monthly expenses', 'Up to 4 bank/credit card accounts', 'Weekly bookkeeping', 'Dedicated bookkeeping team', 'Current bookkeeping system integration included (QBO & all major platforms)', 'Monthly software subscription covered — one payment, no extras', 'Client portal — reports & communication']
   },
   {
     name: 'Growth',
-    price: '$499',
-    period: '/month',
-    description: 'For growing businesses that need more hands-on support and insight.',
+    price: '$595',
+    period: '/mo',
+    description: 'For scaling businesses that need deeper financial visibility.',
     popular: true,
-    features: ['Everything in Starter', 'Accounts payable & receivable', 'Monthly review call', 'Priority support', 'Catch-up bookkeeping', 'Up to 300 transactions/mo']
+    features: ['Up to $75,000 monthly expenses', 'Up to 6 bank/credit card accounts', 'Weekly bookkeeping', 'Dedicated bookkeeping team', 'Current bookkeeping system integration included (QBO & all major platforms)', 'Monthly software subscription covered — one payment, no extras', 'Client portal — reports & communication']
   },
   {
-    name: 'Professional',
-    price: '$799',
-    period: '/month',
-    description: 'Full-service bookkeeping for established, fast-moving businesses.',
+    name: 'Scale',
+    price: '$895',
+    period: '/mo',
+    description: 'Full-service bookkeeping for high-volume real estate & travel portfolios.',
     popular: false,
-    features: ['Everything in Growth', 'Payroll support', 'Tax prep support', 'Financial analysis', 'QuickBooks setup & cleanup', 'Dedicated bookkeeper', 'Unlimited transactions']
+    features: ['Up to $125,000 monthly expenses', 'Up to 12 bank/credit card accounts', 'Weekly bookkeeping', 'Dedicated bookkeeping team', 'Current bookkeeping system integration included (QBO & all major platforms)', 'Monthly software subscription covered — one payment, no extras', 'Client portal — reports & communication']
   }
 ];
 
