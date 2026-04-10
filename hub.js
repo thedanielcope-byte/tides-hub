@@ -3,16 +3,15 @@
    hub.js  |  Sidebar, tabs, mobile toggle, content storage
    ============================================================ */
 
-/* ---- Supabase config ---- */
-const SUPABASE_URL = 'https://khhfkxfxefjgunhrihyx.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtoaGZreGZ4ZWZqZ3VuaHJpaHl4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU3NzYwMjcsImV4cCI6MjA5MTM1MjAyN30.bYW68xMDUEXBRC1bxOLdj77xCcjXb3wIuHbPAPFdSGo';
-
 /* ---- Hub content storage (cross-device, keys: goals-YEAR, pricing-tiers) ---- */
+const _HUB_SB_URL = 'https://khhfkxfxefjgunhrihyx.supabase.co';
+const _HUB_SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtoaGZreGZ4ZWZqZ3VuaHJpaHl4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU3NzYwMjcsImV4cCI6MjA5MTM1MjAyN30.bYW68xMDUEXBRC1bxOLdj77xCcjXb3wIuHbPAPFdSGo';
+
 async function loadHubContent(key) {
   try {
     const res = await fetch(
-      `${SUPABASE_URL}/rest/v1/hub_content?content_key=eq.${encodeURIComponent(key)}&select=content_value`,
-      { headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` } }
+      `${_HUB_SB_URL}/rest/v1/hub_content?content_key=eq.${encodeURIComponent(key)}&select=content_value`,
+      { headers: { 'apikey': _HUB_SB_KEY, 'Authorization': `Bearer ${_HUB_SB_KEY}` } }
     );
     if (!res.ok) return null;
     const rows = await res.json();
@@ -23,19 +22,19 @@ async function loadHubContent(key) {
 async function saveHubContent(key, value) {
   try {
     const check = await fetch(
-      `${SUPABASE_URL}/rest/v1/hub_content?content_key=eq.${encodeURIComponent(key)}&select=id`,
-      { headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` } }
+      `${_HUB_SB_URL}/rest/v1/hub_content?content_key=eq.${encodeURIComponent(key)}&select=id`,
+      { headers: { 'apikey': _HUB_SB_KEY, 'Authorization': `Bearer ${_HUB_SB_KEY}` } }
     );
     const rows = await check.json();
     const method = rows.length ? 'PATCH' : 'POST';
     const url = rows.length
-      ? `${SUPABASE_URL}/rest/v1/hub_content?content_key=eq.${encodeURIComponent(key)}`
-      : `${SUPABASE_URL}/rest/v1/hub_content`;
+      ? `${_HUB_SB_URL}/rest/v1/hub_content?content_key=eq.${encodeURIComponent(key)}`
+      : `${_HUB_SB_URL}/rest/v1/hub_content`;
     await fetch(url, {
       method,
       headers: {
-        'apikey': SUPABASE_KEY,
-        'Authorization': `Bearer ${SUPABASE_KEY}`,
+        'apikey': _HUB_SB_KEY,
+        'Authorization': `Bearer ${_HUB_SB_KEY}`,
         'Content-Type': 'application/json',
         'Prefer': 'return=minimal'
       },
