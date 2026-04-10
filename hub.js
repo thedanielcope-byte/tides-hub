@@ -17,10 +17,11 @@ const HUB_NAV = [
     { text: 'Meetings',  href: 'coming-soon.html?page=Meetings' },
   ]},
   { label: 'MARKETING', items: [
-    { text: 'Marketing Avenues',  href: 'marketing.html' },
-    { text: 'Content Planner',    href: 'coming-soon.html?page=Content+Planner' },
-    { text: 'Citation Websites',  href: 'coming-soon.html?page=Citation+Websites' },
-    { text: 'Affiliate Links',    href: 'marketing.html#affiliates' },
+    { text: 'Marketing Avenues',     href: 'marketing.html' },
+    { text: 'Website Page Tracker',  href: 'website-pages.html' },
+    { text: 'Content Planner',       href: 'coming-soon.html?page=Content+Planner' },
+    { text: 'Citation Websites',     href: 'coming-soon.html?page=Citation+Websites' },
+    { text: 'Affiliate Links',       href: 'marketing.html#affiliates' },
   ]},
   { label: 'CLIENTS', items: [
     { text: 'Clients Database', href: 'coming-soon.html?page=Clients+Database' },

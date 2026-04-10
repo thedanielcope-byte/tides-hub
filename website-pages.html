@@ -1,0 +1,781 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Website Page Tracker — Tides Hub</title>
+  <link rel="stylesheet" href="hub.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+  <style>
+    /* ---- Summary stats ---- */
+    .tracker-stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+      margin-bottom: 24px;
+    }
+    .stat-card {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px 20px;
+      box-shadow: var(--shadow-sm);
+      text-align: center;
+    }
+    .stat-num {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--primary);
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+    .stat-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: .06em;
+    }
+
+    /* ---- Category progress cards ---- */
+    .cat-progress-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+      margin-bottom: 8px;
+    }
+    .cat-prog-card {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+      box-shadow: var(--shadow-sm);
+    }
+    .cat-prog-title { font-size: 12px; font-weight: 700; color: var(--text-1); margin-bottom: 2px; }
+    .cat-prog-sub   { font-size: 11px; color: var(--text-muted); margin-bottom: 10px; }
+    .cat-prog-bar   { height: 6px; background: #e5e7eb; border-radius: 3px; overflow: hidden; }
+    .cat-prog-fill  { height: 100%; background: linear-gradient(to right, var(--teal), var(--primary)); border-radius: 3px; transition: width .5s ease; }
+
+    /* ---- Checklist ---- */
+    .cl-section {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-sm);
+      overflow: hidden;
+      margin-bottom: 20px;
+    }
+    .cl-section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 11px 16px;
+      background: #f9fafb;
+      border-bottom: 1px solid var(--border);
+    }
+    .cl-section-title { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: .06em; }
+    .cl-section-count { font-size: 11px; color: var(--text-muted); }
+
+    .cl-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 7px 16px;
+      border-bottom: 1px solid #f3f4f6;
+      transition: background .1s;
+    }
+    .cl-row:last-child { border-bottom: none; }
+    .cl-row:hover      { background: rgba(65,211,208,.04); }
+    .cl-row.level-1    { padding-left: 36px; background: #fafafa; }
+    .cl-row.level-1:hover { background: rgba(65,211,208,.04); }
+    .cl-row.level-2    { padding-left: 56px; background: #f7f8f9; }
+    .cl-row.level-2:hover { background: rgba(65,211,208,.04); }
+
+    .cl-cb {
+      width: 15px; height: 15px;
+      flex-shrink: 0; cursor: pointer;
+      accent-color: var(--primary);
+    }
+    .cl-name {
+      flex: 1;
+      font-size: 13px; font-weight: 500; color: var(--text-1);
+    }
+    .cl-row.level-1 .cl-name { font-weight: 400; }
+    .cl-row.level-2 .cl-name { font-weight: 400; font-size: 12px; color: var(--text-2); }
+
+    .cl-file {
+      font-family: 'Courier New', monospace;
+      font-size: 11px; color: var(--text-muted);
+      cursor: pointer;
+      padding: 2px 7px;
+      background: #f3f4f6;
+      border-radius: 3px;
+      border: 1px solid #e5e7eb;
+      white-space: nowrap;
+      transition: color .1s, background .1s, border-color .1s;
+    }
+    .cl-file:hover { color: var(--primary); background: rgba(65,211,208,.08); border-color: var(--primary); }
+
+    .cl-link {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 24px; height: 24px;
+      color: var(--primary); text-decoration: none;
+      border-radius: 4px; font-size: 13px;
+      background: rgba(65,211,208,.1);
+      flex-shrink: 0;
+      transition: background .1s;
+    }
+    .cl-link:hover { background: rgba(65,211,208,.22); }
+
+    /* ---- Supabase setup notice ---- */
+    .supabase-notice {
+      background: #fffbeb;
+      border: 1px solid #fcd34d;
+      border-radius: var(--radius);
+      padding: 14px 18px;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+    }
+    .supabase-notice.hidden { display: none; }
+    .sn-icon  { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+    .sn-title { font-size: 13px; font-weight: 700; color: #92400e; margin-bottom: 4px; }
+    .sn-text  { font-size: 12px; color: #78350f; line-height: 1.7; }
+    .sn-text code { background: #fef3c7; padding: 1px 5px; border-radius: 3px; font-family: monospace; font-size: 11px; }
+
+    /* ---- Sync indicator ---- */
+    .sync-bar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+    .sync-left { display: flex; align-items: center; gap: 6px; }
+    .sync-dot  { width: 8px; height: 8px; border-radius: 50%; background: #d1d5db; flex-shrink: 0; }
+    .sync-dot.synced  { background: #10b981; }
+    .sync-dot.syncing { background: #f59e0b; animation: pulse .8s infinite; }
+    .sync-dot.error   { background: #ef4444; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+    .sync-label { font-size: 11px; color: var(--text-muted); }
+    .reset-btn {
+      font-size: 11px; color: var(--text-muted);
+      background: none; border: 1px solid var(--border);
+      cursor: pointer; padding: 4px 10px; border-radius: 4px;
+      transition: color .1s, border-color .1s;
+    }
+    .reset-btn:hover { color: var(--text-1); border-color: #9ca3af; }
+
+    /* ---- Copy toast ---- */
+    .copy-toast {
+      position: fixed; bottom: 24px; left: 50%;
+      transform: translateX(-50%) translateY(60px);
+      background: #111827; color: #fff;
+      font-size: 12px; font-weight: 600;
+      padding: 8px 16px; border-radius: 20px;
+      opacity: 0; transition: opacity .2s, transform .2s;
+      pointer-events: none; z-index: 9999;
+    }
+    .copy-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    @media (max-width: 768px) {
+      .tracker-stats    { grid-template-columns: repeat(2, 1fr); }
+      .cat-progress-grid{ grid-template-columns: 1fr; }
+      .cl-file          { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="main-content">
+  <div class="topbar">
+    <button class="topbar-hamburger" id="hubHamburger" aria-label="Open menu">&#9776;</button>
+    <span class="topbar-crumb">Tides Bookkeeping</span>
+    <span class="topbar-sep">/</span>
+    <span class="topbar-title">Website Page Tracker</span>
+  </div>
+
+  <div class="page-content">
+    <div class="page-header">
+      <div class="page-icon">🗺️</div>
+      <h1 class="page-title">Website Page Tracker</h1>
+      <p class="page-subtitle">Every page we need to build — services, industries, states, cities, and counties. Check them off as they go live.</p>
+    </div>
+
+    <!-- Supabase setup notice -->
+    <div class="supabase-notice" id="supabaseNotice">
+      <div class="sn-icon">⚡</div>
+      <div>
+        <div class="sn-title">Cross-device sync not yet configured — saving to this browser only</div>
+        <div class="sn-text">
+          To sync checkboxes across all devices: <strong>1)</strong> Create a free account at <strong>supabase.com</strong> → New Project → Table Editor.&nbsp;
+          <strong>2)</strong> Create a table named <code>page_status</code> with columns: <code>page_id</code> (text, primary key) and <code>checked</code> (bool, default false).&nbsp;
+          <strong>3)</strong> Copy your Project URL + anon public key and paste them into the <code>SUPABASE_URL</code> and <code>SUPABASE_ANON_KEY</code> constants at the top of the &lt;script&gt; block in <code>website-pages.html</code>.
+        </div>
+      </div>
+    </div>
+
+    <!-- Sync status + reset -->
+    <div class="sync-bar">
+      <div class="sync-left">
+        <span class="sync-dot" id="syncDot"></span>
+        <span class="sync-label" id="syncLabel">Loading...</span>
+      </div>
+      <button class="reset-btn" onclick="resetAll()">↺ Reset All</button>
+    </div>
+
+    <!-- Tabs -->
+    <div data-tabs>
+      <div class="tab-bar" data-tab-bar>
+        <button class="tab-btn active" data-tab="tab-summary">Summary</button>
+        <button class="tab-btn" data-tab="tab-core">Core Pages</button>
+        <button class="tab-btn" data-tab="tab-services">Services</button>
+        <button class="tab-btn" data-tab="tab-industries">Industries</button>
+        <button class="tab-btn" data-tab="tab-sc">South Carolina</button>
+        <button class="tab-btn" data-tab="tab-nc">North Carolina</button>
+        <button class="tab-btn" data-tab="tab-fl">Florida</button>
+        <button class="tab-btn" data-tab="tab-in">Indiana</button>
+        <button class="tab-btn" data-tab="tab-tx">Texas</button>
+        <button class="tab-btn" data-tab="tab-states">All States</button>
+      </div>
+
+      <!-- SUMMARY -->
+      <div class="tab-pane active" id="tab-summary">
+        <div class="tracker-stats" id="summaryStats"></div>
+        <div class="section-label" style="margin-bottom:12px;">Progress by Category</div>
+        <div class="cat-progress-grid" id="catProgressGrid"></div>
+      </div>
+
+      <!-- CORE PAGES -->
+      <div class="tab-pane" id="tab-core"><div id="list-core"></div></div>
+
+      <!-- SERVICES -->
+      <div class="tab-pane" id="tab-services"><div id="list-services"></div></div>
+
+      <!-- INDUSTRIES -->
+      <div class="tab-pane" id="tab-industries"><div id="list-industries"></div></div>
+
+      <!-- SC -->
+      <div class="tab-pane" id="tab-sc"><div id="list-sc"></div></div>
+
+      <!-- NC -->
+      <div class="tab-pane" id="tab-nc"><div id="list-nc"></div></div>
+
+      <!-- FL -->
+      <div class="tab-pane" id="tab-fl"><div id="list-fl"></div></div>
+
+      <!-- IN -->
+      <div class="tab-pane" id="tab-in"><div id="list-in"></div></div>
+
+      <!-- TX -->
+      <div class="tab-pane" id="tab-tx"><div id="list-tx"></div></div>
+
+      <!-- ALL STATES -->
+      <div class="tab-pane" id="tab-states">
+        <div class="card" style="background:rgba(65,211,208,.05);border-color:var(--teal);box-shadow:none;padding:12px 16px;margin-bottom:16px;">
+          <p style="font-size:12px;color:var(--text-2);margin:0;">
+            <strong>Priority states</strong> (SC, NC, FL, IN, TX) have dedicated tabs with full city + county breakdowns. The 45 remaining state-level pages are tracked here.
+          </p>
+        </div>
+        <div id="list-states"></div>
+      </div>
+
+    </div><!-- /data-tabs -->
+  </div>
+</div>
+
+<div class="copy-toast" id="copyToast"></div>
+
+<script>
+/* ============================================================
+   SUPABASE CONFIG — paste your credentials here to enable
+   cross-device sync. Leave empty to use localStorage only.
+   ============================================================ */
+const SUPABASE_URL      = '';  // e.g. 'https://xyzabcde.supabase.co'
+const SUPABASE_ANON_KEY = '';  // e.g. 'eyJhbGci...'
+
+/* ============================================================
+   PAGE DATA
+   ============================================================ */
+const PAGE_DATA = {
+
+  core: [
+    { id:'homepage',          name:'Homepage',                file:'index.html',              status:'in-progress' },
+    { id:'about',             name:'About Us',                file:'about.html',              status:''            },
+    { id:'services-overview', name:'Services Overview',       file:'services.html',           status:'in-progress' },
+    { id:'who-we-serve',      name:'Who We Serve',            file:'who-we-serve.html',       status:'in-progress' },
+    { id:'contact',           name:'Contact',                 file:'contact.html',            status:''            },
+    { id:'pricing',           name:'Pricing',                 file:'pricing.html',            status:''            },
+    { id:'blog',              name:'Blog / Resources',        file:'blog.html',               status:''            },
+    { id:'faq',               name:'FAQ',                     file:'faq-review.html',         status:'in-progress' },
+    { id:'glossary',          name:'Glossary',                file:'glossary.html',           status:'in-progress' },
+    { id:'privacy-policy',    name:'Privacy Policy',          file:'privacy-policy.html',     status:''            },
+    { id:'terms',             name:'Terms of Service',        file:'terms.html',              status:''            },
+    { id:'thank-you',         name:'Thank You',               file:'thank-you.html',          status:''            },
+  ],
+
+  services: [
+    { id:'svc-monthly',    name:'Monthly Bookkeeping',           file:'service-monthly-bookkeeping.html',         status:'built' },
+    { id:'svc-catchup',    name:'Catch-Up Bookkeeping',          file:'service-catchup-bookkeeping.html',         status:''      },
+    { id:'svc-bank-rec',   name:'Bank Reconciliation',           file:'service-bank-reconciliation.html',         status:''      },
+    { id:'svc-reporting',  name:'Financial Reporting',           file:'service-financial-reporting.html',         status:''      },
+    { id:'svc-apar',       name:'Accounts Payable & Receivable', file:'service-accounts-payable-receivable.html', status:''      },
+    { id:'svc-payroll',    name:'Payroll Support',               file:'service-payroll-support.html',             status:''      },
+    { id:'svc-setup',      name:'Bookkeeping Setup & Cleanup',   file:'service-setup-cleanup.html',               status:''      },
+    { id:'svc-tax-prep',   name:'Tax Prep Support',              file:'service-tax-prep-support.html',            status:''      },
+    { id:'svc-qbo',        name:'QuickBooks Setup',              file:'service-quickbooks-setup.html',            status:''      },
+  ],
+
+  industries: [
+    { id:'ind-re-investors',  name:'Real Estate Investors',        file:'industry-real-estate.html',            status:'built' },
+    { id:'ind-re-agents',     name:'Real Estate Agents & Brokers', file:'industry-real-estate-agents.html',     status:''      },
+    { id:'ind-legal',         name:'Legal & Law Firms',            file:'industry-legal.html',                  status:''      },
+    { id:'ind-healthcare',    name:'Healthcare & Medical',         file:'industry-healthcare.html',             status:''      },
+    { id:'ind-consulting',    name:'Consulting',                   file:'industry-consulting.html',             status:''      },
+    { id:'ind-marketing',     name:'Marketing Agencies',           file:'industry-marketing-agencies.html',     status:''      },
+    { id:'ind-home-services', name:'Home Services & Contractors',  file:'industry-home-services.html',          status:''      },
+    { id:'ind-tech',          name:'Technology & SaaS',            file:'industry-technology.html',             status:''      },
+    { id:'ind-travel',        name:'Travel & Tourism',             file:'industry-travel.html',                 status:''      },
+    { id:'ind-restaurants',   name:'Restaurants & Food Service',   file:'industry-restaurants.html',            status:''      },
+    { id:'ind-retail',        name:'Retail',                       file:'industry-retail.html',                 status:''      },
+    { id:'ind-nonprofits',    name:'Non-Profits',                  file:'industry-nonprofits.html',             status:''      },
+    { id:'ind-dental',        name:'Dental Practices',             file:'industry-dental.html',                 status:''      },
+    { id:'ind-fitness',       name:'Fitness & Gyms',               file:'industry-fitness.html',                status:''      },
+    { id:'ind-photography',   name:'Photography & Creative',       file:'industry-photography.html',            status:''      },
+    { id:'ind-ecommerce',     name:'E-Commerce',                   file:'industry-ecommerce.html',              status:''      },
+    { id:'ind-construction',  name:'Construction',                 file:'industry-construction.html',           status:''      },
+    { id:'ind-insurance',     name:'Insurance',                    file:'industry-insurance.html',              status:''      },
+    { id:'ind-fin-advisors',  name:'Financial Advisors',           file:'industry-financial-advisors.html',     status:''      },
+    { id:'ind-trucking',      name:'Trucking & Transportation',    file:'industry-trucking.html',               status:''      },
+  ],
+
+  states: {
+    sc: {
+      state: { id:'state-sc', name:'South Carolina', file:'state-south-carolina.html', status:'in-progress' },
+      cities: [
+        { id:'city-greenville-sc',   name:'Greenville',         file:'city-greenville-sc.html',   status:'built',
+          counties:[{ id:'county-greenville-sc', name:'Greenville County', file:'county-greenville-sc.html', status:'built' }] },
+        { id:'city-columbia-sc',     name:'Columbia',           file:'city-columbia-sc.html',     status:'',
+          counties:[
+            { id:'county-richland-sc',  name:'Richland County',  file:'county-richland-sc.html',  status:'' },
+            { id:'county-lexington-sc', name:'Lexington County', file:'county-lexington-sc.html', status:'' },
+          ]},
+        { id:'city-charleston-sc',   name:'Charleston',         file:'city-charleston-sc.html',   status:'',
+          counties:[{ id:'county-charleston-sc',  name:'Charleston County',  file:'county-charleston-sc.html',  status:'' }] },
+        { id:'city-spartanburg-sc',  name:'Spartanburg',        file:'city-spartanburg-sc.html',  status:'',
+          counties:[{ id:'county-spartanburg-sc', name:'Spartanburg County', file:'county-spartanburg-sc.html', status:'' }] },
+        { id:'city-rock-hill-sc',    name:'Rock Hill',          file:'city-rock-hill-sc.html',    status:'',
+          counties:[{ id:'county-york-sc',        name:'York County',        file:'county-york-sc.html',        status:'' }] },
+        { id:'city-myrtle-beach-sc', name:'Myrtle Beach',       file:'city-myrtle-beach-sc.html', status:'',
+          counties:[{ id:'county-horry-sc',       name:'Horry County',       file:'county-horry-sc.html',       status:'' }] },
+        { id:'city-anderson-sc',     name:'Anderson',           file:'city-anderson-sc.html',     status:'',
+          counties:[{ id:'county-anderson-sc',    name:'Anderson County',    file:'county-anderson-sc.html',    status:'' }] },
+        { id:'city-summerville-sc',  name:'Summerville',        file:'city-summerville-sc.html',  status:'',
+          counties:[{ id:'county-dorchester-sc',  name:'Dorchester County',  file:'county-dorchester-sc.html',  status:'' }] },
+        { id:'city-florence-sc',     name:'Florence',           file:'city-florence-sc.html',     status:'',
+          counties:[{ id:'county-florence-sc',    name:'Florence County',    file:'county-florence-sc.html',    status:'' }] },
+        { id:'city-hilton-head-sc',  name:'Hilton Head Island', file:'city-hilton-head-sc.html',  status:'',
+          counties:[{ id:'county-beaufort-sc',    name:'Beaufort County',    file:'county-beaufort-sc.html',    status:'' }] },
+      ]
+    },
+    nc: {
+      state: { id:'state-nc', name:'North Carolina', file:'state-north-carolina.html', status:'' },
+      cities: [
+        { id:'city-charlotte-nc',    name:'Charlotte',      file:'city-charlotte-nc.html',    status:'',
+          counties:[{ id:'county-mecklenburg-nc', name:'Mecklenburg County', file:'county-mecklenburg-nc.html', status:'' }] },
+        { id:'city-raleigh-nc',      name:'Raleigh',        file:'city-raleigh-nc.html',      status:'',
+          counties:[{ id:'county-wake-nc',        name:'Wake County',        file:'county-wake-nc.html',        status:'' }] },
+        { id:'city-durham-nc',       name:'Durham',         file:'city-durham-nc.html',       status:'',
+          counties:[{ id:'county-durham-nc',      name:'Durham County',      file:'county-durham-nc.html',      status:'' }] },
+        { id:'city-greensboro-nc',   name:'Greensboro',     file:'city-greensboro-nc.html',   status:'',
+          counties:[{ id:'county-guilford-nc',    name:'Guilford County',    file:'county-guilford-nc.html',    status:'' }] },
+        { id:'city-winston-salem-nc',name:'Winston-Salem',  file:'city-winston-salem-nc.html',status:'',
+          counties:[{ id:'county-forsyth-nc',     name:'Forsyth County',     file:'county-forsyth-nc.html',     status:'' }] },
+        { id:'city-fayetteville-nc', name:'Fayetteville',   file:'city-fayetteville-nc.html', status:'',
+          counties:[{ id:'county-cumberland-nc',  name:'Cumberland County',  file:'county-cumberland-nc.html',  status:'' }] },
+        { id:'city-cary-nc',         name:'Cary',           file:'city-cary-nc.html',         status:'', counties:[] },
+        { id:'city-wilmington-nc',   name:'Wilmington',     file:'city-wilmington-nc.html',   status:'',
+          counties:[{ id:'county-new-hanover-nc', name:'New Hanover County', file:'county-new-hanover-nc.html', status:'' }] },
+        { id:'city-high-point-nc',   name:'High Point',     file:'city-high-point-nc.html',   status:'', counties:[] },
+        { id:'city-asheville-nc',    name:'Asheville',      file:'city-asheville-nc.html',    status:'',
+          counties:[{ id:'county-buncombe-nc',    name:'Buncombe County',    file:'county-buncombe-nc.html',    status:'' }] },
+      ]
+    },
+    fl: {
+      state: { id:'state-fl', name:'Florida', file:'state-florida.html', status:'' },
+      cities: [
+        { id:'city-jacksonville-fl',   name:'Jacksonville',   file:'city-jacksonville-fl.html',   status:'',
+          counties:[{ id:'county-duval-fl',        name:'Duval County',        file:'county-duval-fl.html',        status:'' }] },
+        { id:'city-miami-fl',          name:'Miami',          file:'city-miami-fl.html',          status:'',
+          counties:[{ id:'county-miami-dade-fl',   name:'Miami-Dade County',   file:'county-miami-dade-fl.html',   status:'' }] },
+        { id:'city-tampa-fl',          name:'Tampa',          file:'city-tampa-fl.html',          status:'',
+          counties:[{ id:'county-hillsborough-fl', name:'Hillsborough County', file:'county-hillsborough-fl.html', status:'' }] },
+        { id:'city-orlando-fl',        name:'Orlando',        file:'city-orlando-fl.html',        status:'',
+          counties:[{ id:'county-orange-fl',       name:'Orange County',       file:'county-orange-fl.html',       status:'' }] },
+        { id:'city-st-pete-fl',        name:'St. Petersburg', file:'city-st-petersburg-fl.html',  status:'',
+          counties:[{ id:'county-pinellas-fl',     name:'Pinellas County',     file:'county-pinellas-fl.html',     status:'' }] },
+        { id:'city-fort-lauderdale-fl',name:'Fort Lauderdale',file:'city-fort-lauderdale-fl.html',status:'',
+          counties:[{ id:'county-broward-fl',      name:'Broward County',      file:'county-broward-fl.html',      status:'' }] },
+        { id:'city-tallahassee-fl',    name:'Tallahassee',    file:'city-tallahassee-fl.html',    status:'',
+          counties:[{ id:'county-leon-fl',         name:'Leon County',         file:'county-leon-fl.html',         status:'' }] },
+        { id:'city-cape-coral-fl',     name:'Cape Coral',     file:'city-cape-coral-fl.html',     status:'',
+          counties:[{ id:'county-lee-fl',          name:'Lee County',          file:'county-lee-fl.html',          status:'' }] },
+        { id:'city-gainesville-fl',    name:'Gainesville',    file:'city-gainesville-fl.html',    status:'',
+          counties:[{ id:'county-alachua-fl',      name:'Alachua County',      file:'county-alachua-fl.html',      status:'' }] },
+        { id:'city-naples-fl',         name:'Naples',         file:'city-naples-fl.html',         status:'',
+          counties:[{ id:'county-collier-fl',      name:'Collier County',      file:'county-collier-fl.html',      status:'' }] },
+        { id:'city-port-st-lucie-fl',  name:'Port St. Lucie', file:'city-port-st-lucie-fl.html',  status:'',
+          counties:[{ id:'county-st-lucie-fl',     name:'St. Lucie County',    file:'county-st-lucie-fl.html',     status:'' }] },
+        { id:'city-sarasota-fl',       name:'Sarasota',       file:'city-sarasota-fl.html',       status:'',
+          counties:[{ id:'county-sarasota-fl',     name:'Sarasota County',     file:'county-sarasota-fl.html',     status:'' }] },
+      ]
+    },
+    in: {
+      state: { id:'state-in', name:'Indiana', file:'state-indiana.html', status:'' },
+      cities: [
+        { id:'city-indianapolis-in', name:'Indianapolis', file:'city-indianapolis-in.html', status:'',
+          counties:[{ id:'county-marion-in',      name:'Marion County',      file:'county-marion-in.html',      status:'' }] },
+        { id:'city-fort-wayne-in',   name:'Fort Wayne',   file:'city-fort-wayne-in.html',   status:'',
+          counties:[{ id:'county-allen-in',       name:'Allen County',       file:'county-allen-in.html',       status:'' }] },
+        { id:'city-evansville-in',   name:'Evansville',   file:'city-evansville-in.html',   status:'',
+          counties:[{ id:'county-vanderburgh-in', name:'Vanderburgh County', file:'county-vanderburgh-in.html', status:'' }] },
+        { id:'city-south-bend-in',   name:'South Bend',   file:'city-south-bend-in.html',   status:'',
+          counties:[{ id:'county-st-joseph-in',   name:'St. Joseph County',  file:'county-st-joseph-in.html',   status:'' }] },
+        { id:'city-carmel-in',       name:'Carmel',       file:'city-carmel-in.html',       status:'',
+          counties:[{ id:'county-hamilton-in',    name:'Hamilton County',    file:'county-hamilton-in.html',    status:'' }] },
+        { id:'city-bloomington-in',  name:'Bloomington',  file:'city-bloomington-in.html',  status:'',
+          counties:[{ id:'county-monroe-in',      name:'Monroe County',      file:'county-monroe-in.html',      status:'' }] },
+        { id:'city-fishers-in',      name:'Fishers',      file:'city-fishers-in.html',      status:'', counties:[] },
+        { id:'city-hammond-in',      name:'Hammond',      file:'city-hammond-in.html',      status:'',
+          counties:[{ id:'county-lake-in',        name:'Lake County',        file:'county-lake-in.html',        status:'' }] },
+        { id:'city-muncie-in',       name:'Muncie',       file:'city-muncie-in.html',       status:'',
+          counties:[{ id:'county-delaware-in',    name:'Delaware County',    file:'county-delaware-in.html',    status:'' }] },
+        { id:'city-terre-haute-in',  name:'Terre Haute',  file:'city-terre-haute-in.html',  status:'',
+          counties:[{ id:'county-vigo-in',        name:'Vigo County',        file:'county-vigo-in.html',        status:'' }] },
+      ]
+    },
+    tx: {
+      state: { id:'state-tx', name:'Texas', file:'state-texas.html', status:'' },
+      cities: [
+        { id:'city-houston-tx',       name:'Houston',        file:'city-houston-tx.html',       status:'',
+          counties:[{ id:'county-harris-tx',   name:'Harris County',   file:'county-harris-tx.html',   status:'' }] },
+        { id:'city-dallas-tx',        name:'Dallas',         file:'city-dallas-tx.html',        status:'',
+          counties:[{ id:'county-dallas-tx',   name:'Dallas County',   file:'county-dallas-tx.html',   status:'' }] },
+        { id:'city-san-antonio-tx',   name:'San Antonio',    file:'city-san-antonio-tx.html',   status:'',
+          counties:[{ id:'county-bexar-tx',    name:'Bexar County',    file:'county-bexar-tx.html',    status:'' }] },
+        { id:'city-austin-tx',        name:'Austin',         file:'city-austin-tx.html',        status:'',
+          counties:[{ id:'county-travis-tx',   name:'Travis County',   file:'county-travis-tx.html',   status:'' }] },
+        { id:'city-fort-worth-tx',    name:'Fort Worth',     file:'city-fort-worth-tx.html',    status:'',
+          counties:[{ id:'county-tarrant-tx',  name:'Tarrant County',  file:'county-tarrant-tx.html',  status:'' }] },
+        { id:'city-el-paso-tx',       name:'El Paso',        file:'city-el-paso-tx.html',       status:'',
+          counties:[{ id:'county-el-paso-tx',  name:'El Paso County',  file:'county-el-paso-tx.html',  status:'' }] },
+        { id:'city-arlington-tx',     name:'Arlington',      file:'city-arlington-tx.html',     status:'', counties:[] },
+        { id:'city-corpus-christi-tx',name:'Corpus Christi', file:'city-corpus-christi-tx.html',status:'',
+          counties:[{ id:'county-nueces-tx',   name:'Nueces County',   file:'county-nueces-tx.html',   status:'' }] },
+        { id:'city-plano-tx',         name:'Plano',          file:'city-plano-tx.html',         status:'',
+          counties:[{ id:'county-collin-tx',   name:'Collin County',   file:'county-collin-tx.html',   status:'' }] },
+        { id:'city-lubbock-tx',       name:'Lubbock',        file:'city-lubbock-tx.html',       status:'',
+          counties:[{ id:'county-lubbock-tx',  name:'Lubbock County',  file:'county-lubbock-tx.html',  status:'' }] },
+        { id:'city-garland-tx',       name:'Garland',        file:'city-garland-tx.html',       status:'', counties:[] },
+        { id:'city-irving-tx',        name:'Irving',         file:'city-irving-tx.html',        status:'', counties:[] },
+        { id:'city-amarillo-tx',      name:'Amarillo',       file:'city-amarillo-tx.html',      status:'',
+          counties:[{ id:'county-potter-tx',   name:'Potter County',   file:'county-potter-tx.html',   status:'' }] },
+        { id:'city-mckinney-tx',      name:'McKinney',       file:'city-mckinney-tx.html',      status:'', counties:[] },
+        { id:'city-frisco-tx',        name:'Frisco',         file:'city-frisco-tx.html',        status:'', counties:[] },
+      ]
+    },
+  },
+
+  allStates: [
+    { id:'state-al', name:'Alabama',       abbr:'AL', file:'state-alabama.html',       status:'' },
+    { id:'state-ak', name:'Alaska',        abbr:'AK', file:'state-alaska.html',        status:'' },
+    { id:'state-az', name:'Arizona',       abbr:'AZ', file:'state-arizona.html',       status:'' },
+    { id:'state-ar', name:'Arkansas',      abbr:'AR', file:'state-arkansas.html',      status:'' },
+    { id:'state-ca', name:'California',    abbr:'CA', file:'state-california.html',    status:'' },
+    { id:'state-co', name:'Colorado',      abbr:'CO', file:'state-colorado.html',      status:'' },
+    { id:'state-ct', name:'Connecticut',   abbr:'CT', file:'state-connecticut.html',   status:'' },
+    { id:'state-de', name:'Delaware',      abbr:'DE', file:'state-delaware.html',      status:'' },
+    { id:'state-ga', name:'Georgia',       abbr:'GA', file:'state-georgia.html',       status:'' },
+    { id:'state-hi', name:'Hawaii',        abbr:'HI', file:'state-hawaii.html',        status:'' },
+    { id:'state-id', name:'Idaho',         abbr:'ID', file:'state-idaho.html',         status:'' },
+    { id:'state-il', name:'Illinois',      abbr:'IL', file:'state-illinois.html',      status:'' },
+    { id:'state-ia', name:'Iowa',          abbr:'IA', file:'state-iowa.html',          status:'' },
+    { id:'state-ks', name:'Kansas',        abbr:'KS', file:'state-kansas.html',        status:'' },
+    { id:'state-ky', name:'Kentucky',      abbr:'KY', file:'state-kentucky.html',      status:'' },
+    { id:'state-la', name:'Louisiana',     abbr:'LA', file:'state-louisiana.html',     status:'' },
+    { id:'state-me', name:'Maine',         abbr:'ME', file:'state-maine.html',         status:'' },
+    { id:'state-md', name:'Maryland',      abbr:'MD', file:'state-maryland.html',      status:'' },
+    { id:'state-ma', name:'Massachusetts', abbr:'MA', file:'state-massachusetts.html', status:'' },
+    { id:'state-mi', name:'Michigan',      abbr:'MI', file:'state-michigan.html',      status:'' },
+    { id:'state-mn', name:'Minnesota',     abbr:'MN', file:'state-minnesota.html',     status:'' },
+    { id:'state-ms', name:'Mississippi',   abbr:'MS', file:'state-mississippi.html',   status:'' },
+    { id:'state-mo', name:'Missouri',      abbr:'MO', file:'state-missouri.html',      status:'' },
+    { id:'state-mt', name:'Montana',       abbr:'MT', file:'state-montana.html',       status:'' },
+    { id:'state-ne', name:'Nebraska',      abbr:'NE', file:'state-nebraska.html',      status:'' },
+    { id:'state-nv', name:'Nevada',        abbr:'NV', file:'state-nevada.html',        status:'' },
+    { id:'state-nh', name:'New Hampshire', abbr:'NH', file:'state-new-hampshire.html', status:'' },
+    { id:'state-nj', name:'New Jersey',    abbr:'NJ', file:'state-new-jersey.html',    status:'' },
+    { id:'state-nm', name:'New Mexico',    abbr:'NM', file:'state-new-mexico.html',    status:'' },
+    { id:'state-ny', name:'New York',      abbr:'NY', file:'state-new-york.html',      status:'' },
+    { id:'state-nd', name:'North Dakota',  abbr:'ND', file:'state-north-dakota.html',  status:'' },
+    { id:'state-oh', name:'Ohio',          abbr:'OH', file:'state-ohio.html',          status:'' },
+    { id:'state-ok', name:'Oklahoma',      abbr:'OK', file:'state-oklahoma.html',      status:'' },
+    { id:'state-or', name:'Oregon',        abbr:'OR', file:'state-oregon.html',        status:'' },
+    { id:'state-pa', name:'Pennsylvania',  abbr:'PA', file:'state-pennsylvania.html',  status:'' },
+    { id:'state-ri', name:'Rhode Island',  abbr:'RI', file:'state-rhode-island.html',  status:'' },
+    { id:'state-sd', name:'South Dakota',  abbr:'SD', file:'state-south-dakota.html',  status:'' },
+    { id:'state-tn', name:'Tennessee',     abbr:'TN', file:'state-tennessee.html',     status:'' },
+    { id:'state-ut', name:'Utah',          abbr:'UT', file:'state-utah.html',          status:'' },
+    { id:'state-vt', name:'Vermont',       abbr:'VT', file:'state-vermont.html',       status:'' },
+    { id:'state-va', name:'Virginia',      abbr:'VA', file:'state-virginia.html',      status:'' },
+    { id:'state-wa', name:'Washington',    abbr:'WA', file:'state-washington.html',    status:'' },
+    { id:'state-wv', name:'West Virginia', abbr:'WV', file:'state-west-virginia.html', status:'' },
+    { id:'state-wi', name:'Wisconsin',     abbr:'WI', file:'state-wisconsin.html',     status:'' },
+    { id:'state-wy', name:'Wyoming',       abbr:'WY', file:'state-wyoming.html',       status:'' },
+  ],
+
+};
+
+/* ============================================================
+   STORAGE — Supabase or localStorage fallback
+   ============================================================ */
+let sbClient    = null;
+let checkedState = {};
+
+async function initStorage() {
+  if (SUPABASE_URL && SUPABASE_ANON_KEY) {
+    try {
+      sbClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      setSyncStatus('syncing', 'Connecting to Supabase...');
+      const { data, error } = await sbClient.from('page_status').select('page_id, checked');
+      if (error) throw error;
+      data.forEach(row => { checkedState[row.page_id] = row.checked; });
+      document.getElementById('supabaseNotice').classList.add('hidden');
+      setSyncStatus('synced', 'Synced across all devices');
+    } catch (e) {
+      console.error('Supabase error:', e);
+      sbClient = null;
+      loadLocal();
+      setSyncStatus('error', 'Sync error — saving to this browser only');
+    }
+  } else {
+    loadLocal();
+    setSyncStatus('', 'Saving to this browser only');
+  }
+
+  // Pre-check already-built pages on first load
+  getAllPages().forEach(p => {
+    if (p.status === 'built' && checkedState[p.id] === undefined) {
+      checkedState[p.id] = true;
+    }
+  });
+}
+
+function loadLocal() {
+  try {
+    const saved = localStorage.getItem('tides_page_tracker');
+    checkedState = saved ? JSON.parse(saved) : {};
+  } catch (e) { checkedState = {}; }
+}
+
+function saveLocal() {
+  try { localStorage.setItem('tides_page_tracker', JSON.stringify(checkedState)); } catch(e) {}
+}
+
+async function setChecked(id, checked) {
+  checkedState[id] = checked;
+  if (sbClient) {
+    setSyncStatus('syncing', 'Saving...');
+    try {
+      await sbClient.from('page_status').upsert({ page_id: id, checked });
+      setSyncStatus('synced', 'Synced across all devices');
+    } catch (e) {
+      console.error('Save error:', e);
+      setSyncStatus('error', 'Save failed — check console');
+      saveLocal();
+    }
+  } else {
+    saveLocal();
+  }
+  updateSummary();
+}
+
+function setSyncStatus(state, label) {
+  const dot = document.getElementById('syncDot');
+  const lbl = document.getElementById('syncLabel');
+  dot.className = 'sync-dot' + (state ? ' ' + state : '');
+  lbl.textContent = label;
+}
+
+async function resetAll() {
+  if (!confirm('Reset all checkboxes? Pages marked "Built" will stay checked.')) return;
+  getAllPages().forEach(p => { checkedState[p.id] = p.status === 'built'; });
+  if (sbClient) {
+    setSyncStatus('syncing', 'Resetting...');
+    try {
+      const rows = getAllPages().map(p => ({ page_id: p.id, checked: p.status === 'built' }));
+      await sbClient.from('page_status').upsert(rows);
+      setSyncStatus('synced', 'Synced across all devices');
+    } catch(e) { setSyncStatus('error', 'Reset failed'); }
+  } else {
+    saveLocal();
+  }
+  renderAll();
+}
+
+/* ============================================================
+   DATA HELPERS
+   ============================================================ */
+function getAllPages() {
+  const out = [];
+  out.push(...PAGE_DATA.core);
+  out.push(...PAGE_DATA.services);
+  out.push(...PAGE_DATA.industries);
+  Object.values(PAGE_DATA.states).forEach(st => {
+    out.push(st.state);
+    st.cities.forEach(c => { out.push(c); out.push(...c.counties); });
+  });
+  out.push(...PAGE_DATA.allStates);
+  return out;
+}
+
+function getFlatStatePages(key) {
+  const st = PAGE_DATA.states[key];
+  const out = [{ ...st.state, _level: 0 }];
+  st.cities.forEach(c => {
+    out.push({ ...c, _level: 1 });
+    c.counties.forEach(co => out.push({ ...co, _level: 2 }));
+  });
+  return out;
+}
+
+/* ============================================================
+   RENDERING
+   ============================================================ */
+function badgeHTML(status) {
+  if (status === 'built')       return '<span class="badge badge-green">Built</span>';
+  if (status === 'in-progress') return '<span class="badge badge-teal">In Progress</span>';
+  return '<span class="badge badge-gray">Not Started</span>';
+}
+
+function rowHTML(page, level) {
+  const lvl     = level !== undefined ? level : (page._level || 0);
+  const checked = checkedState[page.id] ? 'checked' : '';
+  const link    = page.status === 'built'
+    ? `<a href="../${page.file}" target="_blank" class="cl-link" title="Open page">↗</a>`
+    : '';
+  return `<div class="cl-row level-${lvl}">
+    <input type="checkbox" class="cl-cb" data-id="${page.id}" ${checked}>
+    <span class="cl-name">${page.name}</span>
+    <span class="cl-file" onclick="copyFile('${page.file}')" title="Click to copy filename">${page.file}</span>
+    ${badgeHTML(page.status)}
+    ${link}
+  </div>`;
+}
+
+function sectionHTML(title, pages) {
+  const builtCt   = pages.filter(p => p.status === 'built').length;
+  const checkedCt = pages.filter(p => checkedState[p.id]).length;
+  return `<div class="cl-section">
+    <div class="cl-section-header">
+      <span class="cl-section-title">${title}</span>
+      <span class="cl-section-count">${checkedCt} / ${pages.length} checked &nbsp;·&nbsp; ${builtCt} built</span>
+    </div>
+    ${pages.map(p => rowHTML(p)).join('')}
+  </div>`;
+}
+
+function renderList(containerId, pages, title) {
+  document.getElementById(containerId).innerHTML = sectionHTML(title, pages);
+  bindCheckboxes(containerId);
+}
+
+function renderStatePage(containerId, stateKey, title) {
+  const pages = getFlatStatePages(stateKey);
+  renderList(containerId, pages, title);
+}
+
+function bindCheckboxes(containerId) {
+  document.getElementById(containerId).querySelectorAll('.cl-cb').forEach(cb => {
+    cb.addEventListener('change', () => setChecked(cb.dataset.id, cb.checked));
+  });
+}
+
+function renderAll() {
+  renderList('list-core',       PAGE_DATA.core,       'Core Pages');
+  renderList('list-services',   PAGE_DATA.services,   'Service Pages');
+  renderList('list-industries', PAGE_DATA.industries, 'Industry Pages');
+  renderStatePage('list-sc',    'sc', 'South Carolina — State, Cities & Counties');
+  renderStatePage('list-nc',    'nc', 'North Carolina — State, Cities & Counties');
+  renderStatePage('list-fl',    'fl', 'Florida — State, Cities & Counties');
+  renderStatePage('list-in',    'in', 'Indiana — State, Cities & Counties');
+  renderStatePage('list-tx',    'tx', 'Texas — State, Cities & Counties');
+  renderList('list-states',     PAGE_DATA.allStates, 'Remaining 45 States (State-Level Pages)');
+  updateSummary();
+}
+
+/* ============================================================
+   SUMMARY TAB
+   ============================================================ */
+function catStats(items) {
+  return {
+    total:   items.length,
+    built:   items.filter(p => p.status === 'built').length,
+    checked: items.filter(p => checkedState[p.id]).length,
+  };
+}
+
+function updateSummary() {
+  const all     = getAllPages();
+  const total   = all.length;
+  const built   = all.filter(p => p.status === 'built').length;
+  const checked = all.filter(p => checkedState[p.id]).length;
+  const remain  = total - checked;
+
+  document.getElementById('summaryStats').innerHTML = `
+    <div class="stat-card"><div class="stat-num">${total}</div><div class="stat-label">Total Pages</div></div>
+    <div class="stat-card"><div class="stat-num" style="color:#10b981">${built}</div><div class="stat-label">Built</div></div>
+    <div class="stat-card"><div class="stat-num" style="color:var(--primary)">${checked}</div><div class="stat-label">Checked Off</div></div>
+    <div class="stat-card"><div class="stat-num" style="color:#6b7280">${remain}</div><div class="stat-label">Remaining</div></div>
+  `;
+
+  const cats = [
+    { label:'Core Pages',       items: PAGE_DATA.core },
+    { label:'Services',         items: PAGE_DATA.services },
+    { label:'Industries',       items: PAGE_DATA.industries },
+    { label:'South Carolina',   items: getFlatStatePages('sc') },
+    { label:'North Carolina',   items: getFlatStatePages('nc') },
+    { label:'Florida',          items: getFlatStatePages('fl') },
+    { label:'Indiana',          items: getFlatStatePages('in') },
+    { label:'Texas',            items: getFlatStatePages('tx') },
+    { label:'All Other States', items: PAGE_DATA.allStates },
+  ];
+
+  document.getElementById('catProgressGrid').innerHTML = cats.map(cat => {
+    const s   = catStats(cat.items);
+    const pct = s.total > 0 ? Math.round((s.checked / s.total) * 100) : 0;
+    return `<div class="cat-prog-card">
+      <div class="cat-prog-title">${cat.label}</div>
+      <div class="cat-prog-sub">${s.checked} / ${s.total} checked &nbsp;·&nbsp; ${s.built} built</div>
+      <div class="cat-prog-bar"><div class="cat-prog-fill" style="width:${pct}%"></div></div>
+    </div>`;
+  }).join('');
+}
+
+/* ============================================================
+   COPY FILENAME
+   ============================================================ */
+function copyFile(filename) {
+  navigator.clipboard.writeText(filename).catch(() => {});
+  const toast = document.getElementById('copyToast');
+  toast.textContent = 'Copied: ' + filename;
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 2200);
+}
+
+/* ============================================================
+   INIT
+   ============================================================ */
+document.addEventListener('DOMContentLoaded', async () => {
+  await initStorage();
+  renderAll();
+});
+</script>
+<script src="hub.js"></script>
+</body>
+</html>
