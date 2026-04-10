@@ -286,8 +286,8 @@
    SUPABASE CONFIG — paste your credentials here to enable
    cross-device sync. Leave empty to use localStorage only.
    ============================================================ */
-const SUPABASE_URL      = '';  // e.g. 'https://xyzabcde.supabase.co'
-const SUPABASE_ANON_KEY = '';  // e.g. 'eyJhbGci...'
+const SUPABASE_URL      = 'https://khhfkxfxefjgunhrihyx.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtoaGZreGZ4ZWZqZ3VuaHJpaHl4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU3NzYwMjcsImV4cCI6MjA5MTM1MjAyN30.bYW68xMDUEXBRC1bxOLdj77xCcjXb3wIuHbPAPFdSGo';
 
 /* ============================================================
    PAGE DATA
@@ -582,7 +582,12 @@ async function setChecked(id, checked) {
   if (sbClient) {
     setSyncStatus('syncing', 'Saving...');
     try {
-      await sbClient.from('page_status').upsert({ page_id: id, checked });
+      const { data } = await sbClient.from('page_status').select('id').eq('page_id', id);
+      if (data && data.length > 0) {
+        await sbClient.from('page_status').update({ checked }).eq('page_id', id);
+      } else {
+        await sbClient.from('page_status').insert({ page_id: id, checked });
+      }
       setSyncStatus('synced', 'Synced across all devices');
     } catch (e) {
       console.error('Save error:', e);
@@ -608,8 +613,9 @@ async function resetAll() {
   if (sbClient) {
     setSyncStatus('syncing', 'Resetting...');
     try {
+      await sbClient.from('page_status').delete().neq('page_id', '');
       const rows = getAllPages().map(p => ({ page_id: p.id, checked: p.status === 'built' }));
-      await sbClient.from('page_status').upsert(rows);
+      await sbClient.from('page_status').insert(rows);
       setSyncStatus('synced', 'Synced across all devices');
     } catch(e) { setSyncStatus('error', 'Reset failed'); }
   } else {
