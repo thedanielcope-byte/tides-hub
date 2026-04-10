@@ -6,27 +6,99 @@
   <title>Guides &amp; Manuals — Tides Hub</title>
   <link rel="stylesheet" href="hub.css">
   <style>
+    /* ---- Guide page layout ---- */
+    .guides-page-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 28px;
+    }
+    .guides-header-left { flex: 1; }
+    .guides-header-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-shrink: 0;
+      padding-top: 4px;
+    }
+
+    /* ---- Edit toggle button ---- */
+    .btn-edit-guides {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--primary-light);
+      color: var(--primary);
+      border: 1.5px solid var(--primary);
+      border-radius: var(--radius-sm);
+      padding: 7px 14px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background .15s;
+    }
+    .btn-edit-guides:hover { background: rgba(33,81,151,.15); }
+    .btn-edit-guides.active {
+      background: var(--primary);
+      color: #fff;
+    }
+    .btn-edit-guides.active:hover { background: #1a3f78; }
+
+    .save-flash-guides {
+      font-size: 12px;
+      font-weight: 600;
+      color: #16a34a;
+      opacity: 0;
+      transition: opacity .3s;
+      white-space: nowrap;
+    }
+    .save-flash-guides.show { opacity: 1; }
+
+    /* ---- Category sections ---- */
     .guide-section { margin-bottom: 32px; }
+
+    .guide-section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+
+    /* ---- Guide grid ---- */
     .guide-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
       gap: 10px;
     }
-    .guide-item {
+
+    /* ---- Guide tile (base) ---- */
+    .guide-tile {
       background: var(--white);
       border: 1px solid var(--border);
       border-radius: var(--radius);
-      padding: 14px 16px;
+      padding: 13px 14px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 10px;
+      gap: 8px;
       box-shadow: var(--shadow-sm);
       font-size: 13.5px;
       font-weight: 500;
       color: var(--text-2);
+      position: relative;
+      text-decoration: none;
+      transition: border-color .15s, box-shadow .15s;
     }
-    .guide-item .badge-cs {
+    a.guide-tile:hover {
+      border-color: var(--teal);
+      box-shadow: 0 2px 8px rgba(65,207,208,.18);
+      color: var(--text-2);
+    }
+
+    /* ---- Badges ---- */
+    .badge-coming {
       font-size: 10px;
       font-weight: 700;
       padding: 2px 8px;
@@ -36,8 +108,108 @@
       white-space: nowrap;
       flex-shrink: 0;
     }
-    .guide-popular { border-left: 3px solid var(--teal); }
-    .guide-popular .badge-cs { background: rgba(65,207,208,.12); color: var(--teal); }
+    .badge-available {
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 20px;
+      background: rgba(65,207,208,.13);
+      color: #0f7779;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    /* ---- Delete button (edit mode) ---- */
+    .btn-del-tile {
+      position: absolute;
+      top: -7px;
+      right: -7px;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: #ef4444;
+      color: #fff;
+      border: none;
+      font-size: 13px;
+      line-height: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      padding: 0;
+      box-shadow: 0 1px 4px rgba(0,0,0,.2);
+      transition: background .12s;
+      flex-shrink: 0;
+    }
+    .btn-del-tile:hover { background: #b91c1c; }
+
+    /* ---- Add guide row (edit mode) ---- */
+    .add-guide-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      margin-top: 10px;
+      flex-wrap: wrap;
+    }
+    .add-guide-input {
+      flex: 1;
+      min-width: 140px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 7px 10px;
+      font-size: 13px;
+      font-family: var(--font);
+      color: var(--text);
+    }
+    .add-guide-input:focus { outline: none; border-color: var(--primary); }
+    .add-guide-input::placeholder { color: var(--text-muted); }
+    .btn-add-guide-save {
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius-sm);
+      padding: 7px 14px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .btn-add-guide-save:hover { background: #1a3f78; }
+    .btn-add-guide-cancel {
+      background: none;
+      color: var(--text-muted);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 7px 12px;
+      font-size: 13px;
+      cursor: pointer;
+    }
+    .btn-add-guide-cancel:hover { background: #f3f4f6; }
+
+    /* ---- + Add Guide button ---- */
+    .btn-add-guide-open {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      background: var(--primary-light);
+      color: var(--primary);
+      border: 1px dashed var(--primary);
+      border-radius: var(--radius-sm);
+      padding: 10px 14px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      width: 100%;
+      margin-top: 10px;
+      font-family: var(--font);
+    }
+    .btn-add-guide-open:hover { background: rgba(33,81,151,.13); }
+
+    /* ---- Edit mode: tile border highlight ---- */
+    .edit-mode-active .guide-tile {
+      border-color: #c7d2fe;
+    }
   </style>
 </head>
 <body>
@@ -51,68 +223,257 @@
   </div>
 
   <div class="page-content">
-    <div class="page-header">
-      <div class="page-icon">📘</div>
-      <h1 class="page-title">Guides &amp; Manuals</h1>
-      <p class="page-subtitle">Reference guides, training manuals, and SOPs for the Tides Bookkeeping team.</p>
-    </div>
-
-    <!-- Software -->
-    <div class="guide-section">
-      <div class="section-label">💻 Software</div>
-      <div class="guide-grid">
-        <div class="guide-item"><span>QuickBooks Online</span><span class="badge-cs">Coming Soon</span></div>
-        <div class="guide-item"><span>Puzzle (Accounting Platform)</span><span class="badge-cs">Coming Soon</span></div>
-        <div class="guide-item"><span>GoHighLevel</span><span class="badge-cs">Coming Soon</span></div>
-        <div class="guide-item"><span>SharePoint / Client Portal</span><span class="badge-cs">Coming Soon</span></div>
-        <div class="guide-item"><span>Notion</span><span class="badge-cs">Coming Soon</span></div>
+    <div class="guides-page-header">
+      <div class="guides-header-left">
+        <div class="page-header" style="margin-bottom:0;">
+          <div class="page-icon">📘</div>
+          <h1 class="page-title">Guides &amp; Manuals</h1>
+          <p class="page-subtitle">Reference guides, training manuals, and SOPs for the Tides Bookkeeping team.</p>
+        </div>
+      </div>
+      <div class="guides-header-right">
+        <span class="save-flash-guides" id="guidesSaveFlash">&#10003; Saved!</span>
+        <button class="btn-edit-guides" id="btnEditGuides" onclick="toggleEditMode()">&#9998;&#xFE0F; Edit Guides</button>
       </div>
     </div>
 
-    <!-- Bookkeeping Fundamentals -->
-    <div class="guide-section">
-      <div class="section-label">📒 Bookkeeping Fundamentals</div>
-      <div class="guide-grid">
-        <div class="guide-item"><span>Bookkeeping Essentials</span><span class="badge-cs">Coming Soon</span></div>
-        <div class="guide-item"><span>Chart of Accounts</span><span class="badge-cs">Coming Soon</span></div>
-        <div class="guide-item"><span>Financial Reports</span><span class="badge-cs">Coming Soon</span></div>
-      </div>
-    </div>
-
-    <!-- Client Operations -->
-    <div class="guide-section">
-      <div class="section-label">🤝 Client Operations</div>
-      <div class="guide-grid">
-        <div class="guide-item"><span>Onboarding Procedures</span><span class="badge-cs">Coming Soon</span></div>
-        <div class="guide-item"><span>Monthly Close Process</span><span class="badge-cs">Coming Soon</span></div>
-        <div class="guide-item"><span>Client Communication</span><span class="badge-cs">Coming Soon</span></div>
-      </div>
-    </div>
-
-    <!-- Industry-Specific -->
-    <div class="guide-section">
-      <div class="section-label">🏭 Industry-Specific</div>
-      <div class="guide-grid">
-        <div class="guide-item"><span>Other Bookkeepers</span><span class="badge-cs">Coming Soon</span></div>
-        <div class="guide-item"><span>CPAs</span><span class="badge-cs">Coming Soon</span></div>
-        <div class="guide-item guide-popular"><span>Real Estate <span style="font-size:11px;color:var(--teal);font-weight:600;">★ Most Popular</span></span><span class="badge-cs">Coming Soon</span></div>
-        <div class="guide-item"><span>Contractors &amp; Trades</span><span class="badge-cs">Coming Soon</span></div>
-        <div class="guide-item"><span>Restaurants &amp; Bars</span><span class="badge-cs">Coming Soon</span></div>
-        <div class="guide-item"><span>Healthcare Practices</span><span class="badge-cs">Coming Soon</span></div>
-        <div class="guide-item"><span>Professional Services</span><span class="badge-cs">Coming Soon</span></div>
-        <div class="guide-item"><span>E-Commerce &amp; Retail</span><span class="badge-cs">Coming Soon</span></div>
-        <div class="guide-item"><span>Solo Entrepreneurs</span><span class="badge-cs">Coming Soon</span></div>
-        <div class="guide-item"><span>Small Businesses</span><span class="badge-cs">Coming Soon</span></div>
-        <div class="guide-item"><span>Automotive Services</span><span class="badge-cs">Coming Soon</span></div>
-        <div class="guide-item"><span>Logistics &amp; Transportation</span><span class="badge-cs">Coming Soon</span></div>
-        <div class="guide-item"><span>Non-Profit Organizations</span><span class="badge-cs">Coming Soon</span></div>
-        <div class="guide-item"><span>Tech &amp; Startups</span><span class="badge-cs">Coming Soon</span></div>
-      </div>
-    </div>
-
+    <div id="guidesContainer"></div>
   </div>
 </div>
 
 <script src="hub.js"></script>
+<script>
+/* ============================================================
+   Guides & Manuals — Dynamic State
+   ============================================================ */
+
+const GUIDES_KEY = 'guides-state';
+
+/* Default categories + tiles — initialized on first load if Supabase has nothing */
+const DEFAULT_STATE = {
+  categories: [
+    {
+      id: 'software',
+      name: '💻 Software',
+      guides: [
+        { id: 'sw1', title: 'QuickBooks Online',        link: null },
+        { id: 'sw2', title: 'Puzzle (Accounting Platform)', link: null },
+        { id: 'sw3', title: 'GoHighLevel',              link: null },
+        { id: 'sw4', title: 'SharePoint / Client Portal', link: null },
+        { id: 'sw5', title: 'Notion',                   link: null },
+      ]
+    },
+    {
+      id: 'bookkeeping',
+      name: '📒 Bookkeeping Fundamentals',
+      guides: [
+        { id: 'bk1', title: 'Bookkeeping Essentials', link: null },
+        { id: 'bk2', title: 'Chart of Accounts',      link: null },
+        { id: 'bk3', title: 'Financial Reports',       link: null },
+      ]
+    },
+    {
+      id: 'client-ops',
+      name: '🤝 Client Operations',
+      guides: [
+        { id: 'co1', title: 'Onboarding Procedures',  link: null },
+        { id: 'co2', title: 'Monthly Close Process',   link: null },
+        { id: 'co3', title: 'Client Communication',    link: null },
+      ]
+    },
+    {
+      id: 'industry',
+      name: '🏭 Industry-Specific',
+      guides: [
+        { id: 'in1',  title: 'Other Bookkeepers',          link: null },
+        { id: 'in2',  title: 'CPAs',                        link: null },
+        { id: 'in3',  title: 'Real Estate',                 link: null },
+        { id: 'in4',  title: 'Contractors & Trades',        link: null },
+        { id: 'in5',  title: 'Restaurants & Bars',          link: null },
+        { id: 'in6',  title: 'Healthcare Practices',        link: null },
+        { id: 'in7',  title: 'Professional Services',       link: null },
+        { id: 'in8',  title: 'E-Commerce & Retail',         link: null },
+        { id: 'in9',  title: 'Solo Entrepreneurs',          link: null },
+        { id: 'in10', title: 'Small Businesses',            link: null },
+        { id: 'in11', title: 'Automotive Services',         link: null },
+        { id: 'in12', title: 'Logistics & Transportation',  link: null },
+        { id: 'in13', title: 'Non-Profit Organizations',    link: null },
+        { id: 'in14', title: 'Tech & Startups',             link: null },
+      ]
+    },
+    {
+      id: 'policies',
+      name: '📋 Company Policies',
+      guides: [
+        { id: 'po1', title: 'Employee Handbook',        link: null },
+        { id: 'po2', title: 'Code of Conduct',          link: null },
+        { id: 'po3', title: 'Remote Work Policy',       link: null },
+        { id: 'po4', title: 'Data & Confidentiality',   link: null },
+      ]
+    },
+  ]
+};
+
+let guidesState = null;
+let editMode    = false;
+let addingIn    = null; /* { catId } when the add-form is open */
+
+/* ---- Utilities ---- */
+function uid() {
+  return Math.random().toString(36).slice(2, 9);
+}
+function esc(s) {
+  return String(s || '')
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+/* ---- Load / Save ---- */
+async function initGuides() {
+  const data = await loadHubContent(GUIDES_KEY);
+  if (data && data.categories && Array.isArray(data.categories)) {
+    guidesState = data;
+  } else {
+    guidesState = JSON.parse(JSON.stringify(DEFAULT_STATE));
+    await saveHubContent(GUIDES_KEY, guidesState);
+  }
+  render();
+}
+
+async function persistGuides() {
+  const ok = await saveHubContent(GUIDES_KEY, guidesState);
+  if (ok) {
+    const flash = document.getElementById('guidesSaveFlash');
+    if (flash) {
+      flash.classList.add('show');
+      setTimeout(() => flash.classList.remove('show'), 2500);
+    }
+  }
+}
+
+/* ---- Edit toggle ---- */
+function toggleEditMode() {
+  editMode = !editMode;
+  addingIn = null;
+  const btn = document.getElementById('btnEditGuides');
+  if (editMode) {
+    btn.textContent = '✕ Done Editing';
+    btn.classList.add('active');
+  } else {
+    btn.innerHTML = '&#9998;&#xFE0F; Edit Guides';
+    btn.classList.remove('active');
+  }
+  render();
+}
+
+/* ---- Render ---- */
+function render() {
+  const container = document.getElementById('guidesContainer');
+  if (!guidesState) { container.innerHTML = '<p style="color:var(--text-muted);font-size:13px;">Loading…</p>'; return; }
+
+  let html = '';
+  guidesState.categories.forEach(cat => {
+    const isAddingHere = addingIn === cat.id;
+
+    html += `<div class="guide-section ${editMode ? 'edit-mode-active' : ''}">
+      <div class="guide-section-header">
+        <div class="section-label" style="margin-bottom:0;">${esc(cat.name)}</div>
+      </div>
+      <div class="guide-grid">`;
+
+    cat.guides.forEach(guide => {
+      const hasLink = guide.link && guide.link.trim();
+      const tag     = hasLink ? 'a' : 'div';
+      const href    = hasLink ? ` href="${esc(guide.link)}" target="_blank" rel="noopener"` : '';
+      const badge   = hasLink
+        ? `<span class="badge-available">Available</span>`
+        : `<span class="badge-coming">Coming Soon</span>`;
+      const delBtn  = editMode
+        ? `<button class="btn-del-tile" onclick="deleteTile('${cat.id}','${guide.id}')" title="Remove tile">&times;</button>`
+        : '';
+
+      html += `<${tag} class="guide-tile"${href}>${delBtn}<span>${esc(guide.title)}</span>${badge}</${tag}>`;
+    });
+
+    html += `</div>`; /* /guide-grid */
+
+    /* Add Guide button / inline form */
+    if (editMode) {
+      if (isAddingHere) {
+        html += `<div class="add-guide-row">
+          <input class="add-guide-input" id="addTitle-${cat.id}" type="text" placeholder="Guide title (required)" autocomplete="off">
+          <input class="add-guide-input" id="addLink-${cat.id}"  type="url"  placeholder="OneDrive link (optional)" autocomplete="off">
+          <button class="btn-add-guide-save"   onclick="saveNewTile('${cat.id}')">Add</button>
+          <button class="btn-add-guide-cancel" onclick="cancelAdd()">Cancel</button>
+        </div>`;
+      } else {
+        html += `<button class="btn-add-guide-open" onclick="openAddForm('${cat.id}')">+ Add Guide</button>`;
+      }
+    }
+
+    html += `</div>`; /* /guide-section */
+  });
+
+  container.innerHTML = html;
+
+  /* Focus first input if add form just opened */
+  if (addingIn) {
+    const inp = document.getElementById('addTitle-' + addingIn);
+    if (inp) inp.focus();
+  }
+}
+
+/* ---- Tile actions ---- */
+function deleteTile(catId, guideId) {
+  const cat = guidesState.categories.find(c => c.id === catId);
+  if (!cat) return;
+  cat.guides = cat.guides.filter(g => g.id !== guideId);
+  persistGuides();
+  render();
+}
+
+function openAddForm(catId) {
+  addingIn = catId;
+  render();
+}
+
+function cancelAdd() {
+  addingIn = null;
+  render();
+}
+
+function saveNewTile(catId) {
+  const titleEl = document.getElementById('addTitle-' + catId);
+  const linkEl  = document.getElementById('addLink-' + catId);
+  const title   = titleEl ? titleEl.value.trim() : '';
+  const link    = linkEl  ? linkEl.value.trim()  : '';
+
+  if (!title) {
+    if (titleEl) { titleEl.style.borderColor = '#ef4444'; titleEl.focus(); }
+    return;
+  }
+
+  const cat = guidesState.categories.find(c => c.id === catId);
+  if (!cat) return;
+
+  cat.guides.push({
+    id:    uid(),
+    title: title,
+    link:  link || null
+  });
+
+  addingIn = null;
+  persistGuides();
+  render();
+}
+
+/* ---- Enter key in add form ---- */
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && addingIn) saveNewTile(addingIn);
+  if (e.key === 'Escape' && addingIn) cancelAdd();
+});
+
+document.addEventListener('DOMContentLoaded', initGuides);
+</script>
 </body>
 </html>
