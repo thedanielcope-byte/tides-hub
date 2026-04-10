@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pricing Tiers — Tides Hub</title>
+  <link rel="stylesheet" href="hub.css">
+  <style>
+    .tiers-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-bottom: 24px;
+    }
+    .tier-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 18px;
+      margin-bottom: 32px;
+    }
+    .tier-card {
+      background: var(--white);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px 22px;
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      flex-direction: column;
+      transition: border-color .15s;
+    }
+    .tier-card.popular {
+      border-color: var(--primary);
+      box-shadow: 0 4px 20px rgba(33,81,151,.12);
+    }
+    .tier-card.edit-mode { border-color: var(--accent-blue); }
+    .popular-badge {
+      display: inline-block;
+      background: var(--primary);
+      color: white;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      padding: 3px 10px;
+      border-radius: 20px;
+      margin-bottom: 12px;
+      align-self: flex-start;
+    }
+    .tier-name {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 6px;
+    }
+    .tier-price {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--primary);
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+    .tier-period {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+    .tier-desc {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 18px;
+      line-height: 1.5;
+    }
+    .tier-divider { height: 1px; background: var(--border); margin-bottom: 16px; }
+    .tier-features { list-style: none; flex: 1; }
+    .tier-feature {
+      font-size: 13px;
+      color: var(--text-2);
+      padding: 5px 0;
+      border-bottom: 1px solid #f3f4f6;
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      line-height: 1.4;
+    }
+    .tier-feature::before { content: '✓'; color: #10b981; font-weight: 700; flex-shrink: 0; }
+    .tier-feature:last-child { border-bottom: none; }
+
+    /* Edit mode */
+    .tier-name-input, .tier-price-input, .tier-desc-input, .tier-period-input {
+      font-family: var(--font);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 5px 8px;
+      color: var(--text);
+      width: 100%;
+    }
+    .tier-name-input { font-size: 17px; font-weight: 700; margin-bottom: 6px; }
+    .tier-price-input { font-size: 24px; font-weight: 800; color: var(--primary); margin-bottom: 4px; }
+    .tier-period-input { font-size: 12px; margin-bottom: 6px; color: var(--text-muted); }
+    .tier-desc-input { font-size: 13px; margin-bottom: 14px; min-height: 48px; resize: vertical; }
+    .tier-name-input:focus, .tier-price-input:focus, .tier-desc-input:focus, .tier-period-input:focus {
+      outline: none; border-color: var(--primary);
+    }
+    .feature-edit-row {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      padding: 3px 0;
+    }
+    .feature-input {
+      flex: 1;
+      font-family: var(--font);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 4px 7px;
+      font-size: 13px;
+      color: var(--text);
+    }
+    .feature-input:focus { outline: none; border-color: var(--primary); }
+    .btn-del-feature {
+      background: none;
+      border: none;
+      color: #ef4444;
+      cursor: pointer;
+      font-size: 17px;
+      padding: 2px 4px;
+      border-radius: 3px;
+    }
+    .btn-del-feature:hover { background: #fee2e2; }
+    .btn-add-feature {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      background: var(--primary-light);
+      color: var(--primary);
+      border: 1px dashed var(--primary);
+      border-radius: var(--radius-sm);
+      padding: 5px 10px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      width: 100%;
+      margin-top: 8px;
+      font-family: var(--font);
+    }
+    .btn-add-feature:hover { background: rgba(33,81,151,.15); }
+    @media (max-width: 900px) { .tier-grid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+
+<div class="main-content">
+  <div class="topbar">
+    <button class="topbar-hamburger" id="hubHamburger" aria-label="Open menu">&#9776;</button>
+    <span class="topbar-crumb">Tides Bookkeeping</span>
+    <span class="topbar-sep">/</span>
+    <span class="topbar-title">Pricing Tiers</span>
+  </div>
+
+  <div class="page-content">
+    <div class="page-header">
+      <div class="page-icon">💰</div>
+      <h1 class="page-title">Pricing Tiers</h1>
+      <p class="page-subtitle">Internal reference for Tides Bookkeeping service packages. Click Edit to update pricing or features.</p>
+    </div>
+
+    <div class="tiers-toolbar">
+      <span class="save-flash" id="tiers-flash">&#10003; Saved!</span>
+      <button class="edit-toggle-btn" id="tiersEditBtn" onclick="toggleTiersEdit()">&#9998;&#xFE0F; Edit Tiers</button>
+      <button class="btn-save-inline" id="tiersSaveBtn" style="display:none;" onclick="saveTiers()">Save Changes</button>
+    </div>
+
+    <div class="tier-grid" id="tierGrid"></div>
+
+  </div>
+</div>
+
+<script src="hub.js"></script>
+<script>
+const DEFAULT_TIERS = [
+  {
+    name: 'Starter',
+    price: '$299',
+    period: '/month',
+    description: 'Perfect for small businesses just getting started with clean books.',
+    popular: false,
+    features: ['Monthly bookkeeping', 'Bank reconciliation', 'Basic financial reports', 'Email support', 'Up to 100 transactions/mo']
+  },
+  {
+    name: 'Growth',
+    price: '$499',
+    period: '/month',
+    description: 'For growing businesses that need more hands-on support and insight.',
+    popular: true,
+    features: ['Everything in Starter', 'Accounts payable & receivable', 'Monthly review call', 'Priority support', 'Catch-up bookkeeping', 'Up to 300 transactions/mo']
+  },
+  {
+    name: 'Professional',
+    price: '$799',
+    period: '/month',
+    description: 'Full-service bookkeeping for established, fast-moving businesses.',
+    popular: false,
+    features: ['Everything in Growth', 'Payroll support', 'Tax prep support', 'Financial analysis', 'QuickBooks setup & cleanup', 'Dedicated bookkeeper', 'Unlimited transactions']
+  }
+];
+
+let tiersData = JSON.parse(JSON.stringify(DEFAULT_TIERS));
+let tiersEditing = false;
+
+async function initTiers() {
+  const saved = await loadHubContent('pricing-tiers');
+  if (saved && Array.isArray(saved)) tiersData = saved;
+  renderTiers();
+}
+
+function renderTiers() {
+  const grid = document.getElementById('tierGrid');
+  const editBtn  = document.getElementById('tiersEditBtn');
+  const saveBtn  = document.getElementById('tiersSaveBtn');
+
+  editBtn.textContent = tiersEditing ? '✕ Cancel' : '✏️ Edit Tiers';
+  editBtn.classList.toggle('active', tiersEditing);
+  saveBtn.style.display = tiersEditing ? '' : 'none';
+
+  grid.innerHTML = tiersData.map((t, ti) => {
+    if (tiersEditing) {
+      return `<div class="tier-card edit-mode">
+        <input class="tier-name-input" type="text" value="${esc(t.name)}" data-ti="${ti}" data-field="name" placeholder="Tier name">
+        <input class="tier-price-input" type="text" value="${esc(t.price)}" data-ti="${ti}" data-field="price" placeholder="$000">
+        <input class="tier-period-input" type="text" value="${esc(t.period)}" data-ti="${ti}" data-field="period" placeholder="/month">
+        <textarea class="tier-desc-input" data-ti="${ti}" data-field="description" placeholder="Description...">${esc(t.description)}</textarea>
+        <div class="tier-divider"></div>
+        ${t.features.map((f, fi) => `<div class="feature-edit-row">
+          <input class="feature-input" type="text" value="${esc(f)}" data-ti="${ti}" data-fi="${fi}" placeholder="Feature...">
+          <button class="btn-del-feature" onclick="deleteFeature(${ti},${fi})" title="Remove">&times;</button>
+        </div>`).join('')}
+        <button class="btn-add-feature" onclick="addFeature(${ti})">+ Add Feature</button>
+      </div>`;
+    } else {
+      return `<div class="tier-card ${t.popular ? 'popular' : ''}">
+        ${t.popular ? '<span class="popular-badge">Most Popular</span>' : ''}
+        <div class="tier-name">${esc(t.name)}</div>
+        <div class="tier-price">${esc(t.price)}</div>
+        <div class="tier-period">${esc(t.period)}</div>
+        <div class="tier-desc">${esc(t.description)}</div>
+        <div class="tier-divider"></div>
+        <ul class="tier-features">
+          ${t.features.map(f => `<li class="tier-feature">${esc(f)}</li>`).join('')}
+        </ul>
+      </div>`;
+    }
+  }).join('');
+}
+
+function esc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function collectTierEdits() {
+  document.querySelectorAll('[data-field]').forEach(el => {
+    const ti    = +el.dataset.ti;
+    const field = el.dataset.field;
+    if (field !== undefined && tiersData[ti]) {
+      tiersData[ti][field] = el.value.trim();
+    }
+  });
+  document.querySelectorAll('.feature-input').forEach(el => {
+    const ti = +el.dataset.ti;
+    const fi = +el.dataset.fi;
+    if (tiersData[ti] && tiersData[ti].features[fi] !== undefined) {
+      tiersData[ti].features[fi] = el.value.trim();
+    }
+  });
+}
+
+function toggleTiersEdit() {
+  if (tiersEditing) {
+    tiersEditing = false;
+  } else {
+    tiersEditing = true;
+  }
+  renderTiers();
+}
+
+function addFeature(ti) {
+  collectTierEdits();
+  tiersData[ti].features.push('');
+  renderTiers();
+  const inputs = document.querySelectorAll(`.feature-input[data-ti="${ti}"]`);
+  if (inputs.length) inputs[inputs.length - 1].focus();
+}
+
+function deleteFeature(ti, fi) {
+  collectTierEdits();
+  tiersData[ti].features.splice(fi, 1);
+  renderTiers();
+}
+
+async function saveTiers() {
+  collectTierEdits();
+  // Clean empty features
+  tiersData.forEach(t => { t.features = t.features.filter(f => f.trim()); });
+  const ok = await saveHubContent('pricing-tiers', tiersData);
+  tiersEditing = false;
+  renderTiers();
+  if (ok) {
+    const flash = document.getElementById('tiers-flash');
+    flash.classList.add('show');
+    setTimeout(() => flash.classList.remove('show'), 3000);
+  }
+}
+
+document.addEventListener('DOMContentLoaded', initTiers);
+</script>
+</body>
+</html>

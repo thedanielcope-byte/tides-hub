@@ -1,49 +1,85 @@
 /* ============================================================
    Tides Bookkeeping — Employee Hub
-   hub.js  |  Sidebar, tabs, mobile toggle
+   hub.js  |  Sidebar, tabs, mobile toggle, content storage
    ============================================================ */
 
+/* ---- Supabase config ---- */
+const SUPABASE_URL = 'https://khhfkxfxefjgunhrihyx.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtoaGZreGZ4ZWZqZ3VuaHJpaHl4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU3NzYwMjcsImV4cCI6MjA5MTM1MjAyN30.bYW68xMDUEXBRC1bxOLdj77xCcjXb3wIuHbPAPFdSGo';
+
+/* ---- Hub content storage (cross-device, keys: goals-YEAR, pricing-tiers) ---- */
+async function loadHubContent(key) {
+  try {
+    const res = await fetch(
+      `${SUPABASE_URL}/rest/v1/hub_content?content_key=eq.${encodeURIComponent(key)}&select=content_value`,
+      { headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` } }
+    );
+    if (!res.ok) return null;
+    const rows = await res.json();
+    return rows.length ? rows[0].content_value : null;
+  } catch { return null; }
+}
+
+async function saveHubContent(key, value) {
+  try {
+    const check = await fetch(
+      `${SUPABASE_URL}/rest/v1/hub_content?content_key=eq.${encodeURIComponent(key)}&select=id`,
+      { headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` } }
+    );
+    const rows = await check.json();
+    const method = rows.length ? 'PATCH' : 'POST';
+    const url = rows.length
+      ? `${SUPABASE_URL}/rest/v1/hub_content?content_key=eq.${encodeURIComponent(key)}`
+      : `${SUPABASE_URL}/rest/v1/hub_content`;
+    await fetch(url, {
+      method,
+      headers: {
+        'apikey': SUPABASE_KEY,
+        'Authorization': `Bearer ${SUPABASE_KEY}`,
+        'Content-Type': 'application/json',
+        'Prefer': 'return=minimal'
+      },
+      body: JSON.stringify({ content_key: key, content_value: value })
+    });
+    return true;
+  } catch { return false; }
+}
+
+/* ---- Navigation ---- */
 const HUB_NAV = [
-  { label: 'OVERVIEW', items: [
+  { label: '🔵 OVERVIEW', color: '#3b82f6', items: [
     { text: 'Vision, Mission, Core Values', href: 'vision.html' },
     { text: 'Brand Identity',               href: 'brand.html' },
     { text: 'Organization Chart',           href: 'org-chart.html' },
     { text: 'Resources',                    href: 'resources.html' },
   ]},
-  { label: 'OPERATIONS', items: [
-    { text: 'Team',      href: 'team.html' },
-    { text: 'Tasks',     href: 'coming-soon.html?page=Tasks' },
-    { text: 'Projects',  href: 'projects.html' },
-    { text: 'Meetings',  href: 'coming-soon.html?page=Meetings' },
+  { label: '🟢 OPERATIONS', color: '#22c55e', items: [
+    { text: 'Team',          href: 'team.html' },
+    { text: 'Tasks \u2197',  href: 'https://thedanielcope.com/tides-bookkeeping-tasks/', external: true },
+    { text: 'Meetings',      href: 'coming-soon.html?page=Meetings' },
   ]},
-  { label: 'MARKETING', items: [
+  { label: '🟡 MARKETING', color: '#eab308', items: [
     { text: 'Marketing Avenues',     href: 'marketing.html' },
     { text: 'Website Page Tracker',  href: 'website-pages.html' },
     { text: 'Content Planner',       href: 'coming-soon.html?page=Content+Planner' },
     { text: 'Citation Websites',     href: 'coming-soon.html?page=Citation+Websites' },
     { text: 'Affiliate Links',       href: 'marketing.html#affiliates' },
   ]},
-  { label: 'CLIENTS', items: [
-    { text: 'Clients Database', href: 'coming-soon.html?page=Clients+Database' },
-    { text: 'Deal Tracking',    href: 'coming-soon.html?page=Deal+Tracking' },
+  { label: '🟠 CLIENTS', color: '#f97316', items: [
+    { text: 'CRM \u2197', href: 'https://app.gohighlevel.com/v2/location/MbY1ICQ6HdzVOrgFncoI/dashboard', external: true },
   ]},
-  { label: 'FINANCE', items: [
+  { label: '🔴 FINANCE', color: '#ef4444', items: [
     { text: 'Passwords \u2197', href: 'https://keepersecurity.com', external: true },
     { text: 'Budget Planner',   href: 'coming-soon.html?page=Budget+Planner' },
-    { text: 'Subscriptions',    href: 'coming-soon.html?page=Subscriptions' },
   ]},
-  { label: 'BUYER', items: [
-    { text: 'Buyer Personas',    href: 'coming-soon.html?page=Buyer+Personas' },
-    { text: 'Customer Insights', href: 'coming-soon.html?page=Customer+Insights' },
-    { text: 'Email List',        href: 'coming-soon.html?page=Email+List' },
-  ]},
-  { label: 'REVIEW', items: [
+  { label: '⚪ REVIEW', color: '#6b7280', items: [
     { text: 'Yearly Goals', href: 'goals.html' },
-    { text: 'Reviews',      href: 'coming-soon.html?page=Reviews' },
-    { text: 'Milestones',   href: 'coming-soon.html?page=Milestones' },
   ]},
-  { label: 'PRODUCTS', items: [
-    { text: 'Products & Inventory', href: 'coming-soon.html?page=Products+%26+Inventory' },
+  { label: '🟣 PRICING', color: '#a855f7', items: [
+    { text: 'Pricing Tiers', href: 'pricing-tiers.html' },
+  ]},
+  { label: '📘 GUIDES', color: '#215197', items: [
+    { text: 'Guides & Manuals', href: 'guides.html' },
   ]},
 ];
 
@@ -52,7 +88,6 @@ function isActive(href) {
   if (!href || href.startsWith('http')) return false;
   const curFile   = window.location.pathname.split('/').pop() || 'index.html';
   const curSearch = window.location.search;
-  // Strip hash from href for comparison
   const [hFull]  = href.split('#');
   const [hFile, hQuery] = hFull.split('?');
   const hSearch  = hQuery ? '?' + hQuery : '';
@@ -68,7 +103,8 @@ function buildSidebar() {
 
   let sectionsHTML = '';
   HUB_NAV.forEach(section => {
-    sectionsHTML += `<div class="nav-section"><div class="nav-label">${section.label}</div>`;
+    const color = section.color || 'var(--text-muted)';
+    sectionsHTML += `<div class="nav-section"><div class="nav-label" style="color:${color}">${section.label}</div>`;
     section.items.forEach(item => {
       const active = isActive(item.href) ? ' active' : '';
       const ext    = item.external ? ' target="_blank" rel="noopener noreferrer"' : '';
@@ -92,7 +128,6 @@ function buildSidebar() {
 
   document.body.insertAdjacentHTML('afterbegin', html);
 
-  /* Mobile toggle */
   const ham     = document.getElementById('hubHamburger');
   const overlay = document.getElementById('sidebarOverlay');
   const sidebar = document.getElementById('sidebar');

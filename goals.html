@@ -5,6 +5,118 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Yearly Goals — Tides Hub</title>
   <link rel="stylesheet" href="hub.css">
+  <style>
+    .goals-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .goals-toolbar-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .month-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+    }
+    .month-card {
+      background: var(--white);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px 18px;
+      box-shadow: var(--shadow-sm);
+      transition: border-color .15s;
+    }
+    .month-card.edit-mode { border-color: var(--primary); }
+    .month-name {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: var(--primary);
+      margin-bottom: 10px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border);
+    }
+    .goal-list { list-style: none; min-height: 16px; }
+    .goal-item {
+      font-size: 13px;
+      color: var(--text-2);
+      padding: 4px 0;
+      border-bottom: 1px solid #f3f4f6;
+      display: flex;
+      align-items: flex-start;
+      gap: 6px;
+      line-height: 1.4;
+    }
+    .goal-item::before {
+      content: '•';
+      color: var(--primary);
+      flex-shrink: 0;
+      margin-top: 1px;
+      font-weight: 700;
+    }
+    .goal-item:last-child { border-bottom: none; }
+    .goal-empty {
+      font-size: 12px;
+      color: var(--text-muted);
+      font-style: italic;
+      padding: 4px 0;
+    }
+    .goal-item-edit {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      padding: 3px 0;
+    }
+    .goal-input {
+      flex: 1;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 5px 8px;
+      font-size: 13px;
+      font-family: var(--font);
+      color: var(--text);
+    }
+    .goal-input:focus { outline: none; border-color: var(--primary); }
+    .btn-del-goal {
+      background: none;
+      border: none;
+      color: #ef4444;
+      cursor: pointer;
+      font-size: 17px;
+      line-height: 1;
+      padding: 2px 4px;
+      flex-shrink: 0;
+      border-radius: 3px;
+    }
+    .btn-del-goal:hover { background: #fee2e2; }
+    .btn-add-goal {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      background: var(--primary-light);
+      color: var(--primary);
+      border: 1px dashed var(--primary);
+      border-radius: var(--radius-sm);
+      padding: 5px 10px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      width: 100%;
+      margin-top: 8px;
+      font-family: var(--font);
+    }
+    .btn-add-goal:hover { background: rgba(33,81,151,.15); }
+    @media (max-width: 900px) { .month-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 600px) { .month-grid { grid-template-columns: 1fr; } }
+  </style>
 </head>
 <body>
 
@@ -19,80 +131,161 @@
   <div class="page-content">
     <div class="page-header">
       <div class="page-icon">🎯</div>
-      <h1 class="page-title">Yearly Goals — 2026</h1>
-      <p class="page-subtitle">Company-wide targets guiding our focus and decisions this year.</p>
+      <h1 class="page-title">Yearly Goals</h1>
+      <p class="page-subtitle">Monthly goal tracker for 2026–2030. Click Edit Goals to add or update goals for any month.</p>
     </div>
 
-    <div class="section-label">2026 Goals</div>
-    <div class="card-grid g3" style="margin-bottom:32px;">
-
-      <!-- Customer Goal -->
-      <div class="goal-card">
-        <div class="goal-icon">📈</div>
-        <div class="goal-type">Customer Goal</div>
-        <div class="goal-title">Reach $12,000 Monthly Sales</div>
-        <div class="goal-target">
-          Grow monthly recurring revenue to $12,000 by acquiring and retaining high-value bookkeeping clients.
-        </div>
-        <div class="progress-bar">
-          <!-- Update data-pct (0–100) to reflect current progress -->
-          <div class="progress-fill" data-pct="0"></div>
-        </div>
-        <div class="progress-meta">
-          <span>$0 current</span>
-          <span>$12,000 target</span>
-        </div>
+    <div data-tabs>
+      <div class="tab-bar" data-tab-bar>
+        <button class="tab-btn active" data-tab="year-2026">2026</button>
+        <button class="tab-btn" data-tab="year-2027">2027</button>
+        <button class="tab-btn" data-tab="year-2028">2028</button>
+        <button class="tab-btn" data-tab="year-2029">2029</button>
+        <button class="tab-btn" data-tab="year-2030">2030</button>
       </div>
 
-      <!-- Retention Goal -->
-      <div class="goal-card">
-        <div class="goal-icon">🤝</div>
-        <div class="goal-type">PR Retention Goal</div>
-        <div class="goal-title">Achieve 83% Client Retention</div>
-        <div class="goal-target">
-          Maintain at least 83% client retention ratio through excellent service, proactive communication, and consistent delivery.
-        </div>
-        <div class="progress-bar">
-          <!-- Update data-pct (0–100) to reflect current progress -->
-          <div class="progress-fill" data-pct="0"></div>
-        </div>
-        <div class="progress-meta">
-          <span>0% current</span>
-          <span>83% target</span>
-        </div>
-      </div>
-
-      <!-- Marketing Goal -->
-      <div class="goal-card">
-        <div class="goal-icon">📣</div>
-        <div class="goal-type">Marketing Goal</div>
-        <div class="goal-title">Grow to 1,000 Local Followers</div>
-        <div class="goal-target">
-          Build local business presence to 1,000 followers across social platforms to increase brand awareness in the Greenville, SC market.
-        </div>
-        <div class="progress-bar">
-          <!-- Update data-pct (0–100) to reflect current progress -->
-          <div class="progress-fill" data-pct="0"></div>
-        </div>
-        <div class="progress-meta">
-          <span>0 current</span>
-          <span>1,000 target</span>
-        </div>
-      </div>
-
+      <div id="year-2026" class="tab-pane active"></div>
+      <div id="year-2027" class="tab-pane"></div>
+      <div id="year-2028" class="tab-pane"></div>
+      <div id="year-2029" class="tab-pane"></div>
+      <div id="year-2030" class="tab-pane"></div>
     </div>
-
-    <!-- How to update -->
-    <div class="card" style="border-left:3px solid var(--teal);background:rgba(65,211,208,.05);box-shadow:none;">
-      <p style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted);margin-bottom:6px;">📝 How to update progress</p>
-      <p style="font-size:13px;color:var(--text-2);line-height:1.6;">
-        Edit <code style="background:#f3f4f6;padding:1px 6px;border-radius:3px;font-size:12px;">goals.html</code> and change the <code style="background:#f3f4f6;padding:1px 6px;border-radius:3px;font-size:12px;">data-pct</code> value on each <code style="background:#f3f4f6;padding:1px 6px;border-radius:3px;font-size:12px;">.progress-fill</code> element to a number between 0–100. Also update the "current" label in the <code style="background:#f3f4f6;padding:1px 6px;border-radius:3px;font-size:12px;">.progress-meta</code> row below each bar.
-      </p>
-    </div>
-
   </div>
 </div>
 
 <script src="hub.js"></script>
+<script>
+const MONTHS     = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+const MONTH_KEYS = ['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'];
+const YEARS      = ['2026','2027','2028','2029','2030'];
+
+// State: { '2026': { jan: ['goal 1', ...], ... }, ... }
+const goalsData = {};
+YEARS.forEach(y => {
+  goalsData[y] = {};
+  MONTH_KEYS.forEach(m => { goalsData[y][m] = []; });
+});
+
+let editingYear = null;
+
+async function initGoals() {
+  await Promise.all(YEARS.map(async y => {
+    const data = await loadHubContent('goals-' + y);
+    if (data && typeof data === 'object') {
+      MONTH_KEYS.forEach(m => {
+        if (Array.isArray(data[m])) goalsData[y][m] = data[m];
+      });
+    }
+  }));
+  YEARS.forEach(y => renderYear(y));
+}
+
+function esc(s) {
+  return String(s)
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;');
+}
+
+function renderYear(year) {
+  const pane     = document.getElementById('year-' + year);
+  const isEditing = editingYear === year;
+
+  let html = `<div class="goals-toolbar">
+    <span style="font-size:13px;color:var(--text-muted);">${year} &mdash; ${isEditing ? 'Edit mode: update goals below, then save.' : 'Click Edit Goals to add or update goals.'}</span>
+    <div class="goals-toolbar-right">
+      <span class="save-flash" id="flash-${year}">&#10003; Saved!</span>
+      <button class="edit-toggle-btn ${isEditing ? 'active' : ''}" onclick="toggleEdit('${year}')">
+        ${isEditing ? '&#10005; Cancel' : '&#9998;&#xFE0F; Edit Goals'}
+      </button>
+      ${isEditing ? `<button class="btn-save-inline" onclick="saveGoals('${year}')">Save Changes</button>` : ''}
+    </div>
+  </div>
+  <div class="month-grid">`;
+
+  MONTHS.forEach((name, i) => {
+    const mk    = MONTH_KEYS[i];
+    const goals = goalsData[year][mk] || [];
+
+    html += `<div class="month-card ${isEditing ? 'edit-mode' : ''}" id="card-${year}-${mk}">
+      <div class="month-name">${name}</div>`;
+
+    if (isEditing) {
+      goals.forEach((g, gi) => {
+        html += `<div class="goal-item-edit">
+          <input class="goal-input" type="text" value="${esc(g)}"
+            data-year="${year}" data-month="${mk}" data-idx="${gi}"
+            placeholder="Enter goal...">
+          <button class="btn-del-goal" onclick="deleteGoal('${year}','${mk}',${gi})" title="Remove">&times;</button>
+        </div>`;
+      });
+      html += `<button class="btn-add-goal" onclick="addGoal('${year}','${mk}')">+ Add Goal</button>`;
+    } else {
+      if (goals.length === 0) {
+        html += `<div class="goal-empty">No goals yet</div>`;
+      } else {
+        html += `<ul class="goal-list">`;
+        goals.forEach(g => { html += `<li class="goal-item">${esc(g)}</li>`; });
+        html += `</ul>`;
+      }
+    }
+
+    html += `</div>`;
+  });
+
+  html += `</div>`;
+  pane.innerHTML = html;
+}
+
+function collectEdits(year) {
+  MONTH_KEYS.forEach(mk => {
+    const inputs = document.querySelectorAll(`input[data-year="${year}"][data-month="${mk}"]`);
+    if (inputs.length > 0) {
+      goalsData[year][mk] = Array.from(inputs).map(i => i.value.trim()).filter(Boolean);
+    }
+  });
+}
+
+function toggleEdit(year) {
+  if (editingYear === year) {
+    editingYear = null;
+  } else {
+    if (editingYear) collectEdits(editingYear);
+    editingYear = year;
+  }
+  YEARS.forEach(y => renderYear(y));
+}
+
+function addGoal(year, mk) {
+  collectEdits(year);
+  goalsData[year][mk].push('');
+  renderYear(year);
+  const inputs = document.querySelectorAll(`input[data-year="${year}"][data-month="${mk}"]`);
+  if (inputs.length) inputs[inputs.length - 1].focus();
+}
+
+function deleteGoal(year, mk, idx) {
+  collectEdits(year);
+  goalsData[year][mk].splice(idx, 1);
+  renderYear(year);
+}
+
+async function saveGoals(year) {
+  collectEdits(year);
+  const ok = await saveHubContent('goals-' + year, goalsData[year]);
+  editingYear = null;
+  YEARS.forEach(y => renderYear(y));
+  if (ok) {
+    const flash = document.getElementById('flash-' + year);
+    if (flash) {
+      flash.classList.add('show');
+      setTimeout(() => flash.classList.remove('show'), 3000);
+    }
+  }
+}
+
+document.addEventListener('DOMContentLoaded', initGoals);
+</script>
 </body>
 </html>

@@ -7,8 +7,8 @@
   <link rel="stylesheet" href="hub.css">
   <style>
     /* ---- Org chart overrides ---- */
-    .tree { overflow-x: auto; padding-bottom: 16px; }
-    .tree > ul { min-width: 900px; }
+    .tree-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; padding-bottom: 8px; }
+    .tree { display: inline-block; min-width: 100%; text-align: center; }
     .tree-node { min-width: 110px; max-width: 160px; }
     .tree li { padding: 20px 4px 0; }
   </style>
@@ -31,7 +31,8 @@
     </div>
 
     <div class="section-label">Full Org Chart</div>
-    <div class="card" style="overflow-x:auto;padding:32px 16px;">
+    <div class="card" style="padding:32px 16px;">
+      <div class="tree-scroll">
       <div class="tree">
         <ul>
           <li>
@@ -129,7 +130,7 @@
               <li>
                 <div class="tree-node chief">
                   <div class="tn-title">CFO</div>
-                  <div class="tn-name">Chief Financial Officer</div>
+                  <div class="tn-name">Dan Cope</div>
                 </div>
                 <ul>
                   <li><div class="tree-node"><div class="tn-title">Accountant</div></div></li>
@@ -159,6 +160,7 @@
           </li>
         </ul>
       </div>
+      </div><!-- /tree-scroll -->
     </div>
 
     <!-- Department summary cards -->

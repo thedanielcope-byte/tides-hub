@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Guides &amp; Manuals — Tides Hub</title>
+  <link rel="stylesheet" href="hub.css">
+  <style>
+    .guide-section { margin-bottom: 32px; }
+    .guide-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 10px;
+    }
+    .guide-item {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      box-shadow: var(--shadow-sm);
+      font-size: 13.5px;
+      font-weight: 500;
+      color: var(--text-2);
+    }
+    .guide-item .badge-cs {
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 20px;
+      background: #f3f4f6;
+      color: var(--text-muted);
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .guide-popular { border-left: 3px solid var(--teal); }
+    .guide-popular .badge-cs { background: rgba(65,207,208,.12); color: var(--teal); }
+  </style>
+</head>
+<body>
+
+<div class="main-content">
+  <div class="topbar">
+    <button class="topbar-hamburger" id="hubHamburger" aria-label="Open menu">&#9776;</button>
+    <span class="topbar-crumb">Tides Bookkeeping</span>
+    <span class="topbar-sep">/</span>
+    <span class="topbar-title">Guides &amp; Manuals</span>
+  </div>
+
+  <div class="page-content">
+    <div class="page-header">
+      <div class="page-icon">📘</div>
+      <h1 class="page-title">Guides &amp; Manuals</h1>
+      <p class="page-subtitle">Reference guides, training manuals, and SOPs for the Tides Bookkeeping team.</p>
+    </div>
+
+    <!-- Software -->
+    <div class="guide-section">
+      <div class="section-label">💻 Software</div>
+      <div class="guide-grid">
+        <div class="guide-item"><span>QuickBooks Online</span><span class="badge-cs">Coming Soon</span></div>
+        <div class="guide-item"><span>Puzzle (Accounting Platform)</span><span class="badge-cs">Coming Soon</span></div>
+        <div class="guide-item"><span>GoHighLevel</span><span class="badge-cs">Coming Soon</span></div>
+        <div class="guide-item"><span>SharePoint / Client Portal</span><span class="badge-cs">Coming Soon</span></div>
+        <div class="guide-item"><span>Notion</span><span class="badge-cs">Coming Soon</span></div>
+      </div>
+    </div>
+
+    <!-- Bookkeeping Fundamentals -->
+    <div class="guide-section">
+      <div class="section-label">📒 Bookkeeping Fundamentals</div>
+      <div class="guide-grid">
+        <div class="guide-item"><span>Bookkeeping Essentials</span><span class="badge-cs">Coming Soon</span></div>
+        <div class="guide-item"><span>Chart of Accounts</span><span class="badge-cs">Coming Soon</span></div>
+        <div class="guide-item"><span>Financial Reports</span><span class="badge-cs">Coming Soon</span></div>
+      </div>
+    </div>
+
+    <!-- Client Operations -->
+    <div class="guide-section">
+      <div class="section-label">🤝 Client Operations</div>
+      <div class="guide-grid">
+        <div class="guide-item"><span>Onboarding Procedures</span><span class="badge-cs">Coming Soon</span></div>
+        <div class="guide-item"><span>Monthly Close Process</span><span class="badge-cs">Coming Soon</span></div>
+        <div class="guide-item"><span>Client Communication</span><span class="badge-cs">Coming Soon</span></div>
+      </div>
+    </div>
+
+    <!-- Industry-Specific -->
+    <div class="guide-section">
+      <div class="section-label">🏭 Industry-Specific</div>
+      <div class="guide-grid">
+        <div class="guide-item"><span>Other Bookkeepers</span><span class="badge-cs">Coming Soon</span></div>
+        <div class="guide-item"><span>CPAs</span><span class="badge-cs">Coming Soon</span></div>
+        <div class="guide-item guide-popular"><span>Real Estate <span style="font-size:11px;color:var(--teal);font-weight:600;">★ Most Popular</span></span><span class="badge-cs">Coming Soon</span></div>
+        <div class="guide-item"><span>Contractors &amp; Trades</span><span class="badge-cs">Coming Soon</span></div>
+        <div class="guide-item"><span>Restaurants &amp; Bars</span><span class="badge-cs">Coming Soon</span></div>
+        <div class="guide-item"><span>Healthcare Practices</span><span class="badge-cs">Coming Soon</span></div>
+        <div class="guide-item"><span>Professional Services</span><span class="badge-cs">Coming Soon</span></div>
+        <div class="guide-item"><span>E-Commerce &amp; Retail</span><span class="badge-cs">Coming Soon</span></div>
+        <div class="guide-item"><span>Solo Entrepreneurs</span><span class="badge-cs">Coming Soon</span></div>
+        <div class="guide-item"><span>Small Businesses</span><span class="badge-cs">Coming Soon</span></div>
+        <div class="guide-item"><span>Automotive Services</span><span class="badge-cs">Coming Soon</span></div>
+        <div class="guide-item"><span>Logistics &amp; Transportation</span><span class="badge-cs">Coming Soon</span></div>
+        <div class="guide-item"><span>Non-Profit Organizations</span><span class="badge-cs">Coming Soon</span></div>
+        <div class="guide-item"><span>Tech &amp; Startups</span><span class="badge-cs">Coming Soon</span></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script src="hub.js"></script>
+</body>
+</html>

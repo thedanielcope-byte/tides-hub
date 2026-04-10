@@ -5,11 +5,12 @@
 
 /* ---------- Brand Tokens ---------- */
 :root {
-  --primary:       #046c6e;
-  --primary-light: rgba(4, 108, 110, 0.08);
-  --teal:          #41d3d0;
-  --slate:         #3a6958;
-  --navy:          #213197;
+  --primary:       #215197;
+  --primary-light: rgba(33, 81, 151, 0.08);
+  --teal:          #41cfd0;
+  --accent-blue:   #66c1ee;
+  --slate:         #3a4858;
+  --navy:          #215197;
   --white:         #ffffff;
   --bg:            #f5f6f7;
   --sidebar-bg:    #ffffff;
@@ -307,7 +308,7 @@ button { font-family: inherit; cursor: pointer; }
    DASHBOARD — HERO
    ============================================================ */
 .hub-hero {
-  background: linear-gradient(135deg, #046c6e 0%, #3a6958 55%, #213197 100%);
+  background: linear-gradient(135deg, #215197 0%, #3a4858 55%, #41cfd0 100%);
   padding: 40px 48px;
   color: white;
   display: flex;
@@ -644,6 +645,61 @@ button { font-family: inherit; cursor: pointer; }
   transition: opacity .15s;
 }
 .coming-soon-back:hover { opacity: .88; }
+
+/* ============================================================
+   EDIT MODE (goals, pricing tiers)
+   ============================================================ */
+.edit-toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 16px;
+  background: var(--white);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-2);
+  cursor: pointer;
+  transition: border-color .15s, color .15s;
+  font-family: var(--font);
+}
+.edit-toggle-btn:hover { border-color: var(--primary); color: var(--primary); }
+.edit-toggle-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+
+.btn-save-inline {
+  padding: 7px 20px;
+  background: var(--primary);
+  color: white;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: var(--font);
+}
+.btn-save-inline:hover { opacity: .88; }
+
+.btn-cancel-inline {
+  padding: 7px 16px;
+  background: var(--white);
+  color: var(--text-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: var(--font);
+}
+
+.save-flash {
+  font-size: 12px;
+  color: #10b981;
+  font-weight: 600;
+  opacity: 0;
+  transition: opacity .3s;
+}
+.save-flash.show { opacity: 1; }
 
 /* ============================================================
    RESPONSIVE
