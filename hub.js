@@ -79,6 +79,7 @@ const HUB_NAV = [
   ]},
   { label: '📘 GUIDES', color: '#215197', items: [
     { text: 'Guides & Manuals', href: 'guides.html' },
+    { text: 'Client Call Sheet', href: 'call-sheet.html' },
   ]},
 ];
 

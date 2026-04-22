@@ -1,0 +1,1069 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Client Call Sheet — Tides Hub</title>
+  <link rel="stylesheet" href="hub.css">
+  <style>
+    .cs-tabs {
+      display: flex;
+      gap: 4px;
+      margin-bottom: 24px;
+      border-bottom: 2px solid var(--border);
+    }
+    .cs-tab {
+      padding: 8px 20px 10px;
+      font-size: 13.5px;
+      font-weight: 600;
+      color: var(--text-muted);
+      background: none;
+      border: none;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -2px;
+      transition: color .15s;
+      font-family: var(--font);
+    }
+    .cs-tab.active { color: var(--primary); border-bottom-color: var(--primary); }
+    .cs-tab:hover:not(.active) { color: var(--text-2); }
+
+    .cs-section {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px 24px;
+      margin-bottom: 16px;
+      box-shadow: var(--shadow-sm);
+    }
+    .cs-section-title {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: var(--primary);
+      margin-bottom: 14px;
+    }
+
+    /* Call Notes */
+    .notes-zone {
+      background: #fffef0;
+      border: 1.5px solid #ddd68a;
+      border-radius: var(--radius);
+      padding: 18px 22px;
+      margin-bottom: 16px;
+    }
+    .notes-zone-title {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: #8a7500;
+      margin-bottom: 8px;
+    }
+    .notes-textarea {
+      width: 100%;
+      min-height: 100px;
+      border: none;
+      background: transparent;
+      font-family: var(--font);
+      font-size: 14px;
+      line-height: 1.65;
+      color: var(--text);
+      resize: vertical;
+    }
+    .notes-textarea:focus { outline: none; }
+    .notes-textarea::placeholder { color: #c8b84a; }
+
+    /* Form layout */
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 20px; }
+    .form-grid.three { grid-template-columns: 1fr 1fr 1fr; }
+    .form-full { grid-column: 1 / -1; }
+    .form-group { display: flex; flex-direction: column; gap: 4px; }
+    .form-label {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      color: var(--text-muted);
+    }
+    .form-input, .form-textarea {
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 8px 10px;
+      font-size: 13.5px;
+      font-family: var(--font);
+      color: var(--text);
+      background: var(--white);
+      transition: border-color .15s;
+    }
+    .form-input:focus, .form-textarea:focus { outline: none; border-color: var(--primary); }
+    .form-input::placeholder, .form-textarea::placeholder { color: var(--text-muted); }
+    .form-textarea { resize: vertical; min-height: 88px; }
+
+    /* Radio pills */
+    .radio-group { display: flex; gap: 8px; flex-wrap: wrap; }
+    .radio-option {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      padding: 7px 16px;
+      border: 1.5px solid var(--border);
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-2);
+      transition: all .15s;
+      user-select: none;
+    }
+    .radio-option input { display: none; }
+    .radio-option.selected {
+      border-color: var(--primary);
+      background: var(--primary-light);
+      color: var(--primary);
+      font-weight: 600;
+    }
+
+    /* Source chips */
+    .source-grid { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+    .source-chip {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      cursor: pointer;
+      padding: 6px 14px;
+      border: 1.5px solid var(--border);
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-2);
+      transition: all .15s;
+      user-select: none;
+    }
+    .source-chip input { display: none; }
+    .source-chip.selected {
+      border-color: var(--teal);
+      background: rgba(65,207,208,.1);
+      color: #0b6b6c;
+      font-weight: 600;
+    }
+
+    /* Service toggles */
+    .toggle-grid { display: flex; flex-wrap: wrap; gap: 8px; }
+    .toggle-chip {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      padding: 6px 14px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-2);
+      transition: all .15s;
+      user-select: none;
+    }
+    .toggle-chip input { display: none; }
+    .toggle-chip .ck {
+      width: 14px; height: 14px;
+      border: 1.5px solid #d1d5db;
+      border-radius: 3px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 9px; color: transparent;
+      flex-shrink: 0;
+    }
+    .toggle-chip.selected {
+      border-color: var(--primary);
+      background: var(--primary-light);
+      color: var(--primary);
+      font-weight: 600;
+    }
+    .toggle-chip.selected .ck { border-color: var(--primary); background: var(--primary); color: #fff; }
+
+    /* Consult questions */
+    .consult-details { margin-bottom: 16px; }
+    .consult-summary {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 13px 20px;
+      cursor: pointer;
+      font-size: 13.5px;
+      font-weight: 600;
+      color: var(--text-2);
+      list-style: none;
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .consult-summary:hover { background: #f9fafb; }
+    .consult-details[open] .consult-summary { border-radius: var(--radius) var(--radius) 0 0; border-bottom: none; }
+    .consult-body {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-top: none;
+      border-radius: 0 0 var(--radius) var(--radius);
+      padding: 18px 24px;
+    }
+    .cq { font-size: 13.5px; font-weight: 600; color: var(--text); margin: 14px 0 4px; }
+    .cq:first-child { margin-top: 0; }
+    .cs-sub { font-size: 13px; color: var(--text-muted); margin-left: 14px; line-height: 1.5; }
+
+    /* Action bar */
+    .cs-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 18px 0 6px;
+      flex-wrap: wrap;
+    }
+    .btn-complete {
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius-sm);
+      padding: 11px 22px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-family: var(--font);
+      transition: background .15s;
+    }
+    .btn-complete:hover { background: #1a3f78; }
+    .btn-complete:disabled { background: #9ca3af; cursor: default; }
+    .btn-secondary {
+      background: none;
+      color: var(--text-muted);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 10px 18px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: var(--font);
+    }
+    .btn-secondary:hover { background: #f3f4f6; color: var(--text-2); }
+    .btn-danger {
+      background: none;
+      color: #ef4444;
+      border: 1px solid #fca5a5;
+      border-radius: var(--radius-sm);
+      padding: 10px 16px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-left: auto;
+      font-family: var(--font);
+    }
+    .btn-danger:hover { background: #fef2f2; }
+    .action-status { font-size: 12px; font-weight: 600; color: #16a34a; }
+
+    /* Draft banner */
+    .draft-banner {
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      border-radius: var(--radius-sm);
+      padding: 11px 16px;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+      color: #1e40af;
+      flex-wrap: wrap;
+    }
+    .draft-banner button {
+      font-size: 12px;
+      font-weight: 700;
+      padding: 5px 12px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      font-family: var(--font);
+    }
+    .btn-restore { background: var(--primary); color: #fff; border: none; }
+    .btn-discard { background: none; border: 1px solid #bfdbfe; color: #6b7280; }
+
+    /* History */
+    .history-empty {
+      text-align: center;
+      padding: 52px 20px;
+      color: var(--text-muted);
+      font-size: 14px;
+    }
+    .history-card {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px 18px;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      cursor: pointer;
+      box-shadow: var(--shadow-sm);
+      transition: border-color .15s, box-shadow .15s;
+    }
+    .history-card:hover { border-color: var(--primary); box-shadow: 0 2px 8px rgba(33,81,151,.12); }
+    .hc-date { font-size: 11px; font-weight: 700; color: var(--text-muted); white-space: nowrap; min-width: 76px; }
+    .hc-name { font-size: 14px; font-weight: 700; color: var(--text); }
+    .hc-company { font-size: 12px; color: var(--text-muted); margin-top: 1px; }
+    .hc-badge {
+      margin-left: auto;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 3px 9px;
+      border-radius: 20px;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .hc-badge.potential { background: rgba(65,207,208,.13); color: #0b6b6c; }
+    .hc-badge.bookkeeper { background: var(--primary-light); color: var(--primary); }
+
+    /* Modal */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.45);
+      z-index: 300;
+      align-items: flex-start;
+      justify-content: center;
+      overflow-y: auto;
+      padding: 32px 16px;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal-box {
+      background: var(--white);
+      border-radius: var(--radius);
+      width: 100%;
+      max-width: 680px;
+      box-shadow: 0 20px 60px rgba(0,0,0,.2);
+      margin: auto;
+    }
+    .modal-header {
+      padding: 20px 24px 16px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .modal-title { font-size: 17px; font-weight: 700; color: var(--text); }
+    .modal-subtitle { font-size: 12px; color: var(--text-muted); margin-top: 3px; }
+    .modal-close { background: none; border: none; font-size: 22px; color: var(--text-muted); cursor: pointer; line-height: 1; padding: 0; }
+    .modal-close:hover { color: var(--text); }
+    .modal-body { padding: 20px 24px; }
+    .modal-sec { margin-bottom: 20px; }
+    .modal-sec-title {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: var(--primary);
+      margin-bottom: 10px;
+    }
+    .modal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 20px; }
+    .mf-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--text-muted); }
+    .mf-value { font-size: 13.5px; color: var(--text); margin-top: 1px; white-space: pre-wrap; }
+    .mf-value.empty { color: var(--text-muted); font-style: italic; }
+    .modal-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+    .modal-chip { padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; background: rgba(65,207,208,.1); color: #0b6b6c; }
+    .modal-chip.svc { background: var(--primary-light); color: var(--primary); }
+    .modal-notes {
+      background: #fffef0;
+      border: 1px solid #ddd68a;
+      border-radius: var(--radius-sm);
+      padding: 12px 14px;
+      font-size: 13.5px;
+      color: var(--text);
+      white-space: pre-wrap;
+      min-height: 56px;
+    }
+
+    @media (max-width: 600px) {
+      .form-grid, .form-grid.three, .modal-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="main-content">
+  <div class="topbar">
+    <button class="topbar-hamburger" id="hubHamburger" aria-label="Open menu">&#9776;</button>
+    <span class="topbar-crumb">Tides Bookkeeping</span>
+    <span class="topbar-sep">/</span>
+    <span class="topbar-title">Client Call Sheet</span>
+  </div>
+
+  <div class="page-content">
+    <div class="page-header">
+      <div class="page-icon">📞</div>
+      <h1 class="page-title">Client Call Sheet</h1>
+      <p class="page-subtitle">Fill out live during the call — auto-saves as you type. Hit Complete to email yourself a copy and save to history.</p>
+    </div>
+
+    <!-- Tabs -->
+    <div class="cs-tabs">
+      <button class="cs-tab active" id="tabBtnForm"    onclick="switchTab('form')">📋 New Call</button>
+      <button class="cs-tab"        id="tabBtnHistory" onclick="switchTab('history')">🕐 Call History</button>
+    </div>
+
+    <!-- =================== TAB: NEW CALL =================== -->
+    <div id="tabForm">
+      <!-- Draft restore banner -->
+      <div class="draft-banner" id="draftBanner" style="display:none;">
+        <span>📄 You have an unsaved draft — restore it?</span>
+        <button class="btn-restore" onclick="restoreDraft()">Restore Draft</button>
+        <button class="btn-discard" onclick="discardDraft()">Discard</button>
+      </div>
+
+      <!-- ZONE 1: Call Notes -->
+      <div class="notes-zone">
+        <div class="notes-zone-title">📝 Your Call Notes &nbsp;<span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:10px;color:#b09820;">— personal notes, not part of the call sheet</span></div>
+        <textarea class="notes-textarea" id="callNotes" placeholder="Jot anything down as the call happens — first impressions, things to follow up on, what they really care about…" oninput="scheduleDraftSave()"></textarea>
+      </div>
+
+      <!-- ZONE 2: Form -->
+
+      <!-- Call Info -->
+      <div class="cs-section">
+        <div class="cs-section-title">📋 Call Info</div>
+        <div class="form-grid" style="margin-bottom:14px;">
+          <div class="form-group">
+            <label class="form-label">Date</label>
+            <input class="form-input" type="date" id="csDate" oninput="scheduleDraftSave()">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Circle One</label>
+            <div class="radio-group" id="csTypeGroup">
+              <label class="radio-option selected" id="radioA">
+                <input type="radio" name="csType" value="potential" checked onchange="selectType(this)"> Potential Client
+              </label>
+              <label class="radio-option" id="radioB">
+                <input type="radio" name="csType" value="bookkeeper" onchange="selectType(this)"> Another Bookkeeping Co.
+              </label>
+            </div>
+          </div>
+        </div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">Client Name</label>
+            <input class="form-input" type="text" id="csClientName" placeholder="Full name" oninput="scheduleDraftSave()">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Company Name</label>
+            <input class="form-input" type="text" id="csCompanyName" placeholder="Company" oninput="scheduleDraftSave()">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Industry</label>
+            <input class="form-input" type="text" id="csIndustry" placeholder="e.g. Real Estate" oninput="scheduleDraftSave()">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Website</label>
+            <input class="form-input" type="text" id="csWebsite" placeholder="website.com" oninput="scheduleDraftSave()">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Phone</label>
+            <input class="form-input" type="tel" id="csPhone" placeholder="(555) 000-0000" oninput="scheduleDraftSave()">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Email</label>
+            <input class="form-input" type="email" id="csEmail" placeholder="client@email.com" oninput="scheduleDraftSave()">
+          </div>
+          <div class="form-group form-full">
+            <label class="form-label">Address</label>
+            <input class="form-input" type="text" id="csAddress" placeholder="Street, City, State, ZIP" oninput="scheduleDraftSave()">
+          </div>
+        </div>
+      </div>
+
+      <!-- Q1 -->
+      <div class="cs-section">
+        <div class="cs-section-title">💬 Question 1</div>
+        <p style="font-size:13.5px;font-weight:600;color:var(--text-2);margin-bottom:10px;">Tell me about your business and what you're looking for help with.</p>
+        <textarea class="form-textarea" id="csQ1" placeholder="Notes from their answer…" oninput="scheduleDraftSave()"></textarea>
+      </div>
+
+      <!-- Q2 -->
+      <div class="cs-section">
+        <div class="cs-section-title">🔍 Question 2</div>
+        <p style="font-size:13.5px;font-weight:600;color:var(--text-2);margin-bottom:6px;">How did you find me and what encouraged you to reach out?</p>
+        <div class="source-grid">
+          <label class="source-chip" id="srcWebsite"><input type="checkbox" value="Website" onchange="toggleSource(this,'srcWebsite')"> 🌐 Website</label>
+          <label class="source-chip" id="srcFacebook"><input type="checkbox" value="Facebook" onchange="toggleSource(this,'srcFacebook')"> Facebook</label>
+          <label class="source-chip" id="srcInstagram"><input type="checkbox" value="Instagram" onchange="toggleSource(this,'srcInstagram')"> Instagram</label>
+          <label class="source-chip" id="srcLinkedIn"><input type="checkbox" value="LinkedIn" onchange="toggleSource(this,'srcLinkedIn')"> LinkedIn</label>
+          <label class="source-chip" id="srcVoucher"><input type="checkbox" value="Voucher" onchange="toggleSource(this,'srcVoucher')"> Voucher</label>
+        </div>
+        <div class="form-grid" style="margin-top:12px;">
+          <div class="form-group">
+            <label class="form-label">Referral (name)</label>
+            <input class="form-input" type="text" id="csReferral" placeholder="Who referred them?" oninput="scheduleDraftSave()">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Other Source</label>
+            <input class="form-input" type="text" id="csOtherSource" placeholder="Describe" oninput="scheduleDraftSave()">
+          </div>
+        </div>
+      </div>
+
+      <!-- Q3 / Next Steps -->
+      <div class="cs-section">
+        <div class="cs-section-title">📅 Question 3 — Next Steps</div>
+        <p style="font-size:13.5px;font-weight:600;color:var(--text-2);margin-bottom:14px;">I can definitely help you with (XYZ) — send proposal &amp; schedule the follow-up call.</p>
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">Proposal Sent</label>
+            <input class="form-input" type="date" id="csProposalSent" oninput="scheduleDraftSave()">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Follow Up Scheduled</label>
+            <input class="form-input" type="text" id="csFollowUp" placeholder="e.g. Thurs 9am or date" oninput="scheduleDraftSave()">
+          </div>
+        </div>
+      </div>
+
+      <!-- Company Stats -->
+      <div class="cs-section">
+        <div class="cs-section-title">📊 Company Stats</div>
+        <div class="form-grid three" style="margin-bottom:16px;">
+          <div class="form-group">
+            <label class="form-label"># Bank Accounts</label>
+            <input class="form-input" type="number" min="0" id="csBankActs" placeholder="0" oninput="scheduleDraftSave()">
+          </div>
+          <div class="form-group">
+            <label class="form-label"># Credit Cards</label>
+            <input class="form-input" type="number" min="0" id="csCRCards" placeholder="0" oninput="scheduleDraftSave()">
+          </div>
+          <div class="form-group">
+            <label class="form-label"># Monthly Transactions</label>
+            <input class="form-input" type="number" min="0" id="csMoTrans" placeholder="0" oninput="scheduleDraftSave()">
+          </div>
+        </div>
+
+        <div class="form-label" style="margin-bottom:8px;">Services Needed</div>
+        <div class="toggle-grid">
+          <label class="toggle-chip" id="togPayroll"><input type="checkbox" onchange="toggleChip(this,'togPayroll')"><span class="ck">✓</span> Payroll</label>
+          <label class="toggle-chip" id="togInvoices"><input type="checkbox" onchange="toggleChip(this,'togInvoices')"><span class="ck">✓</span> Invoices</label>
+          <label class="toggle-chip" id="togBills"><input type="checkbox" onchange="toggleChip(this,'togBills')"><span class="ck">✓</span> Bills</label>
+          <label class="toggle-chip" id="togIntegrations"><input type="checkbox" onchange="toggleChip(this,'togIntegrations')"><span class="ck">✓</span> Integrations</label>
+          <label class="toggle-chip" id="togInventory"><input type="checkbox" onchange="toggleChip(this,'togInventory')"><span class="ck">✓</span> Inventory</label>
+          <label class="toggle-chip" id="togSalesTax"><input type="checkbox" onchange="toggleChip(this,'togSalesTax')"><span class="ck">✓</span> Sales Tax</label>
+          <label class="toggle-chip" id="togProjects"><input type="checkbox" onchange="toggleChip(this,'togProjects')"><span class="ck">✓</span> Projects</label>
+        </div>
+        <div class="form-group" style="margin-top:12px;">
+          <label class="form-label">Other Services</label>
+          <input class="form-input" type="text" id="csOtherServices" placeholder="Describe" oninput="scheduleDraftSave()">
+        </div>
+
+        <div class="form-grid" style="margin-top:16px;">
+          <div class="form-group">
+            <label class="form-label">Annual Revenue</label>
+            <input class="form-input" type="text" id="csAnnualRevenue" placeholder="e.g. $250,000" oninput="scheduleDraftSave()">
+          </div>
+          <div class="form-group">
+            <label class="form-label"># Clients</label>
+            <input class="form-input" type="text" id="csNumClients" placeholder="If applicable" oninput="scheduleDraftSave()">
+          </div>
+          <div class="form-group form-full">
+            <label class="form-label">How Soon Are They Looking to Step Out of the Business?</label>
+            <input class="form-input" type="text" id="csStepOut" placeholder="e.g. 2 years, 6 months, not sure" oninput="scheduleDraftSave()">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Asking Price</label>
+            <input class="form-input" type="text" id="csAskingPrice" placeholder="$" oninput="scheduleDraftSave()">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Estimated Value</label>
+            <input class="form-input" type="text" id="csEstimatedValue" placeholder="$" oninput="scheduleDraftSave()">
+          </div>
+        </div>
+      </div>
+
+      <!-- ZONE 3: Consultation Questions Bank -->
+      <details class="consult-details">
+        <summary class="consult-summary">📖 Consultation Questions Bank <span style="font-size:11px;font-weight:400;color:var(--text-muted);margin-left:6px;">— tap to expand for reference during the call</span></summary>
+        <div class="consult-body">
+          <div class="cq">How's Business Going?</div>
+          <div class="cq">What are your Goals?</div>
+          <div class="cs-sub">Where would you like to be in 5, 10 years? How do you plan to get there?</div>
+          <div class="cs-sub">How does your business fit into your dream/goals?</div>
+          <div class="cs-sub">What do you see as the biggest hurdle to achieving your goals?</div>
+          <div class="cq">What's your #1 struggle with your finances?</div>
+          <div class="cs-sub">Why are you struggling with this?</div>
+          <div class="cs-sub">What worries you about this struggle?</div>
+          <div class="cs-sub">When was the last time you thought about this (struggle)?</div>
+          <div class="cs-sub">Tell me about it… What was going through your head?</div>
+          <div class="cq">How does your business make money?</div>
+          <div class="cs-sub">What do you like about that?</div>
+          <div class="cs-sub">What concerns you about that?</div>
+          <div class="cs-sub">What does your business mainly spend its money on?</div>
+          <div class="cs-sub">What do you like about that?</div>
+          <div class="cs-sub">What concerns you about that?</div>
+          <div class="cq">What motivated you to get some help with your books/taxes?</div>
+          <div class="cs-sub">Why is that important? &nbsp;·&nbsp; Why Now?</div>
+          <div class="cq">What's prevented you from having your books/taxes organized?</div>
+          <div class="cq">Walk me through your current process for getting the books/taxes done.</div>
+          <div class="cq">Have you tried something different in the past?</div>
+          <div class="cq">In your mind, what happens if this doesn't get fixed?</div>
+          <div class="cq">What's an ideal solution look like for you?</div>
+        </div>
+      </details>
+
+      <!-- Action bar -->
+      <div class="cs-actions">
+        <button class="btn-complete" id="btnComplete" onclick="completeCall()">✅ Complete &amp; Email</button>
+        <button class="btn-secondary" onclick="manualSaveDraft()">💾 Save Draft</button>
+        <span class="action-status" id="actionStatus"></span>
+        <button class="btn-danger" onclick="clearForm()">✕ Clear Form</button>
+      </div>
+    </div>
+
+    <!-- =================== TAB: HISTORY =================== -->
+    <div id="tabHistory" style="display:none;">
+      <div id="historyList"><p class="history-empty">Loading…</p></div>
+    </div>
+  </div>
+</div>
+
+<!-- History detail modal -->
+<div class="modal-overlay" id="callModal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title"  id="modalTitle">Call Sheet</div>
+        <div class="modal-subtitle" id="modalSubtitle"></div>
+      </div>
+      <button class="modal-close" onclick="closeModal()">&times;</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+  </div>
+</div>
+
+<script src="hub.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<script>
+/* ============================================================
+   Client Call Sheet — Tides Hub
+   ============================================================ */
+
+/* ---- EmailJS ---- */
+const EMAILJS_PUBLIC_KEY  = 'p_Faa-dt1o_ljx_Yt';
+const EMAILJS_SERVICE_ID  = 'service_437c9z1';
+const EMAILJS_TEMPLATE_ID = 'template_cegd558';
+const SEND_TO_EMAIL       = 'bookkeepingtides@gmail.com';
+
+/* ---- Supabase keys ---- */
+const CALL_INDEX_KEY = 'callsheet-index';
+const DRAFT_KEY      = 'callsheet-draft';
+
+let draftTimer = null;
+
+/* ---- Boot ---- */
+emailjs.init(EMAILJS_PUBLIC_KEY);
+
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('csDate').value = todayISO();
+  const raw = localStorage.getItem(DRAFT_KEY);
+  if (raw) {
+    try {
+      const d = JSON.parse(raw);
+      if (d.clientName || d.companyName || d.callNotes || d.q1) {
+        document.getElementById('draftBanner').style.display = 'flex';
+      }
+    } catch(e) {}
+  }
+});
+
+/* ---- Tab switcher ---- */
+function switchTab(tab) {
+  document.getElementById('tabForm').style.display    = tab === 'form'    ? '' : 'none';
+  document.getElementById('tabHistory').style.display = tab === 'history' ? '' : 'none';
+  document.getElementById('tabBtnForm').classList.toggle('active', tab === 'form');
+  document.getElementById('tabBtnHistory').classList.toggle('active', tab === 'history');
+  if (tab === 'history') loadHistory();
+}
+
+/* ---- UI helpers ---- */
+function selectType(input) {
+  document.querySelectorAll('#csTypeGroup .radio-option').forEach(el => el.classList.remove('selected'));
+  input.closest('.radio-option').classList.add('selected');
+  scheduleDraftSave();
+}
+function toggleSource(input, id) {
+  document.getElementById(id).classList.toggle('selected', input.checked);
+  scheduleDraftSave();
+}
+function toggleChip(input, id) {
+  document.getElementById(id).classList.toggle('selected', input.checked);
+  scheduleDraftSave();
+}
+
+/* ---- Collect all form values ---- */
+function collectFormData() {
+  const sources = [];
+  document.querySelectorAll('.source-chip input:checked').forEach(cb => sources.push(cb.value));
+
+  const SVC_MAP = {
+    togPayroll:'Payroll', togInvoices:'Invoices', togBills:'Bills',
+    togIntegrations:'Integrations', togInventory:'Inventory',
+    togSalesTax:'Sales Tax', togProjects:'Projects'
+  };
+  const services = [];
+  Object.entries(SVC_MAP).forEach(([id, label]) => {
+    if (document.getElementById(id).querySelector('input').checked) services.push(label);
+  });
+
+  const typeRadio = document.querySelector('input[name="csType"]:checked');
+
+  return {
+    id:             uid(),
+    timestamp:      Date.now(),
+    date:           document.getElementById('csDate').value || todayISO(),
+    type:           typeRadio ? typeRadio.value : 'potential',
+    clientName:     val('csClientName'),
+    companyName:    val('csCompanyName'),
+    industry:       val('csIndustry'),
+    website:        val('csWebsite'),
+    phone:          val('csPhone'),
+    email:          val('csEmail'),
+    address:        val('csAddress'),
+    q1:             val('csQ1'),
+    q2Sources:      sources,
+    q2Referral:     val('csReferral'),
+    q2Other:        val('csOtherSource'),
+    proposalSent:   val('csProposalSent'),
+    followUp:       val('csFollowUp'),
+    bankActs:       val('csBankActs'),
+    crCards:        val('csCRCards'),
+    moTrans:        val('csMoTrans'),
+    services:       services,
+    otherServices:  val('csOtherServices'),
+    annualRevenue:  val('csAnnualRevenue'),
+    numClients:     val('csNumClients'),
+    stepOut:        val('csStepOut'),
+    askingPrice:    val('csAskingPrice'),
+    estimatedValue: val('csEstimatedValue'),
+    callNotes:      val('callNotes'),
+  };
+}
+
+function val(id) {
+  return document.getElementById(id).value.trim();
+}
+
+/* ---- Populate form from saved data ---- */
+function populateForm(d) {
+  const set = (id, v) => { document.getElementById(id).value = v || ''; };
+  set('csDate', d.date || todayISO());
+  set('csClientName', d.clientName);  set('csCompanyName', d.companyName);
+  set('csIndustry', d.industry);      set('csWebsite', d.website);
+  set('csPhone', d.phone);            set('csEmail', d.email);
+  set('csAddress', d.address);        set('csQ1', d.q1);
+  set('csReferral', d.q2Referral);    set('csOtherSource', d.q2Other);
+  set('csProposalSent', d.proposalSent); set('csFollowUp', d.followUp);
+  set('csBankActs', d.bankActs);      set('csCRCards', d.crCards);
+  set('csMoTrans', d.moTrans);        set('csOtherServices', d.otherServices);
+  set('csAnnualRevenue', d.annualRevenue); set('csNumClients', d.numClients);
+  set('csStepOut', d.stepOut);        set('csAskingPrice', d.askingPrice);
+  set('csEstimatedValue', d.estimatedValue); set('callNotes', d.callNotes);
+
+  // Radio
+  document.querySelectorAll('input[name="csType"]').forEach(r => {
+    r.checked = r.value === d.type;
+    r.closest('.radio-option').classList.toggle('selected', r.checked);
+  });
+  // Sources
+  document.querySelectorAll('.source-chip input').forEach(cb => {
+    cb.checked = (d.q2Sources || []).includes(cb.value);
+    cb.closest('.source-chip').classList.toggle('selected', cb.checked);
+  });
+  // Services
+  const SVC_MAP = {
+    togPayroll:'Payroll', togInvoices:'Invoices', togBills:'Bills',
+    togIntegrations:'Integrations', togInventory:'Inventory',
+    togSalesTax:'Sales Tax', togProjects:'Projects'
+  };
+  Object.entries(SVC_MAP).forEach(([id, label]) => {
+    const cb = document.getElementById(id).querySelector('input');
+    cb.checked = (d.services || []).includes(label);
+    document.getElementById(id).classList.toggle('selected', cb.checked);
+  });
+}
+
+/* ---- Draft ---- */
+function scheduleDraftSave() {
+  clearTimeout(draftTimer);
+  draftTimer = setTimeout(() => localStorage.setItem(DRAFT_KEY, JSON.stringify(collectFormData())), 800);
+}
+function manualSaveDraft() {
+  localStorage.setItem(DRAFT_KEY, JSON.stringify(collectFormData()));
+  showStatus('💾 Draft saved!');
+}
+function restoreDraft() {
+  try { const d = JSON.parse(localStorage.getItem(DRAFT_KEY)); if (d) populateForm(d); } catch(e) {}
+  document.getElementById('draftBanner').style.display = 'none';
+}
+function discardDraft() {
+  localStorage.removeItem(DRAFT_KEY);
+  document.getElementById('draftBanner').style.display = 'none';
+}
+
+/* ---- Clear form ---- */
+function clearForm() {
+  if (!confirm('Clear the form and start fresh?')) return;
+  ['csClientName','csCompanyName','csIndustry','csWebsite','csPhone','csEmail',
+   'csAddress','csQ1','csReferral','csOtherSource','csProposalSent','csFollowUp',
+   'csBankActs','csCRCards','csMoTrans','csOtherServices','csAnnualRevenue',
+   'csNumClients','csStepOut','csAskingPrice','csEstimatedValue','callNotes']
+    .forEach(id => { document.getElementById(id).value = ''; });
+  document.querySelectorAll('.source-chip input').forEach(cb => { cb.checked = false; cb.closest('.source-chip').classList.remove('selected'); });
+  document.querySelectorAll('.toggle-chip input').forEach(cb => { cb.checked = false; cb.closest('.toggle-chip').classList.remove('selected'); });
+  document.querySelectorAll('input[name="csType"]').forEach(r => {
+    r.checked = r.value === 'potential';
+    r.closest('.radio-option').classList.toggle('selected', r.value === 'potential');
+  });
+  document.getElementById('csDate').value = todayISO();
+  localStorage.removeItem(DRAFT_KEY);
+}
+
+/* ---- Status ---- */
+function showStatus(msg, ms = 3500) {
+  const el = document.getElementById('actionStatus');
+  el.textContent = msg;
+  setTimeout(() => { if (el.textContent === msg) el.textContent = ''; }, ms);
+}
+
+/* ---- Format email body ---- */
+function buildEmailContent(d) {
+  const typeLabel = d.type === 'bookkeeper' ? 'Another Bookkeeping Co.' : 'Potential Client';
+  const sources   = [...(d.q2Sources || [])];
+  if (d.q2Referral) sources.push('Referral: ' + d.q2Referral);
+  if (d.q2Other)    sources.push('Other: ' + d.q2Other);
+
+  return `NEW CLIENT CALL SHEET — Tides Bookkeeping
+=========================================
+Date: ${d.date}   |   Type: ${typeLabel}
+
+CONTACT INFORMATION
+-------------------
+Client Name:   ${d.clientName  || '—'}
+Company:       ${d.companyName || '—'}
+Industry:      ${d.industry    || '—'}
+Website:       ${d.website     || '—'}
+Phone:         ${d.phone       || '—'}
+Email:         ${d.email       || '—'}
+Address:       ${d.address     || '—'}
+
+QUESTIONS
+---------
+1. Tell me about your business:
+${d.q1 || '(no notes)'}
+
+2. How did they find you:
+${sources.length ? sources.join(', ') : '(not noted)'}
+
+3. Next Steps:
+   Proposal Sent:       ${d.proposalSent || '—'}
+   Follow Up Scheduled: ${d.followUp     || '—'}
+
+COMPANY STATS
+-------------
+Bank Accounts: ${d.bankActs || '—'}   |   Credit Cards: ${d.crCards || '—'}   |   Monthly Transactions: ${d.moTrans || '—'}
+Services:      ${d.services && d.services.length ? d.services.join(', ') : 'None checked'}${d.otherServices ? '\nOther:         ' + d.otherServices : ''}
+Annual Revenue:  ${d.annualRevenue  || '—'}
+# Clients:       ${d.numClients     || '—'}
+Step Out:        ${d.stepOut        || '—'}
+Asking Price:    ${d.askingPrice    || '—'}
+Estimated Value: ${d.estimatedValue || '—'}
+
+CALL NOTES (Personal)
+---------------------
+${d.callNotes || '(none)'}
+
+=========================================
+Sent from Tides Hub · hub.tidesbookkeeping.com`;
+}
+
+/* ---- Complete & Email ---- */
+async function completeCall() {
+  const data = collectFormData();
+  if (!data.clientName && !data.companyName) {
+    alert('Please enter at least a client name or company name before completing.');
+    document.getElementById('csClientName').focus();
+    return;
+  }
+
+  const btn = document.getElementById('btnComplete');
+  btn.disabled = true;
+  btn.textContent = '⏳ Saving & Sending…';
+
+  try {
+    // Save to Supabase
+    await saveCallToSupabase(data);
+
+    // Send email
+    await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
+      to_email:    SEND_TO_EMAIL,
+      client_name: data.clientName || data.companyName || 'Unknown Client',
+      date:        data.date,
+      content:     buildEmailContent(data),
+    });
+
+    // Clear draft & reset
+    localStorage.removeItem(DRAFT_KEY);
+    btn.textContent = '✅ Sent!';
+    showStatus('✓ Saved to history & email sent to ' + SEND_TO_EMAIL, 5000);
+    setTimeout(() => {
+      btn.disabled = false;
+      btn.innerHTML = '✅ Complete &amp; Email';
+      clearForm();
+    }, 2500);
+
+  } catch(err) {
+    console.error('Call sheet error:', err);
+    btn.disabled = false;
+    btn.innerHTML = '✅ Complete &amp; Email';
+    localStorage.setItem(DRAFT_KEY, JSON.stringify(data)); // preserve draft
+    showStatus('⚠️ ' + (err.text || err.message || 'Something went wrong — draft preserved'), 7000);
+  }
+}
+
+/* ---- Save to Supabase ---- */
+async function saveCallToSupabase(data) {
+  // Full call record
+  await saveHubContent('callsheet-' + data.id, data);
+  // Update index
+  let idx = await loadHubContent(CALL_INDEX_KEY);
+  if (!idx || !Array.isArray(idx.calls)) idx = { calls: [] };
+  idx.calls.unshift({
+    id:          data.id,
+    timestamp:   data.timestamp,
+    date:        data.date,
+    type:        data.type,
+    clientName:  data.clientName,
+    companyName: data.companyName,
+    industry:    data.industry,
+  });
+  await saveHubContent(CALL_INDEX_KEY, idx);
+}
+
+/* ---- Load history tab ---- */
+async function loadHistory() {
+  const container = document.getElementById('historyList');
+  container.innerHTML = '<p class="history-empty">Loading…</p>';
+  const idx = await loadHubContent(CALL_INDEX_KEY);
+  if (!idx || !idx.calls || !idx.calls.length) {
+    container.innerHTML = '<p class="history-empty">📞 No calls saved yet — complete your first call to see it here.</p>';
+    return;
+  }
+  container.innerHTML = idx.calls.map(c => {
+    const name    = c.clientName || c.companyName || 'Unknown';
+    const sub     = (c.clientName && c.companyName) ? c.companyName : (c.industry || '');
+    const badge   = c.type === 'bookkeeper' ? 'bookkeeper' : 'potential';
+    const bLabel  = c.type === 'bookkeeper' ? 'Bookkeeping Co.' : 'Potential Client';
+    return `<div class="history-card" onclick="viewCall('${c.id}')">
+      <div class="hc-date">${fmtDate(c.date)}</div>
+      <div style="flex:1;min-width:0;">
+        <div class="hc-name">${esc(name)}</div>
+        ${sub ? `<div class="hc-company">${esc(sub)}</div>` : ''}
+      </div>
+      <span class="hc-badge ${badge}">${bLabel}</span>
+    </div>`;
+  }).join('');
+}
+
+/* ---- View call in modal ---- */
+async function viewCall(id) {
+  const d = await loadHubContent('callsheet-' + id);
+  if (!d) { alert('Could not load this call.'); return; }
+
+  const typeLabel = d.type === 'bookkeeper' ? 'Another Bookkeeping Co.' : 'Potential Client';
+  const sources   = [...(d.q2Sources || [])];
+  if (d.q2Referral) sources.push('Referral: ' + d.q2Referral);
+  if (d.q2Other)    sources.push('Other: ' + d.q2Other);
+
+  document.getElementById('modalTitle').textContent    = d.clientName || d.companyName || 'Call Sheet';
+  document.getElementById('modalSubtitle').textContent = fmtDate(d.date) + ' · ' + typeLabel;
+
+  document.getElementById('modalBody').innerHTML = `
+    <div class="modal-sec">
+      <div class="modal-sec-title">Contact Information</div>
+      <div class="modal-grid">
+        ${mf('Client Name',d.clientName)} ${mf('Company',d.companyName)}
+        ${mf('Industry',d.industry)}      ${mf('Website',d.website)}
+        ${mf('Phone',d.phone)}            ${mf('Email',d.email)}
+      </div>
+      ${mf('Address',d.address)}
+    </div>
+    <div class="modal-sec">
+      <div class="modal-sec-title">Question 1 — About the Business</div>
+      <div class="mf-value">${d.q1 ? esc(d.q1) : '<span class="empty">No notes</span>'}</div>
+    </div>
+    <div class="modal-sec">
+      <div class="modal-sec-title">Question 2 — How They Found You</div>
+      ${sources.length ? `<div class="modal-chips">${sources.map(s=>`<span class="modal-chip">${esc(s)}</span>`).join('')}</div>` : '<div class="mf-value empty">Not noted</div>'}
+    </div>
+    <div class="modal-sec">
+      <div class="modal-sec-title">Next Steps</div>
+      <div class="modal-grid">
+        ${mf('Proposal Sent',d.proposalSent)} ${mf('Follow Up',d.followUp)}
+      </div>
+    </div>
+    <div class="modal-sec">
+      <div class="modal-sec-title">Company Stats</div>
+      <div class="modal-grid">
+        ${mf('Bank Accounts',d.bankActs)} ${mf('Credit Cards',d.crCards)}
+        ${mf('Monthly Transactions',d.moTrans)} ${mf('Annual Revenue',d.annualRevenue)}
+        ${mf('# Clients',d.numClients)} ${mf('Step Out Timeline',d.stepOut)}
+        ${mf('Asking Price',d.askingPrice)} ${mf('Estimated Value',d.estimatedValue)}
+      </div>
+      ${(d.services&&d.services.length)||d.otherServices ? `
+        <div style="margin-top:10px;">
+          <div class="mf-label">Services Needed</div>
+          <div class="modal-chips" style="margin-top:4px;">
+            ${(d.services||[]).map(s=>`<span class="modal-chip svc">${esc(s)}</span>`).join('')}
+            ${d.otherServices?`<span class="modal-chip svc">${esc(d.otherServices)}</span>`:''}
+          </div>
+        </div>` : ''}
+    </div>
+    ${d.callNotes ? `
+    <div class="modal-sec">
+      <div class="modal-sec-title">Call Notes (Personal)</div>
+      <div class="modal-notes">${esc(d.callNotes)}</div>
+    </div>` : ''}`;
+
+  document.getElementById('callModal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function mf(label, value) {
+  const empty = !value;
+  return `<div><div class="mf-label">${label}</div><div class="mf-value${empty?' empty':''}">${empty?'—':esc(String(value))}</div></div>`;
+}
+function closeModal() {
+  document.getElementById('callModal').classList.remove('open');
+  document.body.style.overflow = '';
+}
+document.getElementById('callModal').addEventListener('click', e => { if (e.target === e.currentTarget) closeModal(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+/* ---- Utilities ---- */
+function uid()  { return Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
+function todayISO() { return new Date().toISOString().slice(0,10); }
+function fmtDate(iso) {
+  if (!iso) return '';
+  return new Date(iso + 'T12:00:00').toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' });
+}
+function esc(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+</script>
+</body>
+</html>
