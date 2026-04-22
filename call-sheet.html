@@ -912,6 +912,8 @@ async function completeCall() {
     await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
       to_email:    SEND_TO_EMAIL,
       client_name: data.clientName || data.companyName || 'Unknown Client',
+      name:        data.clientName || data.companyName || 'Tides Hub',
+      email:       data.email || '',
       date:        data.date,
       content:     buildEmailContent(data),
     });
