@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Blog Post Tracker — Tides Hub</title>
+<style>
+  :root {
+    --navy: #215197;
+    --sky: #66c1ee;
+    --teal: #41cfd0;
+    --slate: #3a4858;
+    --white: #ffffff;
+    --nc-green: #1D9E75;
+    --in-amber: #BA7517;
+    --gray-50: #f8f9fa;
+    --gray-100: #f1f3f5;
+    --gray-200: #e9ecef;
+    --gray-300: #dee2e6;
+    --gray-500: #adb5bd;
+    --gray-600: #6c757d;
+    --gray-700: #495057;
+    --gray-900: #212529;
+    --font: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: var(--font); background: var(--gray-100); color: var(--gray-900); font-size: 14px; }
+
+  /* NAV - matches hub */
+  nav {
+    background: var(--navy);
+    padding: 0 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 52px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .nav-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: white;
+    font-size: 15px;
+    font-weight: 600;
+    text-decoration: none;
+  }
+  .nav-brand img { height: 28px; }
+  .nav-breadcrumb {
+    color: rgba(255,255,255,0.6);
+    font-size: 13px;
+  }
+  .nav-breadcrumb a { color: rgba(255,255,255,0.8); text-decoration: none; }
+  .nav-breadcrumb span { margin: 0 6px; }
+  .hamburger {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 20px;
+    cursor: pointer;
+    padding: 4px 8px;
+  }
+
+  /* PAGE HEADER */
+  .page-header {
+    background: white;
+    border-bottom: 1px solid var(--gray-200);
+    padding: 28px 32px 24px;
+  }
+  .page-header-inner {
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+  .page-icon { font-size: 28px; margin-bottom: 8px; display: block; }
+  .page-title { font-size: 24px; font-weight: 700; color: var(--navy); margin-bottom: 6px; }
+  .page-desc { color: var(--gray-600); font-size: 14px; max-width: 600px; line-height: 1.5; }
+
+  /* SUPABASE NOTICE */
+  .sync-notice {
+    background: #fff8e1;
+    border-left: 3px solid #f9a825;
+    padding: 10px 14px;
+    font-size: 12px;
+    color: #5f4c02;
+    line-height: 1.5;
+    margin-top: 16px;
+    border-radius: 0 4px 4px 0;
+  }
+  .sync-notice strong { font-weight: 600; }
+
+  /* MAIN LAYOUT */
+  .main {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 24px 32px 48px;
+  }
+
+  /* PROGRESS SECTION */
+  .progress-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  .progress-card {
+    background: white;
+    border-radius: 8px;
+    border: 1px solid var(--gray-200);
+    padding: 14px 16px;
+  }
+  .progress-card-label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--gray-500);
+    margin-bottom: 6px;
+  }
+  .progress-card-nums {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--gray-900);
+    margin-bottom: 8px;
+  }
+  .progress-card-nums span { font-size: 13px; font-weight: 400; color: var(--gray-500); }
+  .progress-bar-bg {
+    height: 5px;
+    background: var(--gray-200);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .progress-bar-fill {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 0.4s ease;
+  }
+
+  /* CONTROLS */
+  .controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+  .filter-group { display: flex; gap: 4px; flex-wrap: wrap; }
+  .fbtn {
+    padding: 5px 12px;
+    border-radius: 20px;
+    border: 1px solid var(--gray-300);
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    background: white;
+    color: var(--gray-600);
+    transition: all 0.15s;
+  }
+  .fbtn:hover { border-color: var(--navy); color: var(--navy); }
+  .fbtn.on { background: var(--navy); color: white; border-color: var(--navy); }
+  .fbtn.nc-on { background: var(--nc-green); color: white; border-color: var(--nc-green); }
+  .fbtn.in-on { background: var(--in-amber); color: white; border-color: var(--in-amber); }
+  .controls-right { margin-left: auto; }
+  .reset-btn {
+    padding: 5px 14px;
+    border-radius: 6px;
+    border: 1px solid var(--gray-300);
+    font-size: 12px;
+    cursor: pointer;
+    background: white;
+    color: var(--gray-600);
+  }
+  .reset-btn:hover { border-color: #dc3545; color: #dc3545; }
+  .search-input {
+    padding: 6px 12px;
+    border-radius: 6px;
+    border: 1px solid var(--gray-300);
+    font-size: 13px;
+    outline: none;
+    width: 220px;
+  }
+  .search-input:focus { border-color: var(--navy); }
+
+  /* TABLE */
+  .table-wrap {
+    background: white;
+    border-radius: 10px;
+    border: 1px solid var(--gray-200);
+    overflow: hidden;
+  }
+  table { width: 100%; border-collapse: collapse; }
+  thead th {
+    background: var(--gray-50);
+    padding: 10px 14px;
+    text-align: left;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--gray-500);
+    border-bottom: 1px solid var(--gray-200);
+    white-space: nowrap;
+  }
+  tbody tr {
+    border-bottom: 1px solid var(--gray-100);
+    transition: background 0.1s;
+  }
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: #fafbfc; }
+  tbody tr.done { background: #f8fff8; }
+  tbody tr.done td { opacity: 0.6; }
+  tbody tr.done .post-title { text-decoration: line-through; color: var(--gray-500); }
+  td { padding: 10px 14px; vertical-align: middle; }
+
+  .post-num { font-size: 11px; color: var(--gray-500); font-weight: 600; width: 36px; }
+  .post-week { font-size: 11px; color: var(--gray-500); white-space: nowrap; width: 80px; }
+  .post-month { font-size: 11px; color: var(--gray-500); white-space: nowrap; width: 90px; }
+  .post-title { font-size: 13px; color: var(--gray-900); line-height: 1.4; }
+  .post-title.placeholder { color: var(--gray-500); font-style: italic; }
+
+  .state-badge {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 20px;
+    white-space: nowrap;
+  }
+  .badge-sc { background: #e8f0fb; color: #1a3f7a; }
+  .badge-nc { background: #e0f5ed; color: #0a5c3a; }
+  .badge-in { background: #fef3e0; color: #7a4d0a; }
+  .badge-ph { background: var(--gray-100); color: var(--gray-500); }
+
+  .pillar-badge {
+    display: inline-block;
+    font-size: 10px;
+    padding: 2px 7px;
+    border-radius: 4px;
+    background: var(--gray-100);
+    color: var(--gray-600);
+    white-space: nowrap;
+  }
+
+  .status-select {
+    font-size: 11px;
+    padding: 3px 8px;
+    border-radius: 5px;
+    border: 1px solid var(--gray-200);
+    background: white;
+    cursor: pointer;
+    outline: none;
+    color: var(--gray-700);
+  }
+  .status-select.published { background: #e8f5e9; border-color: #a5d6a7; color: #2e7d32; }
+  .status-select.in-progress { background: #fff8e1; border-color: #ffe082; color: #e65100; }
+  .status-select.not-started { background: white; color: var(--gray-600); }
+
+  .checkbox-cell { width: 36px; text-align: center; }
+  input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+    accent-color: var(--navy);
+  }
+
+  /* MONTH DIVIDERS */
+  .month-divider td {
+    background: var(--navy);
+    color: white;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 6px 14px;
+    border-bottom: none !important;
+  }
+  .month-divider:hover { background: none !important; }
+  .month-divider td { opacity: 1 !important; }
+  .phase-label {
+    float: right;
+    font-size: 10px;
+    font-weight: 400;
+    opacity: 0.7;
+    text-transform: none;
+    letter-spacing: 0;
+  }
+
+  /* HIDDEN */
+  .hidden { display: none !important; }
+
+  /* FOOTER NOTE */
+  .footer-note {
+    margin-top: 20px;
+    font-size: 12px;
+    color: var(--gray-500);
+    text-align: center;
+    line-height: 1.6;
+  }
+
+  @media (max-width: 700px) {
+    .main { padding: 16px; }
+    .page-header { padding: 20px 16px; }
+    .post-month, .post-week { display: none; }
+    .search-input { width: 140px; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-brand" href="/">
+    <img src="https://hub.tidesbookkeeping.com/logo.png" alt="Tides Bookkeeping" onerror="this.style.display='none'">
+    Tides Bookkeeping
+  </a>
+  <span class="nav-breadcrumb">
+    <a href="/">Dashboard</a><span>/</span> Blog Post Tracker
+  </span>
+  <button class="hamburger">☰</button>
+</nav>
+
+<div class="page-header">
+  <div class="page-header-inner">
+    <span class="page-icon">✍️</span>
+    <h1 class="page-title">Blog Post Tracker</h1>
+    <p class="page-desc">All 88 posts in publishing order — SC foundation first, then NC and Indiana expansion. Check off posts as they go live.</p>
+    <div class="sync-notice" id="sync-notice">
+      ⚡ <strong>Cross-device sync not yet configured — saving to this browser only.</strong><br>
+      To sync across devices: <strong>1)</strong> Create a free Supabase project → Table Editor. <strong>2)</strong> Create a table <code>blog_status</code> with columns: <code>post_id</code> (text, primary key), <code>status</code> (text). <strong>3)</strong> Paste your Project URL + anon key into the <code>SUPABASE_URL</code> and <code>SUPABASE_ANON_KEY</code> constants at the top of the script block in <code>blog-tracker.html</code>.
+    </div>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- PROGRESS CARDS -->
+  <div class="progress-grid">
+    <div class="progress-card">
+      <div class="progress-card-label">Overall progress</div>
+      <div class="progress-card-nums" id="prog-overall-num">0 <span>/ 88 posts</span></div>
+      <div class="progress-bar-bg"><div class="progress-bar-fill" id="prog-overall-bar" style="background:var(--navy);width:0%"></div></div>
+    </div>
+    <div class="progress-card">
+      <div class="progress-card-label">South Carolina</div>
+      <div class="progress-card-nums" id="prog-sc-num">0 <span>/ 60 posts</span></div>
+      <div class="progress-bar-bg"><div class="progress-bar-fill" id="prog-sc-bar" style="background:var(--navy);width:0%"></div></div>
+    </div>
+    <div class="progress-card">
+      <div class="progress-card-label">North Carolina</div>
+      <div class="progress-card-nums" id="prog-nc-num">0 <span>/ 16 posts</span></div>
+      <div class="progress-bar-bg"><div class="progress-bar-fill" id="prog-nc-bar" style="background:var(--nc-green);width:0%"></div></div>
+    </div>
+    <div class="progress-card">
+      <div class="progress-card-label">Indiana</div>
+      <div class="progress-card-nums" id="prog-in-num">0 <span>/ 8 posts</span></div>
+      <div class="progress-bar-bg"><div class="progress-bar-fill" id="prog-in-bar" style="background:var(--in-amber);width:0%"></div></div>
+    </div>
+    <div class="progress-card">
+      <div class="progress-card-label">Published</div>
+      <div class="progress-card-nums" id="prog-pub-num">0 <span>posts live</span></div>
+      <div class="progress-bar-bg"><div class="progress-bar-fill" id="prog-pub-bar" style="background:#2e7d32;width:0%"></div></div>
+    </div>
+  </div>
+
+  <!-- CONTROLS -->
+  <div class="controls">
+    <div class="filter-group" id="state-filters">
+      <button class="fbtn on" data-filter="all">All states</button>
+      <button class="fbtn" data-filter="sc">SC only</button>
+      <button class="fbtn" data-filter="nc">NC only</button>
+      <button class="fbtn" data-filter="in">IN only</button>
+      <button class="fbtn" data-filter="ph">Placeholders</button>
+    </div>
+    <div class="filter-group" id="status-filters" style="margin-left:8px;">
+      <button class="fbtn on" data-status="all">All status</button>
+      <button class="fbtn" data-status="not-started">Not started</button>
+      <button class="fbtn" data-status="in-progress">In progress</button>
+      <button class="fbtn" data-status="published">Published</button>
+    </div>
+    <div class="controls-right" style="display:flex;gap:8px;align-items:center;">
+      <input type="text" class="search-input" id="search" placeholder="Search posts...">
+      <button class="reset-btn" id="reset-btn">↺ Reset all</button>
+    </div>
+  </div>
+
+  <!-- TABLE -->
+  <div class="table-wrap">
+    <table id="blog-table">
+      <thead>
+        <tr>
+          <th class="checkbox-cell">✓</th>
+          <th>#</th>
+          <th>Week</th>
+          <th>Month</th>
+          <th>Post title</th>
+          <th>State</th>
+          <th>Pillar</th>
+          <th>Links to page</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody id="blog-tbody"></tbody>
+    </table>
+  </div>
+
+  <p class="footer-note">Status saves to your browser. Configure Supabase above to sync across devices and share with Joe.</p>
+</div>
+
+<script>
+const SUPABASE_URL = '';
+const SUPABASE_ANON_KEY = '';
+
+const months = [
+  { m:'May 2026', phase:'SC Foundation', col:'#215197', posts:[
+    { wk:'Wk 1', t:'The 5 biggest bookkeeping mistakes small business owners make', st:'sc', pillar:'Tips', link:'/services' },
+    { wk:'Wk 2', t:'Real estate agent tax deductions you\'re probably missing', st:'sc', pillar:'Real estate', link:'/industry-real-estate' },
+    { wk:'Wk 3', t:'Bookkeeping services in Greenville, SC', st:'sc', pillar:'Local SEO', link:'/city-greenville-sc' },
+    { wk:'Wk 4', t:'South Carolina small business tax guide', st:'sc', pillar:'SC state', link:'/state-south-carolina' },
+  ]},
+  { m:'Jun 2026', phase:'SC Foundation', col:'#215197', posts:[
+    { wk:'Wk 1', t:'When should you outsource your bookkeeping?', st:'sc', pillar:'Tips', link:'/service-monthly-bookkeeping' },
+    { wk:'Wk 2', t:'How real estate agents should track commission income', st:'sc', pillar:'Real estate', link:'/industry-real-estate' },
+    { wk:'Wk 3', t:'Bookkeeping for real estate agents in Charleston, SC', st:'sc', pillar:'Local SEO', link:'/city-charleston-sc' },
+    { wk:'Wk 4', t:'How to register a business in South Carolina', st:'sc', pillar:'SC state', link:'/state-south-carolina' },
+  ]},
+  { m:'Jul 2026', phase:'SC Foundation', col:'#215197', posts:[
+    { wk:'Wk 1', t:'What is catch-up bookkeeping and do you need it?', st:'sc', pillar:'Services', link:'/service-catchup-bookkeeping' },
+    { wk:'Wk 2', t:'The real estate agent\'s guide to quarterly estimated taxes', st:'sc', pillar:'Real estate', link:'/industry-real-estate' },
+    { wk:'Wk 3', t:'Small business bookkeeping in Myrtle Beach, SC', st:'sc', pillar:'Local SEO', link:'/city-myrtle-beach-sc' },
+    { wk:'Wk 4', t:'SC self-employment tax — what you need to know', st:'sc', pillar:'SC state', link:'/state-south-carolina' },
+  ]},
+  { m:'Aug 2026', phase:'SC Depth', col:'#0C447C', posts:[
+    { wk:'Wk 1', t:'Bookkeeper vs. CPA — what\'s the difference?', st:'sc', pillar:'Tips', link:'/who-we-serve' },
+    { wk:'Wk 2', t:'What financial reports should your business run every month?', st:'sc', pillar:'Services', link:'/service-financial-reporting' },
+    { wk:'Wk 3', t:'Bookkeeping services in Columbia, SC', st:'sc', pillar:'Local SEO', link:'/city-columbia-sc' },
+    { wk:'Wk 4', t:'South Carolina LLC vs. sole proprietor — which is better?', st:'sc', pillar:'SC state', link:'/state-south-carolina' },
+  ]},
+  { m:'Sep 2026', phase:'SC Depth', col:'#0C447C', posts:[
+    { wk:'Wk 1', t:'What\'s included in monthly bookkeeping service?', st:'sc', pillar:'Services', link:'/service-monthly-bookkeeping' },
+    { wk:'Wk 2', t:'Bookkeeping for solo entrepreneurs — keeping it simple', st:'sc', pillar:'Industries', link:'/industry-solo-entrepreneurs' },
+    { wk:'Wk 3', t:'Bookkeeping for professionals in Hilton Head, SC', st:'sc', pillar:'Local SEO', link:'/city-hilton-head-sc' },
+    { wk:'Wk 4', t:'SC real estate market overview — financial perspective', st:'sc', pillar:'SC state', link:'/industry-real-estate' },
+  ]},
+  { m:'Oct 2026', phase:'SC Depth', col:'#0C447C', posts:[
+    { wk:'Wk 1', t:'Flat-rate bookkeeping — is it worth it for your business?', st:'sc', pillar:'Services', link:'/pricing' },
+    { wk:'Wk 2', t:'Bookkeeping basics for contractors and tradespeople', st:'sc', pillar:'Industries', link:'/industry-contractors-trades' },
+    { wk:'Wk 3', t:'Bookkeeping services in Spartanburg, SC', st:'sc', pillar:'Local SEO', link:'/city-spartanburg-sc' },
+    { wk:'Wk 4', t:'How to catch up on months of messy books', st:'sc', pillar:'Tips', link:'/service-catchup-bookkeeping' },
+  ]},
+  { m:'Nov 2026', phase:'SC + NC Launch', col:'#1D9E75', posts:[
+    { wk:'Wk 1', t:'Cash vs. accrual accounting — which is right for your business?', st:'sc', pillar:'Tips', link:'/glossary' },
+    { wk:'Wk 2', t:'Bookkeeping services in Charlotte, NC', st:'nc', pillar:'Local SEO', link:'[NC city page - Charlotte]' },
+    { wk:'Wk 3', t:'Bookkeeping services in Summerville, SC', st:'sc', pillar:'Local SEO', link:'/city-summerville-sc' },
+    { wk:'Wk 4', t:'North Carolina small business tax guide', st:'nc', pillar:'NC state', link:'[NC state page]' },
+  ]},
+  { m:'Dec 2026', phase:'SC + NC Build', col:'#1D9E75', posts:[
+    { wk:'Wk 1', t:'How to prepare for tax season without the panic', st:'sc', pillar:'Tips', link:'/service-financial-reporting' },
+    { wk:'Wk 2', t:'Bookkeeping for real estate agents in Raleigh, NC', st:'nc', pillar:'Local SEO', link:'[NC city page - Raleigh]' },
+    { wk:'Wk 3', t:'Bookkeeping services in Rock Hill, SC', st:'sc', pillar:'Local SEO', link:'/city-rock-hill-sc' },
+    { wk:'Wk 4', t:'How to register a business in North Carolina', st:'nc', pillar:'NC state', link:'[NC state page]' },
+  ]},
+  { m:'Jan 2027', phase:'SC + NC Build', col:'#1D9E75', posts:[
+    { wk:'Wk 1', t:'What is bank reconciliation and why does it matter?', st:'sc', pillar:'Services', link:'/service-bank-reconciliation' },
+    { wk:'Wk 2', t:'Bookkeeping services in Durham, NC', st:'nc', pillar:'Local SEO', link:'[NC city page - Durham]' },
+    { wk:'Wk 3', t:'Small business resources in Greenville County, SC', st:'sc', pillar:'Local SEO', link:'/county-greenville-sc' },
+    { wk:'Wk 4', t:'NC self-employment tax guide for real estate agents', st:'nc', pillar:'NC state', link:'[NC state page]' },
+  ]},
+  { m:'Feb 2027', phase:'SC + NC + IN Launch', col:'#BA7517', posts:[
+    { wk:'Wk 1', t:'QuickBooks vs. other bookkeeping software — what we recommend', st:'sc', pillar:'Services', link:'/service-software-setup' },
+    { wk:'Wk 2', t:'Small business bookkeeping in Greensboro, NC', st:'nc', pillar:'Local SEO', link:'[NC city page - Greensboro]' },
+    { wk:'Wk 3', t:'Bookkeeping services in Indianapolis, IN', st:'in', pillar:'Local SEO', link:'[IN city page - Indianapolis]' },
+    { wk:'Wk 4', t:'Indiana small business tax guide', st:'in', pillar:'IN state', link:'[IN state page]' },
+  ]},
+  { m:'Mar 2027', phase:'3-State Rotation', col:'#854F0B', posts:[
+    { wk:'Wk 1', t:'Bookkeeping for restaurants and bars — what\'s different', st:'sc', pillar:'Industries', link:'/industry-restaurants-bars' },
+    { wk:'Wk 2', t:'Bookkeeping for real estate agents in Winston-Salem, NC', st:'nc', pillar:'Local SEO', link:'[NC city page - Winston-Salem]' },
+    { wk:'Wk 3', t:'Bookkeeping for real estate agents in Carmel, IN', st:'in', pillar:'Local SEO', link:'[IN city page - Carmel]' },
+    { wk:'Wk 4', t:'How to register a business in Indiana', st:'in', pillar:'IN state', link:'[IN state page]' },
+  ]},
+  { m:'Apr 2027', phase:'3-State Rotation', col:'#854F0B', posts:[
+    { wk:'Wk 1', t:'Nonprofit bookkeeping 101 — what you need to know', st:'sc', pillar:'Industries', link:'/industry-nonprofits' },
+    { wk:'Wk 2', t:'Bookkeeping services in Asheville, NC', st:'nc', pillar:'Local SEO', link:'[NC city page - Asheville]' },
+    { wk:'Wk 3', t:'Bookkeeping services in Fort Wayne, IN', st:'in', pillar:'Local SEO', link:'[IN city page - Fort Wayne]' },
+    { wk:'Wk 4', t:'Indiana LLC vs. sole proprietor — which is better?', st:'in', pillar:'IN state', link:'[IN state page]' },
+  ]},
+  { m:'May 2027', phase:'3-State Rotation', col:'#854F0B', posts:[
+    { wk:'Wk 1', t:'Bookkeeping for e-commerce and retail businesses', st:'sc', pillar:'Industries', link:'/industry-ecommerce-retail' },
+    { wk:'Wk 2', t:'North Carolina real estate market — financial overview', st:'nc', pillar:'NC state', link:'[NC state page]' },
+    { wk:'Wk 3', t:'Bookkeeping services in Fishers, IN', st:'in', pillar:'Local SEO', link:'[IN city page - Fishers]' },
+    { wk:'Wk 4', t:'Bookkeeping for contractors in North Carolina', st:'nc', pillar:'Industries', link:'[NC state page]' },
+  ]},
+  { m:'Jun 2027', phase:'3-State Rotation', col:'#854F0B', posts:[
+    { wk:'Wk 1', t:'How payroll bookkeeping works and why it\'s easy to get wrong', st:'sc', pillar:'Services', link:'/service-payroll' },
+    { wk:'Wk 2', t:'Bookkeeping services in Cary, NC', st:'nc', pillar:'Local SEO', link:'[NC city page - Cary]' },
+    { wk:'Wk 3', t:'Indiana real estate agent tax deductions guide', st:'in', pillar:'Real estate', link:'[IN state page]' },
+    { wk:'Wk 4', t:'Bookkeeping services in Bloomington, IN', st:'in', pillar:'Local SEO', link:'[IN city page - Bloomington]' },
+  ]},
+  { m:'Jul 2027', phase:'Authority Building', col:'#3a4858', posts:[
+    { wk:'Wk 1', t:'Best accounting software for small businesses (2027 guide)', st:'sc', pillar:'Services', link:'/service-software-setup' },
+    { wk:'Wk 2', t:'NC real estate agent quarterly tax guide', st:'nc', pillar:'Real estate', link:'[NC state page]' },
+    { wk:'Wk 3', t:'Bookkeeping for solo entrepreneurs in Indiana', st:'in', pillar:'Industries', link:'[IN state page]' },
+    { wk:'Wk 4', t:'Placeholder — new state or seasonal topic', st:'ph', pillar:'TBD', link:'TBD' },
+  ]},
+  { m:'Aug 2027', phase:'Authority Building', col:'#3a4858', posts:[
+    { wk:'Wk 1', t:'Healthcare practice bookkeeping — common mistakes', st:'sc', pillar:'Industries', link:'/industry-healthcare' },
+    { wk:'Wk 2', t:'Bookkeeping services in Wilmington, NC', st:'nc', pillar:'Local SEO', link:'[NC city page - Wilmington]' },
+    { wk:'Wk 3', t:'Bookkeeping services in South Bend, IN', st:'in', pillar:'Local SEO', link:'[IN city page - South Bend]' },
+    { wk:'Wk 4', t:'Placeholder — new state or seasonal topic', st:'ph', pillar:'TBD', link:'TBD' },
+  ]},
+  { m:'Sep 2027', phase:'Authority Building', col:'#3a4858', posts:[
+    { wk:'Wk 1', t:'Tech startup bookkeeping — what investors want to see', st:'sc', pillar:'Industries', link:'/industry-tech-startups' },
+    { wk:'Wk 2', t:'Bookkeeping services in Fayetteville, NC', st:'nc', pillar:'Local SEO', link:'[NC city page - Fayetteville]' },
+    { wk:'Wk 3', t:'Bookkeeping for contractors in Indiana', st:'in', pillar:'Industries', link:'[IN state page]' },
+    { wk:'Wk 4', t:'Placeholder — new state or expansion topic', st:'ph', pillar:'TBD', link:'TBD' },
+  ]},
+  { m:'Oct 2027', phase:'Authority Building', col:'#3a4858', posts:[
+    { wk:'Wk 1', t:'Auto and automotive business bookkeeping basics', st:'sc', pillar:'Industries', link:'/industry-automotive' },
+    { wk:'Wk 2', t:'Bookkeeping services in High Point, NC', st:'nc', pillar:'Local SEO', link:'[NC city page - High Point]' },
+    { wk:'Wk 3', t:'Indiana real estate market — financial perspective', st:'in', pillar:'IN state', link:'[IN state page]' },
+    { wk:'Wk 4', t:'Placeholder — new state or expansion topic', st:'ph', pillar:'TBD', link:'TBD' },
+  ]},
+];
+
+const stateLabels = { sc:'SC', nc:'NC', in:'IN', ph:'—' };
+const badgeClass = { sc:'badge-sc', nc:'badge-nc', in:'badge-in', ph:'badge-ph' };
+
+let allPosts = [];
+let postNum = 1;
+months.forEach(mo => {
+  mo.posts.forEach(p => {
+    allPosts.push({ id: `post-${postNum}`, num: postNum, month: mo.m, phase: mo.phase, phaseCol: mo.col, ...p });
+    postNum++;
+  });
+});
+
+const stateCounts = { sc: allPosts.filter(p=>p.st==='sc').length, nc: allPosts.filter(p=>p.st==='nc').length, in: allPosts.filter(p=>p.st==='in').length };
+
+function loadStatus() {
+  try { return JSON.parse(localStorage.getItem('tides_blog_status') || '{}'); } catch(e) { return {}; }
+}
+function saveStatus(s) {
+  try { localStorage.setItem('tides_blog_status', JSON.stringify(s)); } catch(e) {}
+}
+
+let statusMap = loadStatus();
+let stateFilter = 'all';
+let statusFilter = 'all';
+let searchVal = '';
+
+function getStatus(id) { return statusMap[id] || 'not-started'; }
+function setStatus(id, val) { statusMap[id] = val; saveStatus(statusMap); updateProgress(); }
+
+function updateProgress() {
+  const published = allPosts.filter(p => getStatus(p.id) === 'published');
+  const checked = allPosts.filter(p => getStatus(p.id) !== 'not-started');
+  const scDone = published.filter(p => p.st === 'sc').length;
+  const ncDone = published.filter(p => p.st === 'nc').length;
+  const inDone = published.filter(p => p.st === 'in').length;
+
+  document.getElementById('prog-overall-num').innerHTML = `${checked.length} <span>/ ${allPosts.length} posts</span>`;
+  document.getElementById('prog-overall-bar').style.width = `${Math.round(checked.length/allPosts.length*100)}%`;
+
+  document.getElementById('prog-sc-num').innerHTML = `${scDone} <span>/ ${stateCounts.sc} posts</span>`;
+  document.getElementById('prog-sc-bar').style.width = `${Math.round(scDone/stateCounts.sc*100)}%`;
+
+  document.getElementById('prog-nc-num').innerHTML = `${ncDone} <span>/ ${stateCounts.nc} posts</span>`;
+  document.getElementById('prog-nc-bar').style.width = `${Math.round(ncDone/stateCounts.nc*100)}%`;
+
+  document.getElementById('prog-in-num').innerHTML = `${inDone} <span>/ ${stateCounts.in} posts</span>`;
+  document.getElementById('prog-in-bar').style.width = `${Math.round(inDone/stateCounts.in*100)}%`;
+
+  document.getElementById('prog-pub-num').innerHTML = `${published.length} <span>posts live</span>`;
+  document.getElementById('prog-pub-bar').style.width = `${Math.round(published.length/allPosts.length*100)}%`;
+}
+
+function buildTable() {
+  const tbody = document.getElementById('blog-tbody');
+  tbody.innerHTML = '';
+  let lastMonth = '';
+
+  allPosts.forEach(p => {
+    const st = getStatus(p.id);
+    const matchState = stateFilter === 'all' || p.st === stateFilter;
+    const matchStatus = statusFilter === 'all' || st === statusFilter;
+    const matchSearch = !searchVal || p.t.toLowerCase().includes(searchVal.toLowerCase()) || p.pillar.toLowerCase().includes(searchVal.toLowerCase());
+    const visible = matchState && matchStatus && matchSearch;
+
+    if (p.month !== lastMonth && visible) {
+      const divRow = document.createElement('tr');
+      divRow.className = 'month-divider';
+      divRow.innerHTML = `<td colspan="9" style="background:${p.phaseCol}">${p.month} <span class="phase-label">${p.phase}</span></td>`;
+      tbody.appendChild(divRow);
+      lastMonth = p.month;
+    }
+
+    const row = document.createElement('tr');
+    row.id = `row-${p.id}`;
+    if (!visible) row.classList.add('hidden');
+    if (st === 'published') row.classList.add('done');
+
+    row.innerHTML = `
+      <td class="checkbox-cell"><input type="checkbox" id="chk-${p.id}" ${st !== 'not-started' ? 'checked' : ''} onchange="toggleCheck('${p.id}', this.checked)"></td>
+      <td class="post-num">${p.num}</td>
+      <td class="post-week">${p.wk}</td>
+      <td class="post-month">${p.month}</td>
+      <td class="post-title${p.st==='ph'?' placeholder':''}">${p.t}</td>
+      <td><span class="state-badge ${badgeClass[p.st]}">${stateLabels[p.st]}</span></td>
+      <td><span class="pillar-badge">${p.pillar}</span></td>
+      <td style="font-size:11px;color:var(--gray-500);max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${p.link}">${p.link}</td>
+      <td><select class="status-select ${st}" id="sel-${p.id}" onchange="changeStatus('${p.id}', this.value)">
+        <option value="not-started" ${st==='not-started'?'selected':''}>Not started</option>
+        <option value="in-progress" ${st==='in-progress'?'selected':''}>In progress</option>
+        <option value="published" ${st==='published'?'selected':''}>Published</option>
+      </select></td>
+    `;
+    tbody.appendChild(row);
+  });
+
+  updateProgress();
+}
+
+function toggleCheck(id, checked) {
+  const newStatus = checked ? 'published' : 'not-started';
+  statusMap[id] = newStatus;
+  saveStatus(statusMap);
+  const sel = document.getElementById('sel-' + id);
+  if (sel) { sel.value = newStatus; sel.className = 'status-select ' + newStatus; }
+  const row = document.getElementById('row-' + id);
+  if (row) { checked ? row.classList.add('done') : row.classList.remove('done'); }
+  updateProgress();
+}
+
+function changeStatus(id, val) {
+  statusMap[id] = val;
+  saveStatus(statusMap);
+  const sel = document.getElementById('sel-' + id);
+  if (sel) sel.className = 'status-select ' + val;
+  const chk = document.getElementById('chk-' + id);
+  if (chk) chk.checked = val !== 'not-started';
+  const row = document.getElementById('row-' + id);
+  if (row) { val === 'published' ? row.classList.add('done') : row.classList.remove('done'); }
+  updateProgress();
+}
+
+document.getElementById('state-filters').addEventListener('click', e => {
+  if (!e.target.dataset.filter) return;
+  stateFilter = e.target.dataset.filter;
+  document.querySelectorAll('#state-filters .fbtn').forEach(b => b.classList.remove('on','nc-on','in-on'));
+  e.target.classList.add('on');
+  buildTable();
+});
+
+document.getElementById('status-filters').addEventListener('click', e => {
+  if (!e.target.dataset.status) return;
+  statusFilter = e.target.dataset.status;
+  document.querySelectorAll('#status-filters .fbtn').forEach(b => b.classList.remove('on'));
+  e.target.classList.add('on');
+  buildTable();
+});
+
+document.getElementById('search').addEventListener('input', e => {
+  searchVal = e.target.value;
+  buildTable();
+});
+
+document.getElementById('reset-btn').addEventListener('click', () => {
+  if (!confirm('Reset all post statuses? This cannot be undone.')) return;
+  statusMap = {};
+  saveStatus(statusMap);
+  buildTable();
+});
+
+buildTable();
+</script>
+</body>
+</html>
