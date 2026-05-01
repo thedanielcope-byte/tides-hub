@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Content Calendar — Tides Hub</title>
+  <link rel="stylesheet" href="hub.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+  <style>
+    /* Type colors */
+    :root {
+      --type-city:        #66c1ee;
+      --type-state:       #215197;
+      --type-service:     #41cfd0;
+      --type-svc-city:    #14b8a6;
+      --type-ind:         #f59e0b;
+      --type-ind-city:    #ef4444;
+      --type-blog:        #8b5cf6;
+    }
+
+    /* Stats row */
+    .cal-stats {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 12px;
+      margin-bottom: 22px;
+    }
+    .cal-stat {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+      text-align: center;
+      box-shadow: var(--shadow-sm);
+    }
+    .cal-stat-num { font-size: 26px; font-weight: 800; color: var(--primary); line-height: 1; margin-bottom: 4px; }
+    .cal-stat-label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: .04em; font-weight: 600; }
+
+    /* Filters bar */
+    .cal-filters {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px 18px;
+      margin-bottom: 18px;
+      display: flex;
+      gap: 16px;
+      align-items: center;
+      flex-wrap: wrap;
+      box-shadow: var(--shadow-sm);
+    }
+    .filter-group { display: flex; gap: 6px; align-items: center; }
+    .filter-group label { font-size: 12px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: .04em; }
+    .filter-pill {
+      padding: 6px 12px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: var(--white);
+      font-size: 12.5px;
+      font-weight: 600;
+      color: var(--text-2);
+      cursor: pointer;
+      transition: all .15s;
+    }
+    .filter-pill:hover { border-color: var(--primary); }
+    .filter-pill.active { background: var(--primary); color: var(--white); border-color: var(--primary); }
+
+    /* This Week banner */
+    .this-week {
+      background: linear-gradient(135deg, var(--primary), #1d3d7e);
+      color: var(--white);
+      border-radius: var(--radius);
+      padding: 18px 22px;
+      margin-bottom: 22px;
+      display: flex;
+      gap: 22px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .this-week-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; opacity: .8; }
+    .this-week-count { font-size: 28px; font-weight: 800; line-height: 1; margin-top: 4px; }
+    .this-week-stat { flex: 1; min-width: 120px; }
+
+    /* Week section */
+    .week-block {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      margin-bottom: 14px;
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+    }
+    .week-header {
+      padding: 14px 20px;
+      background: #f9fafb;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      user-select: none;
+    }
+    .week-header:hover { background: #f3f4f6; }
+    .week-title {
+      font-weight: 700;
+      font-size: 14px;
+      color: var(--text);
+    }
+    .week-range { color: var(--text-muted); font-weight: 500; margin-left: 8px; font-size: 13px; }
+    .week-progress { display: flex; gap: 8px; align-items: center; font-size: 12px; color: var(--text-muted); font-weight: 600; }
+    .progress-pill {
+      background: #e5e7eb;
+      border-radius: 999px;
+      padding: 3px 10px;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-2);
+    }
+    .progress-pill.complete { background: #d1fae5; color: #065f46; }
+    .progress-pill.in-progress { background: #fef3c7; color: #92400e; }
+
+    .week-current { border-color: var(--primary) !important; }
+    .week-current .week-header { background: var(--primary-light); border-bottom-color: rgba(33,81,151,.15); }
+    .week-current-badge {
+      background: var(--primary);
+      color: var(--white);
+      font-size: 9px;
+      font-weight: 800;
+      letter-spacing: .1em;
+      padding: 3px 8px;
+      border-radius: 999px;
+      margin-left: 8px;
+      text-transform: uppercase;
+    }
+
+    /* Page rows */
+    .page-list { padding: 6px 0; }
+    .page-row {
+      display: grid;
+      grid-template-columns: 28px 110px 1fr auto auto;
+      gap: 14px;
+      align-items: center;
+      padding: 10px 20px;
+      font-size: 13px;
+      border-bottom: 1px solid #f3f4f6;
+      transition: background .1s;
+    }
+    .page-row:last-child { border-bottom: none; }
+    .page-row:hover { background: #fafafa; }
+    .page-row.done { opacity: 0.55; }
+    .page-row.done .page-name { text-decoration: line-through; }
+
+    .page-check {
+      width: 18px; height: 18px;
+      border: 2px solid var(--border);
+      border-radius: 5px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all .15s;
+      background: var(--white);
+    }
+    .page-check.done { background: #10b981; border-color: #10b981; color: var(--white); }
+    .page-check.done::after { content: "✓"; font-weight: 900; font-size: 12px; }
+    .page-check.in-progress { background: #fbbf24; border-color: #fbbf24; }
+    .page-check.in-progress::after { content: "•"; color: var(--white); font-weight: 900; font-size: 16px; line-height: 1; }
+
+    .type-badge {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+      padding: 3px 8px;
+      border-radius: 4px;
+      color: var(--white);
+      text-align: center;
+    }
+    .type-city     { background: var(--type-city); }
+    .type-state    { background: var(--type-state); }
+    .type-service  { background: var(--type-service); color: #053a3a; }
+    .type-svc-city { background: var(--type-svc-city); }
+    .type-ind      { background: var(--type-ind); }
+    .type-ind-city { background: var(--type-ind-city); }
+    .type-blog     { background: var(--type-blog); }
+
+    .page-name { color: var(--text); font-weight: 500; }
+    .page-name code { font-family: monospace; font-size: 12px; color: var(--text-muted); background: #f3f4f6; padding: 1px 6px; border-radius: 4px; margin-left: 6px; }
+
+    .page-cmd {
+      font-family: 'SF Mono', Menlo, monospace;
+      font-size: 11px;
+      color: var(--text-muted);
+      background: #f9fafb;
+      border: 1px solid var(--border);
+      padding: 3px 8px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all .15s;
+      white-space: nowrap;
+    }
+    .page-cmd:hover { background: var(--text); color: var(--white); border-color: var(--text); }
+    .page-cmd.copied { background: #10b981; color: var(--white); border-color: #10b981; }
+
+    .page-actions {
+      display: flex; gap: 6px;
+    }
+    .action-btn {
+      font-size: 11px;
+      padding: 4px 10px;
+      border-radius: 5px;
+      border: 1px solid var(--border);
+      background: var(--white);
+      cursor: pointer;
+      font-weight: 600;
+      color: var(--text-2);
+      transition: all .15s;
+    }
+    .action-btn:hover { border-color: var(--primary); color: var(--primary); }
+
+    /* Empty state */
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--text-muted);
+    }
+
+    /* Sync status */
+    .sync-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+    .sync-status { display: flex; gap: 6px; align-items: center; }
+    .sync-dot { width: 8px; height: 8px; border-radius: 50%; background: #d1d5db; }
+    .sync-dot.synced { background: #10b981; }
+    .sync-dot.syncing { background: #fbbf24; animation: pulse 1.4s infinite; }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .4; } }
+
+    /* Responsive */
+    @media (max-width: 900px) {
+      .cal-stats { grid-template-columns: repeat(2, 1fr); }
+      .page-row { grid-template-columns: 24px auto 1fr; gap: 10px; padding: 12px 14px; font-size: 12.5px; }
+      .page-row > .page-cmd, .page-row > .page-actions { display: none; }
+      .week-header { padding: 12px 14px; }
+    }
+  </style>
+</head>
+<body>
+  <!-- Sidebar injected by hub.js -->
+  <main class="content">
+    <div class="page-header">
+      <h1 class="page-title">Content Calendar</h1>
+      <p class="page-subtitle">When to build what. 12 weeks of pre-scheduled pages, sortable by date. Check off as you ship.</p>
+    </div>
+
+    <!-- Sync status -->
+    <div class="sync-bar">
+      <div class="sync-status">
+        <span class="sync-dot" id="syncDot"></span>
+        <span id="syncText">Loading...</span>
+      </div>
+      <button class="action-btn" id="resetBtn" style="font-size:11px;">Reset all to backlog</button>
+    </div>
+
+    <!-- Stats -->
+    <div class="cal-stats">
+      <div class="cal-stat"><div class="cal-stat-num" id="statTotal">0</div><div class="cal-stat-label">Total Planned</div></div>
+      <div class="cal-stat"><div class="cal-stat-num" id="statDone">0</div><div class="cal-stat-label">Shipped</div></div>
+      <div class="cal-stat"><div class="cal-stat-num" id="statInProgress">0</div><div class="cal-stat-label">In Progress</div></div>
+      <div class="cal-stat"><div class="cal-stat-num" id="statTodo">0</div><div class="cal-stat-label">Backlog</div></div>
+      <div class="cal-stat"><div class="cal-stat-num" id="statPercent">0%</div><div class="cal-stat-label">Complete</div></div>
+    </div>
+
+    <!-- This Week banner -->
+    <div class="this-week" id="thisWeekBanner">
+      <div class="this-week-stat">
+        <div class="this-week-label">This Week</div>
+        <div class="this-week-count" id="thisWeekRange">—</div>
+      </div>
+      <div class="this-week-stat">
+        <div class="this-week-label">Pages Due</div>
+        <div class="this-week-count" id="thisWeekTotal">0</div>
+      </div>
+      <div class="this-week-stat">
+        <div class="this-week-label">Completed</div>
+        <div class="this-week-count" id="thisWeekDone">0</div>
+      </div>
+      <div class="this-week-stat">
+        <div class="this-week-label">Remaining</div>
+        <div class="this-week-count" id="thisWeekRemaining">0</div>
+      </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="cal-filters">
+      <div class="filter-group">
+        <label>Status:</label>
+        <button class="filter-pill active" data-filter="status" data-value="all">All</button>
+        <button class="filter-pill" data-filter="status" data-value="todo">Backlog</button>
+        <button class="filter-pill" data-filter="status" data-value="in-progress">In Progress</button>
+        <button class="filter-pill" data-filter="status" data-value="done">Shipped</button>
+      </div>
+      <div class="filter-group">
+        <label>Type:</label>
+        <button class="filter-pill active" data-filter="type" data-value="all">All</button>
+        <button class="filter-pill" data-filter="type" data-value="city">Cities</button>
+        <button class="filter-pill" data-filter="type" data-value="state">States</button>
+        <button class="filter-pill" data-filter="type" data-value="svc-city">Service×City</button>
+        <button class="filter-pill" data-filter="type" data-value="ind-city">Industry×City</button>
+        <button class="filter-pill" data-filter="type" data-value="blog">Blog</button>
+      </div>
+    </div>
+
+    <!-- Weeks -->
+    <div id="weeksContainer"></div>
+  </main>
+
+  <script src="hub.js"></script>
+  <script>
+    /* ============================================================
+       CONTENT CALENDAR DATA — 12 weeks of planned pages
+       Each item: { id, type, name, cmd, week, due }
+       Edit dates here, or check off via the UI.
+       ============================================================ */
+
+    // Pages already shipped (cross-referenced from website-pages.html)
+    const ALREADY_SHIPPED = [
+      'blog-bookkeeper-cost'
+    ];
+
+    // 12-week content plan starting next week
+    const PLAN = [
+      // ── WEEK 1: Foundation cities + first blog after launch ──────────
+      { week: 1, due: 'May 8, 2026',  type: 'city',     name: 'Aiken, SC',                              cmd: 'python3 _internal/new-page.py city "Aiken" "SC"' },
+      { week: 1, due: 'May 9, 2026',  type: 'city',     name: 'Mt. Pleasant, SC',                       cmd: 'python3 _internal/new-page.py city "Mt Pleasant" "SC"' },
+      { week: 1, due: 'May 10, 2026', type: 'city',     name: 'Bluffton, SC',                           cmd: 'python3 _internal/new-page.py city "Bluffton" "SC"' },
+      { week: 1, due: 'May 11, 2026', type: 'city',     name: 'North Charleston, SC',                   cmd: 'python3 _internal/new-page.py city "North Charleston" "SC"' },
+      { week: 1, due: 'May 13, 2026', type: 'state',    name: 'North Carolina (state page)',            cmd: 'python3 _internal/new-page.py state "North Carolina" "NC"' },
+      { week: 1, due: 'May 14, 2026', type: 'blog',     name: 'Blog: Bookkeeper vs CPA vs Accountant',  cmd: 'python3 _internal/new-page.py blog "bookkeeper-vs-cpa-vs-accountant"' },
+
+      // ── WEEK 2: More cities + Georgia state ──────────────────────────
+      { week: 2, due: 'May 15, 2026', type: 'city',     name: 'Goose Creek, SC',                        cmd: 'python3 _internal/new-page.py city "Goose Creek" "SC"' },
+      { week: 2, due: 'May 16, 2026', type: 'city',     name: 'Sumter, SC',                             cmd: 'python3 _internal/new-page.py city "Sumter" "SC"' },
+      { week: 2, due: 'May 17, 2026', type: 'city',     name: 'Florence, SC',                           cmd: 'python3 _internal/new-page.py city "Florence" "SC"' },
+      { week: 2, due: 'May 18, 2026', type: 'city',     name: 'Lexington, SC',                          cmd: 'python3 _internal/new-page.py city "Lexington" "SC"' },
+      { week: 2, due: 'May 20, 2026', type: 'state',    name: 'Georgia (state page)',                   cmd: 'python3 _internal/new-page.py state "Georgia" "GA"' },
+      { week: 2, due: 'May 21, 2026', type: 'blog',     name: 'Blog: 7 Bookkeeping Mistakes (Real Estate)', cmd: 'python3 _internal/new-page.py blog "7-bookkeeping-mistakes-real-estate-investors"' },
+
+      // ── WEEK 3: First service-city combos ────────────────────────────
+      { week: 3, due: 'May 22, 2026', type: 'svc-city', name: 'Monthly Bookkeeping × Charleston, SC',   cmd: 'python3 _internal/new-page.py service-city monthly-bookkeeping "Charleston" "SC"' },
+      { week: 3, due: 'May 23, 2026', type: 'svc-city', name: 'Monthly Bookkeeping × Greenville, SC',   cmd: 'python3 _internal/new-page.py service-city monthly-bookkeeping "Greenville" "SC"' },
+      { week: 3, due: 'May 25, 2026', type: 'svc-city', name: 'Monthly Bookkeeping × Columbia, SC',     cmd: 'python3 _internal/new-page.py service-city monthly-bookkeeping "Columbia" "SC"' },
+      { week: 3, due: 'May 27, 2026', type: 'svc-city', name: 'Monthly Bookkeeping × Spartanburg, SC',  cmd: 'python3 _internal/new-page.py service-city monthly-bookkeeping "Spartanburg" "SC"' },
+      { week: 3, due: 'May 28, 2026', type: 'blog',     name: 'Blog: When to Hire a Bookkeeper',        cmd: 'python3 _internal/new-page.py blog "when-to-hire-a-bookkeeper"' },
+
+      // ── WEEK 4: Florida + service-city continued ─────────────────────
+      { week: 4, due: 'May 29, 2026', type: 'svc-city', name: 'Monthly Bookkeeping × Myrtle Beach, SC', cmd: 'python3 _internal/new-page.py service-city monthly-bookkeeping "Myrtle Beach" "SC"' },
+      { week: 4, due: 'May 30, 2026', type: 'svc-city', name: 'Monthly Bookkeeping × Hilton Head, SC',  cmd: 'python3 _internal/new-page.py service-city monthly-bookkeeping "Hilton Head" "SC"' },
+      { week: 4, due: 'Jun 1, 2026',  type: 'svc-city', name: 'Monthly Bookkeeping × Rock Hill, SC',    cmd: 'python3 _internal/new-page.py service-city monthly-bookkeeping "Rock Hill" "SC"' },
+      { week: 4, due: 'Jun 2, 2026',  type: 'state',    name: 'Florida (state page)',                   cmd: 'python3 _internal/new-page.py state "Florida" "FL"' },
+      { week: 4, due: 'Jun 4, 2026',  type: 'blog',     name: 'Blog: Catch-Up Bookkeeping Costs',       cmd: 'python3 _internal/new-page.py blog "catch-up-bookkeeping-cost"' },
+
+      // ── WEEK 5: Catch-up bookkeeping × cities ────────────────────────
+      { week: 5, due: 'Jun 5, 2026',  type: 'svc-city', name: 'Catch-Up Bookkeeping × Charleston, SC',  cmd: 'python3 _internal/new-page.py service-city catchup-bookkeeping "Charleston" "SC"' },
+      { week: 5, due: 'Jun 6, 2026',  type: 'svc-city', name: 'Catch-Up Bookkeeping × Greenville, SC',  cmd: 'python3 _internal/new-page.py service-city catchup-bookkeeping "Greenville" "SC"' },
+      { week: 5, due: 'Jun 8, 2026',  type: 'svc-city', name: 'Catch-Up Bookkeeping × Columbia, SC',    cmd: 'python3 _internal/new-page.py service-city catchup-bookkeeping "Columbia" "SC"' },
+      { week: 5, due: 'Jun 10, 2026', type: 'svc-city', name: 'Catch-Up Bookkeeping × Spartanburg, SC', cmd: 'python3 _internal/new-page.py service-city catchup-bookkeeping "Spartanburg" "SC"' },
+      { week: 5, due: 'Jun 11, 2026', type: 'blog',     name: 'Blog: QuickBooks Online vs Xero',        cmd: 'python3 _internal/new-page.py blog "quickbooks-online-vs-xero"' },
+
+      // ── WEEK 6: Bank reconciliation × cities ─────────────────────────
+      { week: 6, due: 'Jun 12, 2026', type: 'svc-city', name: 'Bank Reconciliation × Charleston, SC',   cmd: 'python3 _internal/new-page.py service-city bank-reconciliation "Charleston" "SC"' },
+      { week: 6, due: 'Jun 13, 2026', type: 'svc-city', name: 'Bank Reconciliation × Greenville, SC',   cmd: 'python3 _internal/new-page.py service-city bank-reconciliation "Greenville" "SC"' },
+      { week: 6, due: 'Jun 15, 2026', type: 'svc-city', name: 'Bank Reconciliation × Columbia, SC',     cmd: 'python3 _internal/new-page.py service-city bank-reconciliation "Columbia" "SC"' },
+      { week: 6, due: 'Jun 17, 2026', type: 'state',    name: 'Tennessee (state page)',                 cmd: 'python3 _internal/new-page.py state "Tennessee" "TN"' },
+      { week: 6, due: 'Jun 18, 2026', type: 'blog',     name: 'Blog: How to Read a P&L Like a CEO',     cmd: 'python3 _internal/new-page.py blog "how-to-read-pl-like-ceo"' },
+
+      // ── WEEK 7: Financial reporting × cities ─────────────────────────
+      { week: 7, due: 'Jun 19, 2026', type: 'svc-city', name: 'Financial Reporting × Charleston, SC',   cmd: 'python3 _internal/new-page.py service-city financial-reporting "Charleston" "SC"' },
+      { week: 7, due: 'Jun 20, 2026', type: 'svc-city', name: 'Financial Reporting × Greenville, SC',   cmd: 'python3 _internal/new-page.py service-city financial-reporting "Greenville" "SC"' },
+      { week: 7, due: 'Jun 22, 2026', type: 'svc-city', name: 'Financial Reporting × Columbia, SC',     cmd: 'python3 _internal/new-page.py service-city financial-reporting "Columbia" "SC"' },
+      { week: 7, due: 'Jun 24, 2026', type: 'svc-city', name: 'Financial Reporting × Myrtle Beach, SC', cmd: 'python3 _internal/new-page.py service-city financial-reporting "Myrtle Beach" "SC"' },
+      { week: 7, due: 'Jun 25, 2026', type: 'blog',     name: 'Blog: Real Estate Investor Bookkeeping Guide', cmd: 'python3 _internal/new-page.py blog "real-estate-investor-bookkeeping-guide"' },
+
+      // ── WEEK 8: Payroll × cities ─────────────────────────────────────
+      { week: 8, due: 'Jun 26, 2026', type: 'svc-city', name: 'Payroll × Charleston, SC',               cmd: 'python3 _internal/new-page.py service-city payroll "Charleston" "SC"' },
+      { week: 8, due: 'Jun 27, 2026', type: 'svc-city', name: 'Payroll × Greenville, SC',               cmd: 'python3 _internal/new-page.py service-city payroll "Greenville" "SC"' },
+      { week: 8, due: 'Jun 29, 2026', type: 'svc-city', name: 'Payroll × Columbia, SC',                 cmd: 'python3 _internal/new-page.py service-city payroll "Columbia" "SC"' },
+      { week: 8, due: 'Jul 1, 2026',  type: 'svc-city', name: 'Payroll × Hilton Head, SC',              cmd: 'python3 _internal/new-page.py service-city payroll "Hilton Head" "SC"' },
+      { week: 8, due: 'Jul 2, 2026',  type: 'blog',     name: 'Blog: Tax Season Prep Checklist',        cmd: 'python3 _internal/new-page.py blog "tax-season-prep-checklist"' },
+
+      // ── WEEK 9: Real Estate industry × cities ────────────────────────
+      { week: 9, due: 'Jul 3, 2026',  type: 'ind-city', name: 'Real Estate × Charleston, SC',           cmd: 'python3 _internal/new-page.py industry-city real-estate "Charleston" "SC"' },
+      { week: 9, due: 'Jul 6, 2026',  type: 'ind-city', name: 'Real Estate × Greenville, SC',           cmd: 'python3 _internal/new-page.py industry-city real-estate "Greenville" "SC"' },
+      { week: 9, due: 'Jul 8, 2026',  type: 'ind-city', name: 'Real Estate × Hilton Head, SC',          cmd: 'python3 _internal/new-page.py industry-city real-estate "Hilton Head" "SC"' },
+      { week: 9, due: 'Jul 9, 2026',  type: 'blog',     name: 'Blog: Best Bookkeeping Software 2026',   cmd: 'python3 _internal/new-page.py blog "best-bookkeeping-software-2026"' },
+
+      // ── WEEK 10: Restaurants industry × cities ───────────────────────
+      { week: 10, due: 'Jul 10, 2026', type: 'ind-city', name: 'Restaurants/Bars × Charleston, SC',     cmd: 'python3 _internal/new-page.py industry-city restaurants-bars "Charleston" "SC"' },
+      { week: 10, due: 'Jul 13, 2026', type: 'ind-city', name: 'Restaurants/Bars × Greenville, SC',     cmd: 'python3 _internal/new-page.py industry-city restaurants-bars "Greenville" "SC"' },
+      { week: 10, due: 'Jul 15, 2026', type: 'ind-city', name: 'Restaurants/Bars × Myrtle Beach, SC',   cmd: 'python3 _internal/new-page.py industry-city restaurants-bars "Myrtle Beach" "SC"' },
+      { week: 10, due: 'Jul 16, 2026', type: 'blog',     name: 'Blog: How to Find a Local Bookkeeper',  cmd: 'python3 _internal/new-page.py blog "how-to-find-local-bookkeeper"' },
+
+      // ── WEEK 11: Contractors industry × cities ───────────────────────
+      { week: 11, due: 'Jul 17, 2026', type: 'ind-city', name: 'Contractors/Trades × Charleston, SC',   cmd: 'python3 _internal/new-page.py industry-city contractors-trades "Charleston" "SC"' },
+      { week: 11, due: 'Jul 20, 2026', type: 'ind-city', name: 'Contractors/Trades × Greenville, SC',   cmd: 'python3 _internal/new-page.py industry-city contractors-trades "Greenville" "SC"' },
+      { week: 11, due: 'Jul 22, 2026', type: 'ind-city', name: 'Contractors/Trades × Columbia, SC',     cmd: 'python3 _internal/new-page.py industry-city contractors-trades "Columbia" "SC"' },
+      { week: 11, due: 'Jul 23, 2026', type: 'blog',     name: 'Blog: Annual Bookkeeping Audit Guide',  cmd: 'python3 _internal/new-page.py blog "annual-bookkeeping-audit-guide"' },
+
+      // ── WEEK 12: E-commerce industry × cities + wrap-up blog ─────────
+      { week: 12, due: 'Jul 24, 2026', type: 'ind-city', name: 'E-commerce/Retail × Charleston, SC',    cmd: 'python3 _internal/new-page.py industry-city ecommerce-retail "Charleston" "SC"' },
+      { week: 12, due: 'Jul 27, 2026', type: 'ind-city', name: 'E-commerce/Retail × Greenville, SC',    cmd: 'python3 _internal/new-page.py industry-city ecommerce-retail "Greenville" "SC"' },
+      { week: 12, due: 'Jul 29, 2026', type: 'ind-city', name: 'E-commerce/Retail × Columbia, SC',      cmd: 'python3 _internal/new-page.py industry-city ecommerce-retail "Columbia" "SC"' },
+      { week: 12, due: 'Jul 30, 2026', type: 'blog',     name: 'Blog: 90-Day Bookkeeping Cleanup Plan', cmd: 'python3 _internal/new-page.py blog "90-day-bookkeeping-cleanup"' },
+    ];
+
+    // Add stable IDs derived from cmd (so checking off persists)
+    PLAN.forEach((p, i) => {
+      p.id = 'cal-' + i + '-' + p.cmd.split(' ').slice(-2).join('-').replace(/[^a-z0-9]/gi,'-').toLowerCase();
+    });
+
+    /* ============================================================
+       SUPABASE (same project as website-pages tracker)
+       ============================================================ */
+    const SUPABASE_URL  = 'https://khhfkxfxefjgunhrihyx.supabase.co';
+    const SUPABASE_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtoaGZreGZ4ZWZqZ3VuaHJpaHl4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU3NzYwMjcsImV4cCI6MjA5MTM1MjAyN30.bYW68xMDUEXBRC1bxOLdj77xCcjXb3wIuHbPAPFdSGo';
+    const TABLE = 'page_status';
+    let supa = null;
+    try { supa = supabase.createClient(SUPABASE_URL, SUPABASE_KEY); } catch (e) {}
+
+    const STORAGE_KEY = 'tides_calendar_status_v1';
+
+    // Status: 'todo' | 'in-progress' | 'done'
+    const statusCache = {};
+
+    function loadLocal() {
+      try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); } catch { return {}; }
+    }
+    function saveLocal() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(statusCache));
+    }
+
+    async function loadFromSupabase() {
+      if (!supa) return null;
+      try {
+        const { data, error } = await supa.from(TABLE).select('page_id, checked, status').like('page_id', 'cal-%');
+        if (error) throw error;
+        const map = {};
+        (data || []).forEach(r => {
+          map[r.page_id] = r.status || (r.checked ? 'done' : 'todo');
+        });
+        return map;
+      } catch (e) { return null; }
+    }
+
+    async function saveStatus(id, status) {
+      statusCache[id] = status;
+      saveLocal();
+      if (!supa) return;
+      try {
+        await supa.from(TABLE).upsert({
+          page_id: id,
+          checked: status === 'done',
+          status: status
+        }, { onConflict: 'page_id' });
+      } catch (e) { console.warn('Supabase save failed:', e); }
+    }
+
+    /* ============================================================
+       UI
+       ============================================================ */
+    const filters = { status: 'all', type: 'all' };
+
+    function statusOf(item) {
+      // Auto-mark blog post as done if it's the one we already shipped
+      if (item.cmd.includes('how-much-does-a-bookkeeper-cost') || item.id.includes('how-much-does-a-bookkeeper-cost')) return 'done';
+      return statusCache[item.id] || 'todo';
+    }
+
+    function getCurrentWeekNumber() {
+      // Today is May 1, 2026 (the launch day). Week 1 starts May 8.
+      const today = new Date();
+      const start = new Date('2026-05-08');
+      const diffMs = today - start;
+      const week = Math.floor(diffMs / (7 * 24 * 60 * 60 * 1000)) + 1;
+      return Math.max(0, Math.min(13, week));
+    }
+
+    function render() {
+      const currentWeek = getCurrentWeekNumber();
+      const container = document.getElementById('weeksContainer');
+      container.innerHTML = '';
+
+      // Group by week
+      const weeks = {};
+      PLAN.forEach(p => {
+        if (!weeks[p.week]) weeks[p.week] = [];
+        weeks[p.week].push(p);
+      });
+
+      let totalDone = 0, totalInProgress = 0, totalTodo = 0;
+      let weekDone = 0, weekTodo = 0, weekTotal = 0;
+
+      Object.keys(weeks).sort((a,b) => +a - +b).forEach(wnum => {
+        const items = weeks[wnum];
+        const isCurrent = +wnum === currentWeek;
+        const filtered = items.filter(p => {
+          const s = statusOf(p);
+          if (filters.status !== 'all' && s !== filters.status) return false;
+          if (filters.type !== 'all' && p.type !== filters.type) return false;
+          return true;
+        });
+
+        const doneCount = items.filter(p => statusOf(p) === 'done').length;
+        const inProgressCount = items.filter(p => statusOf(p) === 'in-progress').length;
+
+        // Stats accumulate from the unfiltered list
+        items.forEach(p => {
+          const s = statusOf(p);
+          if (s === 'done') totalDone++;
+          else if (s === 'in-progress') totalInProgress++;
+          else totalTodo++;
+          if (isCurrent) {
+            weekTotal++;
+            if (s === 'done') weekDone++;
+            else weekTodo++;
+          }
+        });
+
+        if (filtered.length === 0) return;
+
+        const block = document.createElement('div');
+        block.className = 'week-block' + (isCurrent ? ' week-current' : '');
+        const dates = items.map(i => i.due);
+        const range = `${dates[0]} – ${dates[dates.length-1]}`;
+
+        let progressClass = '';
+        let progressText = `${doneCount}/${items.length}`;
+        if (doneCount === items.length) { progressClass = 'complete'; progressText += ' ✓'; }
+        else if (doneCount > 0 || inProgressCount > 0) progressClass = 'in-progress';
+
+        block.innerHTML = `
+          <div class="week-header" onclick="this.nextElementSibling.style.display = this.nextElementSibling.style.display === 'none' ? '' : 'none'">
+            <div>
+              <span class="week-title">Week ${wnum}</span>
+              <span class="week-range">${range}</span>
+              ${isCurrent ? '<span class="week-current-badge">This Week</span>' : ''}
+            </div>
+            <div class="week-progress">
+              <span class="progress-pill ${progressClass}">${progressText}</span>
+            </div>
+          </div>
+          <div class="page-list">
+            ${filtered.map(p => renderRow(p)).join('')}
+          </div>
+        `;
+        container.appendChild(block);
+      });
+
+      // Stats
+      const total = PLAN.length;
+      document.getElementById('statTotal').textContent = total;
+      document.getElementById('statDone').textContent = totalDone;
+      document.getElementById('statInProgress').textContent = totalInProgress;
+      document.getElementById('statTodo').textContent = totalTodo;
+      document.getElementById('statPercent').textContent = total ? Math.round(100 * totalDone / total) + '%' : '0%';
+
+      // This week
+      if (currentWeek >= 1 && currentWeek <= 12) {
+        document.getElementById('thisWeekRange').textContent = `Week ${currentWeek}`;
+        document.getElementById('thisWeekTotal').textContent = weekTotal;
+        document.getElementById('thisWeekDone').textContent = weekDone;
+        document.getElementById('thisWeekRemaining').textContent = weekTodo;
+      } else {
+        document.getElementById('thisWeekBanner').style.display = 'none';
+      }
+
+      if (container.innerHTML === '') {
+        container.innerHTML = '<div class="empty-state">No pages match your filters. Try clearing them.</div>';
+      }
+    }
+
+    function renderRow(p) {
+      const s = statusOf(p);
+      return `
+        <div class="page-row ${s === 'done' ? 'done' : ''}" data-id="${p.id}">
+          <div class="page-check ${s}" onclick="cycleStatus('${p.id}')"></div>
+          <span class="type-badge type-${p.type}">${p.type.replace('-', '×').replace('svc', 'svc')}</span>
+          <div class="page-name">${p.name} <code>${p.due}</code></div>
+          <div class="page-cmd" onclick="copyCmd(this, ${JSON.stringify(p.cmd).replace(/"/g, '&quot;')})">copy command</div>
+          <div class="page-actions">
+            <button class="action-btn" onclick="askClaude('${p.id}')">Ask Claude</button>
+          </div>
+        </div>
+      `;
+    }
+
+    window.cycleStatus = function(id) {
+      const cur = statusCache[id] || 'todo';
+      const next = cur === 'todo' ? 'in-progress' : cur === 'in-progress' ? 'done' : 'todo';
+      saveStatus(id, next);
+      render();
+    };
+
+    window.copyCmd = function(el, cmd) {
+      navigator.clipboard.writeText(cmd).then(() => {
+        const orig = el.textContent;
+        el.textContent = 'copied ✓';
+        el.classList.add('copied');
+        setTimeout(() => { el.textContent = orig; el.classList.remove('copied'); }, 1400);
+      });
+    };
+
+    window.askClaude = function(id) {
+      const item = PLAN.find(p => p.id === id);
+      if (!item) return;
+      const msg = `Build the ${item.name} page for me — generate the file and write the unique content directly so I just need to git push.`;
+      navigator.clipboard.writeText(msg).then(() => {
+        alert('Copied to clipboard! Paste this into your Claude chat:\n\n' + msg);
+      });
+    };
+
+    // Filter pills
+    document.querySelectorAll('.filter-pill').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const f = btn.dataset.filter;
+        const v = btn.dataset.value;
+        filters[f] = v;
+        document.querySelectorAll(`.filter-pill[data-filter="${f}"]`).forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        render();
+      });
+    });
+
+    // Reset
+    document.getElementById('resetBtn').addEventListener('click', async () => {
+      if (!confirm('Reset all pages back to backlog? This wipes all check-offs.')) return;
+      Object.keys(statusCache).forEach(k => delete statusCache[k]);
+      saveLocal();
+      if (supa) {
+        try { await supa.from(TABLE).delete().like('page_id', 'cal-%'); } catch (e) {}
+      }
+      render();
+    });
+
+    // Boot
+    (async function init() {
+      const dot = document.getElementById('syncDot');
+      const txt = document.getElementById('syncText');
+      // Local first for instant render
+      Object.assign(statusCache, loadLocal());
+      txt.textContent = 'Loaded from local storage';
+      render();
+      // Then Supabase
+      if (supa) {
+        dot.classList.add('syncing');
+        txt.textContent = 'Syncing with cloud…';
+        const remote = await loadFromSupabase();
+        if (remote) {
+          Object.assign(statusCache, remote);
+          saveLocal();
+          dot.classList.remove('syncing'); dot.classList.add('synced');
+          txt.textContent = 'Synced — changes save across devices';
+          render();
+        } else {
+          dot.classList.remove('syncing');
+          txt.textContent = 'Cloud unavailable — local only';
+        }
+      } else {
+        txt.textContent = 'Local storage only (no cloud sync)';
+      }
+    })();
+  </script>
+</body>
+</html>

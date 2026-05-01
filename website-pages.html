@@ -226,6 +226,7 @@
         <button class="tab-btn" data-tab="tab-core">Core Pages</button>
         <button class="tab-btn" data-tab="tab-services">Services</button>
         <button class="tab-btn" data-tab="tab-industries">Industries</button>
+        <button class="tab-btn" data-tab="tab-blog">Blog</button>
         <button class="tab-btn" data-tab="tab-sc">South Carolina</button>
         <button class="tab-btn" data-tab="tab-nc">North Carolina</button>
         <button class="tab-btn" data-tab="tab-fl">Florida</button>
@@ -249,6 +250,9 @@
 
       <!-- INDUSTRIES -->
       <div class="tab-pane" id="tab-industries"><div id="list-industries"></div></div>
+
+      <!-- BLOG -->
+      <div class="tab-pane" id="tab-blog"><div id="list-blog"></div></div>
 
       <!-- SC -->
       <div class="tab-pane" id="tab-sc"><div id="list-sc"></div></div>
@@ -295,28 +299,28 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 const PAGE_DATA = {
 
   core: [
-    { id:'homepage',          name:'Homepage',                file:'index.html',              status:'in-progress' },
-    { id:'about',             name:'About Us',                file:'about.html',              status:''            },
-    { id:'services-overview', name:'Services Overview',       file:'services.html',           status:'in-progress' },
-    { id:'who-we-serve',      name:'Who We Serve',            file:'who-we-serve.html',       status:'in-progress' },
-    { id:'contact',           name:'Contact',                 file:'contact.html',            status:''            },
-    { id:'pricing',           name:'Pricing',                 file:'pricing.html',            status:''            },
-    { id:'blog',              name:'Blog / Resources',        file:'blog.html',               status:''            },
+    { id:'homepage',          name:'Homepage',                file:'index.html',              status:'built' },
+    { id:'about',             name:'About Us',                file:'about.html',              status:'built'            },
+    { id:'services-overview', name:'Services Overview',       file:'services.html',           status:'built' },
+    { id:'who-we-serve',      name:'Who We Serve',            file:'who-we-serve.html',       status:'built' },
+    { id:'contact',           name:'Contact',                 file:'contact.html',            status:'built'            },
+    { id:'pricing',           name:'Pricing',                 file:'pricing.html',            status:'built'            },
+    { id:'blog',              name:'Blog / Resources',        file:'blog.html',               status:'built'            },
     { id:'faq',               name:'FAQ',                     file:'faq-review.html',         status:'in-progress' },
-    { id:'glossary',          name:'Glossary',                file:'glossary.html',           status:'in-progress' },
-    { id:'privacy-policy',    name:'Privacy Policy',          file:'privacy-policy.html',     status:''            },
-    { id:'terms',             name:'Terms of Service',        file:'terms.html',              status:''            },
+    { id:'glossary',          name:'Glossary',                file:'glossary.html',           status:'built' },
+    { id:'privacy-policy',    name:'Privacy Policy',          file:'privacy.html',     status:'built'            },
+    { id:'terms',             name:'Terms of Service',        file:'terms.html',              status:'built'            },
     { id:'thank-you',         name:'Thank You',               file:'thank-you.html',          status:''            },
   ],
 
   services: [
     { id:'svc-monthly',    name:'Monthly Bookkeeping',           file:'service-monthly-bookkeeping.html',         status:'built' },
-    { id:'svc-catchup',    name:'Catch-Up Bookkeeping',          file:'service-catchup-bookkeeping.html',         status:''      },
-    { id:'svc-bank-rec',   name:'Bank Reconciliation',           file:'service-bank-reconciliation.html',         status:''      },
-    { id:'svc-reporting',  name:'Financial Reporting',           file:'service-financial-reporting.html',         status:''      },
-    { id:'svc-apar',       name:'Accounts Payable & Receivable', file:'service-accounts-payable-receivable.html', status:''      },
-    { id:'svc-payroll',    name:'Payroll Support',               file:'service-payroll-support.html',             status:''      },
-    { id:'svc-setup',      name:'Bookkeeping Setup & Cleanup',   file:'service-setup-cleanup.html',               status:''      },
+    { id:'svc-catchup',    name:'Catch-Up Bookkeeping',          file:'service-catchup-bookkeeping.html',         status:'built'      },
+    { id:'svc-bank-rec',   name:'Bank Reconciliation',           file:'service-bank-reconciliation.html',         status:'built'      },
+    { id:'svc-reporting',  name:'Financial Reporting',           file:'service-financial-reporting.html',         status:'built'      },
+    { id:'svc-apar',       name:'Accounts Payable & Receivable', file:'service-accounts-payable-receivable.html', status:'built'      },
+    { id:'svc-payroll',    name:'Payroll Support',               file:'service-payroll.html',             status:'built'      },
+    { id:'svc-setup',      name:'Bookkeeping Setup & Cleanup',   file:'service-software-setup.html',               status:'built'      },
     { id:'svc-tax-prep',   name:'Tax Prep Support',              file:'service-tax-prep-support.html',            status:''      },
     { id:'svc-qbo',        name:'QuickBooks Setup',              file:'service-quickbooks-setup.html',            status:''      },
   ],
@@ -325,52 +329,60 @@ const PAGE_DATA = {
     { id:'ind-re-investors',  name:'Real Estate Investors',        file:'industry-real-estate.html',            status:'built' },
     { id:'ind-re-agents',     name:'Real Estate Agents & Brokers', file:'industry-real-estate-agents.html',     status:''      },
     { id:'ind-legal',         name:'Legal & Law Firms',            file:'industry-legal.html',                  status:''      },
-    { id:'ind-healthcare',    name:'Healthcare & Medical',         file:'industry-healthcare.html',             status:''      },
+    { id:'ind-healthcare',    name:'Healthcare & Medical',         file:'industry-healthcare.html',             status:'built'      },
     { id:'ind-consulting',    name:'Consulting',                   file:'industry-consulting.html',             status:''      },
     { id:'ind-marketing',     name:'Marketing Agencies',           file:'industry-marketing-agencies.html',     status:''      },
-    { id:'ind-home-services', name:'Home Services & Contractors',  file:'industry-home-services.html',          status:''      },
-    { id:'ind-tech',          name:'Technology & SaaS',            file:'industry-technology.html',             status:''      },
+    { id:'ind-home-services', name:'Home Services & Contractors',  file:'industry-contractors-trades.html',          status:'built'      },
+    { id:'ind-tech',          name:'Technology & SaaS',            file:'industry-tech-startups.html',             status:'built'      },
     { id:'ind-travel',        name:'Travel & Tourism',             file:'industry-travel.html',                 status:''      },
-    { id:'ind-restaurants',   name:'Restaurants & Food Service',   file:'industry-restaurants.html',            status:''      },
+    { id:'ind-restaurants',   name:'Restaurants & Food Service',   file:'industry-restaurants-bars.html',            status:'built'      },
     { id:'ind-retail',        name:'Retail',                       file:'industry-retail.html',                 status:''      },
-    { id:'ind-nonprofits',    name:'Non-Profits',                  file:'industry-nonprofits.html',             status:''      },
+    { id:'ind-nonprofits',    name:'Non-Profits',                  file:'industry-nonprofits.html',             status:'built'      },
     { id:'ind-dental',        name:'Dental Practices',             file:'industry-dental.html',                 status:''      },
     { id:'ind-fitness',       name:'Fitness & Gyms',               file:'industry-fitness.html',                status:''      },
     { id:'ind-photography',   name:'Photography & Creative',       file:'industry-photography.html',            status:''      },
-    { id:'ind-ecommerce',     name:'E-Commerce',                   file:'industry-ecommerce.html',              status:''      },
+    { id:'ind-ecommerce',     name:'E-Commerce',                   file:'industry-ecommerce-retail.html',              status:'built'      },
     { id:'ind-construction',  name:'Construction',                 file:'industry-construction.html',           status:''      },
     { id:'ind-insurance',     name:'Insurance',                    file:'industry-insurance.html',              status:''      },
     { id:'ind-fin-advisors',  name:'Financial Advisors',           file:'industry-financial-advisors.html',     status:''      },
-    { id:'ind-trucking',      name:'Trucking & Transportation',    file:'industry-trucking.html',               status:''      },
+    { id:'ind-trucking',      name:'Trucking & Transportation',    file:'industry-logistics-transportation.html',               status:'built'      },
+    { id:'ind-automotive',    name:'Automotive',                   file:'industry-automotive.html',             status:'built'      },
+    { id:'ind-prof-services', name:'Professional Services',        file:'industry-professional-services.html',  status:'built'      },
+    { id:'ind-small-biz',     name:'Small Businesses',             file:'industry-small-businesses.html',       status:'built'      },
+    { id:'ind-solopreneurs',  name:'Solo Entrepreneurs',           file:'industry-solo-entrepreneurs.html',     status:'built'      },
+  ],
+
+  blog: [
+    { id:'blog-bookkeeper-cost', name:'How Much Does a Bookkeeper Cost in 2026?', file:'blog-how-much-does-a-bookkeeper-cost.html', status:'built' },
   ],
 
   states: {
     sc: {
-      state: { id:'state-sc', name:'South Carolina', file:'state-south-carolina.html', status:'in-progress' },
+      state: { id:'state-sc', name:'South Carolina', file:'state-south-carolina.html', status:'built' },
       cities: [
         { id:'city-greenville-sc',   name:'Greenville',         file:'city-greenville-sc.html',   status:'built',
           counties:[{ id:'county-greenville-sc', name:'Greenville County', file:'county-greenville-sc.html', status:'built' }] },
-        { id:'city-columbia-sc',     name:'Columbia',           file:'city-columbia-sc.html',     status:'',
+        { id:'city-columbia-sc',     name:'Columbia',           file:'city-columbia-sc.html',     status:'built',
           counties:[
-            { id:'county-richland-sc',  name:'Richland County',  file:'county-richland-sc.html',  status:'' },
-            { id:'county-lexington-sc', name:'Lexington County', file:'county-lexington-sc.html', status:'' },
+            { id:'county-richland-sc',  name:'Richland County',  file:'county-richland-sc.html',  status:'built' },
+            { id:'county-lexington-sc', name:'Lexington County', file:'county-lexington-sc.html', status:'built' },
           ]},
-        { id:'city-charleston-sc',   name:'Charleston',         file:'city-charleston-sc.html',   status:'',
-          counties:[{ id:'county-charleston-sc',  name:'Charleston County',  file:'county-charleston-sc.html',  status:'' }] },
-        { id:'city-spartanburg-sc',  name:'Spartanburg',        file:'city-spartanburg-sc.html',  status:'',
-          counties:[{ id:'county-spartanburg-sc', name:'Spartanburg County', file:'county-spartanburg-sc.html', status:'' }] },
-        { id:'city-rock-hill-sc',    name:'Rock Hill',          file:'city-rock-hill-sc.html',    status:'',
-          counties:[{ id:'county-york-sc',        name:'York County',        file:'county-york-sc.html',        status:'' }] },
-        { id:'city-myrtle-beach-sc', name:'Myrtle Beach',       file:'city-myrtle-beach-sc.html', status:'',
-          counties:[{ id:'county-horry-sc',       name:'Horry County',       file:'county-horry-sc.html',       status:'' }] },
+        { id:'city-charleston-sc',   name:'Charleston',         file:'city-charleston-sc.html',   status:'built',
+          counties:[{ id:'county-charleston-sc',  name:'Charleston County',  file:'county-charleston-sc.html',  status:'built' }] },
+        { id:'city-spartanburg-sc',  name:'Spartanburg',        file:'city-spartanburg-sc.html',  status:'built',
+          counties:[{ id:'county-spartanburg-sc', name:'Spartanburg County', file:'county-spartanburg-sc.html', status:'built' }] },
+        { id:'city-rock-hill-sc',    name:'Rock Hill',          file:'city-rock-hill-sc.html',    status:'built',
+          counties:[{ id:'county-york-sc',        name:'York County',        file:'county-york-sc.html',        status:'built' }] },
+        { id:'city-myrtle-beach-sc', name:'Myrtle Beach',       file:'city-myrtle-beach-sc.html', status:'built',
+          counties:[{ id:'county-horry-sc',       name:'Horry County',       file:'county-horry-sc.html',       status:'built' }] },
         { id:'city-anderson-sc',     name:'Anderson',           file:'city-anderson-sc.html',     status:'',
           counties:[{ id:'county-anderson-sc',    name:'Anderson County',    file:'county-anderson-sc.html',    status:'' }] },
-        { id:'city-summerville-sc',  name:'Summerville',        file:'city-summerville-sc.html',  status:'',
+        { id:'city-summerville-sc',  name:'Summerville',        file:'city-summerville-sc.html',  status:'built',
           counties:[{ id:'county-dorchester-sc',  name:'Dorchester County',  file:'county-dorchester-sc.html',  status:'' }] },
         { id:'city-florence-sc',     name:'Florence',           file:'city-florence-sc.html',     status:'',
           counties:[{ id:'county-florence-sc',    name:'Florence County',    file:'county-florence-sc.html',    status:'' }] },
-        { id:'city-hilton-head-sc',  name:'Hilton Head Island', file:'city-hilton-head-sc.html',  status:'',
-          counties:[{ id:'county-beaufort-sc',    name:'Beaufort County',    file:'county-beaufort-sc.html',    status:'' }] },
+        { id:'city-hilton-head-sc',  name:'Hilton Head Island', file:'city-hilton-head-sc.html',  status:'built',
+          counties:[{ id:'county-beaufort-sc',    name:'Beaufort County',    file:'county-beaufort-sc.html',    status:'built' }] },
       ]
     },
     nc: {
@@ -632,6 +644,7 @@ function getAllPages() {
   out.push(...PAGE_DATA.core);
   out.push(...PAGE_DATA.services);
   out.push(...PAGE_DATA.industries);
+  out.push(...(PAGE_DATA.blog || []));
   Object.values(PAGE_DATA.states).forEach(st => {
     out.push(st.state);
     st.cities.forEach(c => { out.push(c); out.push(...c.counties); });
@@ -662,8 +675,16 @@ function badgeHTML(status) {
 function rowHTML(page, level) {
   const lvl     = level !== undefined ? level : (page._level || 0);
   const checked = checkedState[page.id] ? 'checked' : '';
-  const link    = page.status === 'built'
-    ? `<a href="../${page.file}" target="_blank" class="cl-link" title="Open page">↗</a>`
+  // Build live URL. Special cases: index → /, pricing → go.subdomain.
+  let liveUrl = '';
+  if (page.status === 'built') {
+    const slug = page.file.replace(/\.html$/, '');
+    if (page.file === 'index.html')        liveUrl = 'https://www.tidesbookkeeping.com/';
+    else if (page.file === 'pricing.html') liveUrl = 'https://go.tidesbookkeeping.com/tiered-pricing';
+    else                                   liveUrl = `https://www.tidesbookkeeping.com/${slug}`;
+  }
+  const link = liveUrl
+    ? `<a href="${liveUrl}" target="_blank" rel="noopener" class="cl-link" title="Open live page">↗</a>`
     : '';
   return `<div class="cl-row level-${lvl}">
     <input type="checkbox" class="cl-cb" data-id="${page.id}" ${checked}>
@@ -706,6 +727,7 @@ function renderAll() {
   renderList('list-core',       PAGE_DATA.core,       'Core Pages');
   renderList('list-services',   PAGE_DATA.services,   'Service Pages');
   renderList('list-industries', PAGE_DATA.industries, 'Industry Pages');
+  renderList('list-blog',       PAGE_DATA.blog || [], 'Blog Posts');
   renderStatePage('list-sc',    'sc', 'South Carolina — State, Cities & Counties');
   renderStatePage('list-nc',    'nc', 'North Carolina — State, Cities & Counties');
   renderStatePage('list-fl',    'fl', 'Florida — State, Cities & Counties');
@@ -744,6 +766,7 @@ function updateSummary() {
     { label:'Core Pages',       items: PAGE_DATA.core },
     { label:'Services',         items: PAGE_DATA.services },
     { label:'Industries',       items: PAGE_DATA.industries },
+    { label:'Blog',             items: PAGE_DATA.blog || [] },
     { label:'South Carolina',   items: getFlatStatePages('sc') },
     { label:'North Carolina',   items: getFlatStatePages('nc') },
     { label:'Florida',          items: getFlatStatePages('fl') },
