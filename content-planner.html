@@ -1,0 +1,1145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Content Planner — Tides Hub</title>
+  <link rel="stylesheet" href="hub.css">
+  <style>
+    /* ---- Platform tokens ---- */
+    :root {
+      --fb:   #1877F2;
+      --ig:   #C13584;
+      --li:   #0A66C2;
+      --blog: #215197;
+    }
+
+    /* ---- Goal bar ---- */
+    .goal-bar-wrap {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px 22px;
+      margin-bottom: 20px;
+      box-shadow: var(--shadow-sm);
+    }
+    .goal-bar-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    .goal-bar-label {
+      font-size: 13.5px;
+      font-weight: 700;
+      color: var(--text);
+    }
+    .goal-bar-label span { color: var(--primary); }
+    .goal-stats {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .goal-stat {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+    .goal-stat b { color: var(--text); }
+    .goal-track {
+      height: 8px;
+      background: #e5e7eb;
+      border-radius: 99px;
+      overflow: hidden;
+    }
+    .goal-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--primary) 0%, var(--teal) 100%);
+      border-radius: 99px;
+      transition: width .4s ease;
+      min-width: 4px;
+    }
+    .goal-edit-btn {
+      font-size: 11px;
+      color: var(--text-muted);
+      background: none;
+      border: none;
+      cursor: pointer;
+      text-decoration: underline;
+      font-family: var(--font);
+      padding: 0;
+    }
+    .goal-edit-btn:hover { color: var(--primary); }
+    .goal-input {
+      width: 60px;
+      border: 1px solid var(--primary);
+      border-radius: var(--radius-sm);
+      padding: 3px 7px;
+      font-size: 13px;
+      font-family: var(--font);
+      text-align: center;
+    }
+    .goal-input:focus { outline: none; }
+
+    /* ---- View toggle ---- */
+    .view-toggle-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 18px;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .view-toggle {
+      display: flex;
+      background: #f3f4f6;
+      border-radius: var(--radius-sm);
+      padding: 3px;
+      gap: 2px;
+    }
+    .view-btn {
+      padding: 6px 18px;
+      border-radius: 5px;
+      border: none;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      color: var(--text-muted);
+      background: none;
+      font-family: var(--font);
+      transition: all .15s;
+    }
+    .view-btn.active { background: var(--white); color: var(--primary); box-shadow: var(--shadow-sm); }
+    .btn-new-post {
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius-sm);
+      padding: 8px 18px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: var(--font);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .btn-new-post:hover { background: #1a3f78; }
+
+    /* ---- CALENDAR ---- */
+    .cal-nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+    .cal-month-label {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text);
+    }
+    .cal-nav-btn {
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 5px 13px;
+      font-size: 14px;
+      cursor: pointer;
+      color: var(--text-2);
+      font-family: var(--font);
+    }
+    .cal-nav-btn:hover { background: #f3f4f6; }
+
+    .cal-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      border-left: 1px solid var(--border);
+      border-top: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      background: var(--white);
+      box-shadow: var(--shadow-sm);
+    }
+    .cal-dow {
+      text-align: center;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      color: var(--text-muted);
+      padding: 8px 4px;
+      border-right: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      background: #f9fafb;
+    }
+    .cal-cell {
+      border-right: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      min-height: 90px;
+      padding: 6px 7px;
+      vertical-align: top;
+      background: var(--white);
+      position: relative;
+    }
+    .cal-cell.empty { background: #fafafa; }
+    .cal-cell.today { background: #eff6ff; }
+    .cal-day-num {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      transition: background .12s;
+    }
+    .cal-day-num:hover { background: var(--primary-light); color: var(--primary); }
+    .cal-cell.today .cal-day-num { background: var(--primary); color: #fff; }
+    .cal-post-chip {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 10.5px;
+      font-weight: 600;
+      color: #fff;
+      margin-bottom: 3px;
+      cursor: pointer;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      max-width: 100%;
+      line-height: 1.4;
+    }
+    .cal-post-chip:hover { opacity: .85; }
+    .cal-more {
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--text-muted);
+      cursor: pointer;
+      padding: 1px 4px;
+    }
+    .cal-more:hover { color: var(--primary); }
+
+    /* ---- LIST VIEW ---- */
+    .filter-row {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+    }
+    .filter-chip {
+      padding: 5px 13px;
+      border-radius: 20px;
+      border: 1.5px solid var(--border);
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      color: var(--text-muted);
+      background: var(--white);
+      font-family: var(--font);
+      transition: all .12s;
+    }
+    .filter-chip:hover { border-color: var(--primary); color: var(--primary); }
+    .filter-chip.active { border-color: var(--primary); background: var(--primary); color: #fff; }
+    .filter-chip.fb.active  { border-color: var(--fb); background: var(--fb); }
+    .filter-chip.ig.active  { border-color: var(--ig); background: var(--ig); }
+    .filter-chip.li.active  { border-color: var(--li); background: var(--li); }
+    .filter-chip.blog.active { border-color: var(--blog); background: var(--blog); }
+
+    .list-empty {
+      text-align: center;
+      padding: 48px;
+      color: var(--text-muted);
+      font-size: 14px;
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+    }
+
+    .post-card {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px 18px;
+      margin-bottom: 10px;
+      box-shadow: var(--shadow-sm);
+      cursor: pointer;
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      transition: border-color .15s, box-shadow .15s;
+    }
+    .post-card:hover { border-color: var(--primary); box-shadow: 0 2px 8px rgba(33,81,151,.12); }
+    .post-card-left { flex: 1; min-width: 0; }
+    .post-card-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 5px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .post-card-meta {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .post-card-date {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+    .platform-dots { display: flex; gap: 4px; align-items: center; }
+    .pdot {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      display: inline-block;
+      flex-shrink: 0;
+    }
+    .pdot.facebook  { background: var(--fb); }
+    .pdot.instagram { background: var(--ig); }
+    .pdot.linkedin  { background: var(--li); }
+    .pdot.blog      { background: var(--blog); }
+    .status-badge {
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 20px;
+    }
+    .status-badge.drafting  { background: #fef3c7; color: #92400e; }
+    .status-badge.scheduled { background: #dbeafe; color: #1e40af; }
+    .status-badge.posted    { background: #d1fae5; color: #065f46; }
+    .post-card-notes {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 5px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* ---- IDEAS BANK ---- */
+    .ideas-section {
+      margin-top: 28px;
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+    }
+    .ideas-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--border);
+      background: #f9fafb;
+    }
+    .ideas-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-2);
+    }
+    .ideas-add-row {
+      display: flex;
+      gap: 8px;
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--border);
+    }
+    .ideas-input {
+      flex: 1;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 8px 11px;
+      font-size: 13px;
+      font-family: var(--font);
+      color: var(--text);
+    }
+    .ideas-input:focus { outline: none; border-color: var(--primary); }
+    .ideas-input::placeholder { color: var(--text-muted); }
+    .btn-idea-add {
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius-sm);
+      padding: 8px 16px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: var(--font);
+      white-space: nowrap;
+    }
+    .btn-idea-add:hover { background: #1a3f78; }
+    .ideas-list { padding: 8px 0; }
+    .idea-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 20px;
+      transition: background .1s;
+    }
+    .idea-item:hover { background: #f9fafb; }
+    .idea-bullet {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--teal);
+      flex-shrink: 0;
+    }
+    .idea-text {
+      flex: 1;
+      font-size: 13.5px;
+      color: var(--text-2);
+      min-width: 0;
+    }
+    .idea-actions { display: flex; gap: 6px; flex-shrink: 0; }
+    .btn-plan-it {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--primary);
+      background: var(--primary-light);
+      border: none;
+      border-radius: var(--radius-sm);
+      padding: 4px 10px;
+      cursor: pointer;
+      font-family: var(--font);
+      white-space: nowrap;
+    }
+    .btn-plan-it:hover { background: rgba(33,81,151,.15); }
+    .btn-idea-del {
+      font-size: 14px;
+      color: var(--text-muted);
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 2px 4px;
+      line-height: 1;
+    }
+    .btn-idea-del:hover { color: #ef4444; }
+    .ideas-empty {
+      padding: 18px 20px;
+      font-size: 13px;
+      color: var(--text-muted);
+      text-align: center;
+    }
+
+    /* ---- MODAL ---- */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.45);
+      z-index: 300;
+      align-items: flex-start;
+      justify-content: center;
+      overflow-y: auto;
+      padding: 32px 16px;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal-box {
+      background: var(--white);
+      border-radius: var(--radius);
+      width: 100%;
+      max-width: 560px;
+      box-shadow: 0 20px 60px rgba(0,0,0,.2);
+      margin: auto;
+    }
+    .modal-header {
+      padding: 18px 22px 14px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .modal-title { font-size: 16px; font-weight: 700; color: var(--text); }
+    .modal-close {
+      background: none; border: none; font-size: 22px;
+      color: var(--text-muted); cursor: pointer; padding: 0; line-height: 1;
+    }
+    .modal-close:hover { color: var(--text); }
+    .modal-body { padding: 20px 22px; display: flex; flex-direction: column; gap: 14px; }
+    .modal-footer {
+      padding: 14px 22px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    .modal-footer-left { display: flex; gap: 8px; }
+
+    .mf-group { display: flex; flex-direction: column; gap: 5px; }
+    .mf-label {
+      font-size: 10px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: .06em;
+      color: var(--text-muted);
+    }
+    .mf-input, .mf-textarea, .mf-select {
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 8px 10px;
+      font-size: 13.5px;
+      font-family: var(--font);
+      color: var(--text);
+      background: var(--white);
+    }
+    .mf-input:focus, .mf-textarea:focus, .mf-select:focus { outline: none; border-color: var(--primary); }
+    .mf-input::placeholder, .mf-textarea::placeholder { color: var(--text-muted); }
+    .mf-textarea { resize: vertical; min-height: 76px; }
+
+    /* Platform checkbox chips in modal */
+    .platform-chips { display: flex; gap: 8px; flex-wrap: wrap; }
+    .plat-chip {
+      display: flex; align-items: center; gap: 6px;
+      cursor: pointer; padding: 7px 14px;
+      border: 2px solid var(--border);
+      border-radius: 20px;
+      font-size: 12px; font-weight: 700;
+      color: var(--text-muted);
+      transition: all .15s;
+      user-select: none;
+    }
+    .plat-chip input { display: none; }
+    .plat-chip.sel-facebook  { border-color: var(--fb);   background: rgba(24,119,242,.1);  color: var(--fb); }
+    .plat-chip.sel-instagram { border-color: var(--ig);   background: rgba(193,53,132,.1);  color: var(--ig); }
+    .plat-chip.sel-linkedin  { border-color: var(--li);   background: rgba(10,102,194,.1);  color: var(--li); }
+    .plat-chip.sel-blog      { border-color: var(--blog); background: rgba(33,81,151,.1);   color: var(--blog); }
+
+    /* Status chips in modal */
+    .status-chips { display: flex; gap: 8px; }
+    .stat-chip {
+      display: flex; align-items: center; gap: 5px;
+      cursor: pointer; padding: 7px 14px;
+      border: 2px solid var(--border);
+      border-radius: 20px;
+      font-size: 12px; font-weight: 700;
+      color: var(--text-muted);
+      transition: all .15s;
+      user-select: none;
+    }
+    .stat-chip input { display: none; }
+    .stat-chip.sel-drafting  { border-color: #f59e0b; background: #fef3c7; color: #92400e; }
+    .stat-chip.sel-scheduled { border-color: #3b82f6; background: #dbeafe; color: #1e40af; }
+    .stat-chip.sel-posted    { border-color: #10b981; background: #d1fae5; color: #065f46; }
+
+    .mf-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+    .btn-save-post {
+      background: var(--primary); color: #fff;
+      border: none; border-radius: var(--radius-sm);
+      padding: 9px 22px; font-size: 13px; font-weight: 700;
+      cursor: pointer; font-family: var(--font);
+    }
+    .btn-save-post:hover { background: #1a3f78; }
+    .btn-cancel-post {
+      background: none; color: var(--text-muted);
+      border: 1px solid var(--border); border-radius: var(--radius-sm);
+      padding: 9px 16px; font-size: 13px; cursor: pointer;
+      font-family: var(--font);
+    }
+    .btn-cancel-post:hover { background: #f3f4f6; }
+    .btn-delete-post {
+      background: none; color: #ef4444;
+      border: 1px solid #fca5a5; border-radius: var(--radius-sm);
+      padding: 9px 14px; font-size: 13px; cursor: pointer;
+      font-family: var(--font);
+    }
+    .btn-delete-post:hover { background: #fef2f2; }
+
+    .save-flash {
+      font-size: 12px; font-weight: 600; color: #16a34a;
+      opacity: 0; transition: opacity .3s; white-space: nowrap;
+    }
+    .save-flash.show { opacity: 1; }
+
+    @media (max-width: 640px) {
+      .mf-grid { grid-template-columns: 1fr; }
+      .status-chips { flex-wrap: wrap; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="main-content">
+  <div class="topbar">
+    <button class="topbar-hamburger" id="hubHamburger" aria-label="Open menu">&#9776;</button>
+    <span class="topbar-crumb">Tides Bookkeeping</span>
+    <span class="topbar-sep">/</span>
+    <span class="topbar-title">Content Planner</span>
+  </div>
+
+  <div class="page-content">
+    <div class="page-header">
+      <div class="page-icon">📣</div>
+      <h1 class="page-title">Content Planner</h1>
+      <p class="page-subtitle">Plan, schedule, and track social media posts and blog content across all platforms.</p>
+    </div>
+
+    <!-- Goal Bar -->
+    <div class="goal-bar-wrap">
+      <div class="goal-bar-top">
+        <div class="goal-bar-label" id="goalBarLabel">May 2026 — <span id="goalPostedCount">0</span> of <span id="goalTarget">12</span> posts published</div>
+        <div class="goal-stats">
+          <div class="goal-stat">✏️ <b id="statDrafting">0</b> Drafting</div>
+          <div class="goal-stat">📅 <b id="statScheduled">0</b> Scheduled</div>
+          <div class="goal-stat">✅ <b id="statPosted">0</b> Posted</div>
+          <button class="goal-edit-btn" onclick="editGoal()" id="goalEditBtn">Edit goal</button>
+        </div>
+      </div>
+      <div class="goal-track">
+        <div class="goal-fill" id="goalFill" style="width:0%"></div>
+      </div>
+    </div>
+
+    <!-- View Toggle + New Post -->
+    <div class="view-toggle-row">
+      <div class="view-toggle">
+        <button class="view-btn active" id="viewBtnCal"  onclick="switchView('calendar')">📅 Calendar</button>
+        <button class="view-btn"        id="viewBtnList" onclick="switchView('list')">📋 List</button>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span class="save-flash" id="cpSaveFlash">✓ Saved!</span>
+        <button class="btn-new-post" onclick="openModal()">+ New Post</button>
+      </div>
+    </div>
+
+    <!-- ===== CALENDAR VIEW ===== -->
+    <div id="viewCalendar">
+      <div class="cal-nav">
+        <button class="cal-nav-btn" onclick="shiftMonth(-1)">&#8592; Prev</button>
+        <div class="cal-month-label" id="calMonthLabel"></div>
+        <button class="cal-nav-btn" onclick="shiftMonth(1)">Next &#8594;</button>
+      </div>
+      <div class="cal-grid" id="calGrid"></div>
+    </div>
+
+    <!-- ===== LIST VIEW ===== -->
+    <div id="viewList" style="display:none;">
+      <div class="filter-row" id="filterPlatform">
+        <button class="filter-chip active" data-val="all" onclick="setFilter('platform','all',this)">All Platforms</button>
+        <button class="filter-chip fb"   data-val="facebook"  onclick="setFilter('platform','facebook',this)">🔵 Facebook</button>
+        <button class="filter-chip ig"   data-val="instagram" onclick="setFilter('platform','instagram',this)">💜 Instagram</button>
+        <button class="filter-chip li"   data-val="linkedin"  onclick="setFilter('platform','linkedin',this)">🔷 LinkedIn</button>
+        <button class="filter-chip blog" data-val="blog"      onclick="setFilter('platform','blog',this)">📘 Blog</button>
+      </div>
+      <div class="filter-row" id="filterStatus">
+        <button class="filter-chip active" data-val="all"       onclick="setFilter('status','all',this)">All Status</button>
+        <button class="filter-chip"        data-val="drafting"  onclick="setFilter('status','drafting',this)">✏️ Drafting</button>
+        <button class="filter-chip"        data-val="scheduled" onclick="setFilter('status','scheduled',this)">📅 Scheduled</button>
+        <button class="filter-chip"        data-val="posted"    onclick="setFilter('status','posted',this)">✅ Posted</button>
+      </div>
+      <div id="postList"></div>
+    </div>
+
+    <!-- ===== IDEAS BANK ===== -->
+    <div class="ideas-section">
+      <div class="ideas-header">
+        <div class="ideas-title">💡 Ideas Bank</div>
+        <div style="font-size:11px;color:var(--text-muted);">Capture ideas before you forget — promote to a post when ready</div>
+      </div>
+      <div class="ideas-add-row">
+        <input class="ideas-input" id="ideaInput" type="text" placeholder="Type a content idea and press Enter or click Add…" onkeydown="if(event.key==='Enter')addIdea()">
+        <button class="btn-idea-add" onclick="addIdea()">Add Idea</button>
+      </div>
+      <div class="ideas-list" id="ideasList"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Post Modal -->
+<div class="modal-overlay" id="postModal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div class="modal-title" id="modalTitle">New Post</div>
+      <button class="modal-close" onclick="closeModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="mf-group">
+        <div class="mf-label">Title / Topic <span style="color:#ef4444;">*</span></div>
+        <input class="mf-input" id="mTitle" type="text" placeholder="What is this post about?">
+      </div>
+      <div class="mf-group">
+        <div class="mf-label">Platforms</div>
+        <div class="platform-chips" id="mPlatforms">
+          <label class="plat-chip" id="pcFb"><input type="checkbox" value="facebook" onchange="togglePlat(this,'pcFb','facebook')"> 🔵 Facebook</label>
+          <label class="plat-chip" id="pcIg"><input type="checkbox" value="instagram" onchange="togglePlat(this,'pcIg','instagram')"> 💜 Instagram</label>
+          <label class="plat-chip" id="pcLi"><input type="checkbox" value="linkedin" onchange="togglePlat(this,'pcLi','linkedin')"> 🔷 LinkedIn</label>
+          <label class="plat-chip" id="pcBlog"><input type="checkbox" value="blog" onchange="togglePlat(this,'pcBlog','blog')"> 📘 Blog</label>
+        </div>
+      </div>
+      <div class="mf-group">
+        <div class="mf-label">Status</div>
+        <div class="status-chips" id="mStatuses">
+          <label class="stat-chip" id="scDrafting"><input type="radio" name="mStatus" value="drafting" onchange="toggleStat(this,'scDrafting','drafting')"> ✏️ Drafting</label>
+          <label class="stat-chip" id="scScheduled"><input type="radio" name="mStatus" value="scheduled" onchange="toggleStat(this,'scScheduled','scheduled')"> 📅 Scheduled</label>
+          <label class="stat-chip" id="scPosted"><input type="radio" name="mStatus" value="posted" onchange="toggleStat(this,'scPosted','posted')"> ✅ Posted</label>
+        </div>
+      </div>
+      <div class="mf-grid">
+        <div class="mf-group">
+          <div class="mf-label">Publish Date</div>
+          <input class="mf-input" id="mDate" type="date">
+        </div>
+        <div class="mf-group">
+          <div class="mf-label">GHL Link <span style="font-weight:400;text-transform:none;letter-spacing:0;">(optional)</span></div>
+          <input class="mf-input" id="mGHL" type="url" placeholder="Paste GoHighLevel link">
+        </div>
+      </div>
+      <div class="mf-group">
+        <div class="mf-label">Caption / Notes</div>
+        <textarea class="mf-textarea" id="mNotes" placeholder="Draft caption, talking points, or link to doc…"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <div class="modal-footer-left">
+        <button class="btn-save-post" onclick="savePost()">Save Post</button>
+        <button class="btn-cancel-post" onclick="closeModal()">Cancel</button>
+      </div>
+      <button class="btn-delete-post" id="btnDeletePost" style="display:none;" onclick="deletePost()">Delete</button>
+    </div>
+  </div>
+</div>
+
+<script src="hub.js"></script>
+<script>
+/* ============================================================
+   Content Planner
+   ============================================================ */
+
+const CP_KEY = 'content-planner';
+
+const PLATFORM_META = {
+  facebook:  { label: 'Facebook',  color: '#1877F2', emoji: '🔵' },
+  instagram: { label: 'Instagram', color: '#C13584', emoji: '💜' },
+  linkedin:  { label: 'LinkedIn',  color: '#0A66C2', emoji: '🔷' },
+  blog:      { label: 'Blog',      color: '#215197', emoji: '📘' },
+};
+
+const STATUS_META = {
+  drafting:  { label: 'Drafting',  emoji: '✏️' },
+  scheduled: { label: 'Scheduled', emoji: '📅' },
+  posted:    { label: 'Posted',    emoji: '✅' },
+};
+
+/* ---- State ---- */
+let cpData = null;            // { posts, ideas, monthlyGoal }
+let curView = 'calendar';
+let calYear, calMonth;        // currently displayed month
+let filterPlatform = 'all';
+let filterStatus   = 'all';
+let editingPostId  = null;    // null = new, string = editing
+let saveTimer      = null;
+
+/* ---- Init ---- */
+document.addEventListener('DOMContentLoaded', async () => {
+  const now = new Date();
+  calYear  = now.getFullYear();
+  calMonth = now.getMonth();
+
+  const raw = await loadHubContent(CP_KEY);
+  if (raw && raw.posts) {
+    cpData = raw;
+  } else {
+    cpData = { posts: [], ideas: [], monthlyGoal: 12 };
+    await saveHubContent(CP_KEY, cpData);
+  }
+
+  refreshAll();
+});
+
+/* ---- Persist ---- */
+function scheduleSave() {
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(async () => {
+    await saveHubContent(CP_KEY, cpData);
+    flash('cpSaveFlash');
+  }, 600);
+}
+
+function flash(id) {
+  const el = document.getElementById(id);
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 2500);
+}
+
+/* ---- Refresh all UI ---- */
+function refreshAll() {
+  updateGoalBar();
+  renderCalendar();
+  renderList();
+  renderIdeas();
+}
+
+/* ============================================================
+   GOAL BAR
+   ============================================================ */
+function updateGoalBar() {
+  const now   = new Date();
+  const label = now.toLocaleString('default', { month: 'long' }) + ' ' + now.getFullYear();
+  document.getElementById('goalBarLabel').innerHTML =
+    `${label} — <span id="goalPostedCount">0</span> of <span id="goalTarget">12</span> posts published`;
+
+  const goal      = cpData.monthlyGoal || 12;
+  const thisMonth = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2,'0');
+
+  let drafted = 0, scheduled = 0, posted = 0;
+  (cpData.posts || []).forEach(p => {
+    if (!p.date || !p.date.startsWith(thisMonth)) return;
+    if (p.status === 'drafting')  drafted++;
+    if (p.status === 'scheduled') scheduled++;
+    if (p.status === 'posted')    posted++;
+  });
+
+  document.getElementById('goalPostedCount').textContent = posted;
+  document.getElementById('goalTarget').textContent      = goal;
+  document.getElementById('statDrafting').textContent    = drafted;
+  document.getElementById('statScheduled').textContent   = scheduled;
+  document.getElementById('statPosted').textContent      = posted;
+  const pct = Math.min(100, Math.round((posted / goal) * 100));
+  document.getElementById('goalFill').style.width = pct + '%';
+}
+
+function editGoal() {
+  const btn = document.getElementById('goalEditBtn');
+  const cur = cpData.monthlyGoal || 12;
+  btn.outerHTML = `<input class="goal-input" id="goalInputField" type="number" min="1" max="365" value="${cur}"
+    onblur="saveGoal()" onkeydown="if(event.key==='Enter')saveGoal()">`;
+  document.getElementById('goalInputField').focus();
+}
+
+function saveGoal() {
+  const inp = document.getElementById('goalInputField');
+  if (!inp) return;
+  const val = parseInt(inp.value) || 12;
+  cpData.monthlyGoal = val;
+  inp.outerHTML = `<button class="goal-edit-btn" onclick="editGoal()" id="goalEditBtn">Edit goal</button>`;
+  updateGoalBar();
+  scheduleSave();
+}
+
+/* ============================================================
+   VIEW TOGGLE
+   ============================================================ */
+function switchView(v) {
+  curView = v;
+  document.getElementById('viewCalendar').style.display = v === 'calendar' ? '' : 'none';
+  document.getElementById('viewList').style.display     = v === 'list'     ? '' : 'none';
+  document.getElementById('viewBtnCal').classList.toggle('active',  v === 'calendar');
+  document.getElementById('viewBtnList').classList.toggle('active', v === 'list');
+}
+
+/* ============================================================
+   CALENDAR
+   ============================================================ */
+function shiftMonth(dir) {
+  calMonth += dir;
+  if (calMonth > 11) { calMonth = 0;  calYear++; }
+  if (calMonth < 0)  { calMonth = 11; calYear--; }
+  renderCalendar();
+}
+
+function renderCalendar() {
+  const MONTHS = ['January','February','March','April','May','June',
+                  'July','August','September','October','November','December'];
+  const DOW = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+
+  document.getElementById('calMonthLabel').textContent = MONTHS[calMonth] + ' ' + calYear;
+
+  const firstDow   = new Date(calYear, calMonth, 1).getDay();
+  const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
+  const todayStr   = new Date().toISOString().slice(0,10);
+
+  // Build post index by date
+  const byDate = {};
+  (cpData.posts || []).forEach(p => {
+    if (p.date && p.date.startsWith(calYear + '-' + String(calMonth+1).padStart(2,'0'))) {
+      if (!byDate[p.date]) byDate[p.date] = [];
+      byDate[p.date].push(p);
+    }
+  });
+
+  let html = DOW.map(d => `<div class="cal-dow">${d}</div>`).join('');
+
+  // Leading empty cells
+  for (let i = 0; i < firstDow; i++) html += `<div class="cal-cell empty"></div>`;
+
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dateStr = calYear + '-' + String(calMonth+1).padStart(2,'0') + '-' + String(d).padStart(2,'0');
+    const isToday = dateStr === todayStr;
+    const posts   = byDate[dateStr] || [];
+
+    let chipsHtml = '';
+    const visible = posts.slice(0, 2);
+    visible.forEach(p => {
+      const mainColor = p.platforms && p.platforms.length
+        ? PLATFORM_META[p.platforms[0]]?.color || '#6b7280'
+        : '#6b7280';
+      const dots = (p.platforms || []).map(pl =>
+        `<span style="display:inline-block;width:5px;height:5px;border-radius:50%;background:#fff;opacity:.8;margin-right:1px;"></span>`
+      ).join('');
+      chipsHtml += `<div class="cal-post-chip" style="background:${mainColor};"
+        onclick="event.stopPropagation();openModal('${p.id}')" title="${esc(p.title)}">
+        ${dots}${esc(p.title)}
+      </div>`;
+    });
+    if (posts.length > 2) {
+      chipsHtml += `<div class="cal-more" onclick="event.stopPropagation();switchView('list')">+${posts.length-2} more</div>`;
+    }
+
+    html += `<div class="cal-cell${isToday?' today':''}">
+      <div class="cal-day-num" onclick="openModal(null,'${dateStr}')">${d}</div>
+      ${chipsHtml}
+    </div>`;
+  }
+
+  // Trailing empty cells
+  const total = firstDow + daysInMonth;
+  const trail = total % 7 === 0 ? 0 : 7 - (total % 7);
+  for (let i = 0; i < trail; i++) html += `<div class="cal-cell empty"></div>`;
+
+  document.getElementById('calGrid').innerHTML = html;
+}
+
+/* ============================================================
+   LIST VIEW
+   ============================================================ */
+function setFilter(type, val, btn) {
+  if (type === 'platform') {
+    filterPlatform = val;
+    document.querySelectorAll('#filterPlatform .filter-chip').forEach(b => b.classList.remove('active'));
+  } else {
+    filterStatus = val;
+    document.querySelectorAll('#filterStatus .filter-chip').forEach(b => b.classList.remove('active'));
+  }
+  btn.classList.add('active');
+  renderList();
+}
+
+function renderList() {
+  const container = document.getElementById('postList');
+  let posts = [...(cpData.posts || [])];
+
+  if (filterPlatform !== 'all') posts = posts.filter(p => (p.platforms||[]).includes(filterPlatform));
+  if (filterStatus   !== 'all') posts = posts.filter(p => p.status === filterStatus);
+
+  posts.sort((a,b) => (a.date||'') < (b.date||'') ? -1 : 1);
+
+  if (!posts.length) {
+    container.innerHTML = `<div class="list-empty">No posts match the current filters.<br><span style="font-size:12px;">Click <b>+ New Post</b> to add one.</span></div>`;
+    return;
+  }
+
+  container.innerHTML = posts.map(p => {
+    const sm = STATUS_META[p.status] || STATUS_META.drafting;
+    const dots = (p.platforms||[]).map(pl => `<span class="pdot ${pl}" title="${PLATFORM_META[pl]?.label||pl}"></span>`).join('');
+    const dateStr = p.date ? fmtDate(p.date) : 'No date';
+    return `<div class="post-card" onclick="openModal('${p.id}')">
+      <div class="post-card-left">
+        <div class="post-card-title">${esc(p.title)}</div>
+        <div class="post-card-meta">
+          <div class="post-card-date">📅 ${dateStr}</div>
+          <div class="platform-dots">${dots}</div>
+          <span class="status-badge ${p.status}">${sm.emoji} ${sm.label}</span>
+        </div>
+        ${p.notes ? `<div class="post-card-notes">${esc(p.notes)}</div>` : ''}
+      </div>
+      ${p.ghlLink ? `<a href="${esc(p.ghlLink)}" target="_blank" rel="noopener"
+        onclick="event.stopPropagation()"
+        style="font-size:11px;font-weight:700;color:var(--primary);white-space:nowrap;flex-shrink:0;padding-top:2px;">
+        Open in GHL ↗</a>` : ''}
+    </div>`;
+  }).join('');
+}
+
+/* ============================================================
+   IDEAS BANK
+   ============================================================ */
+function addIdea() {
+  const inp   = document.getElementById('ideaInput');
+  const title = inp.value.trim();
+  if (!title) return;
+  if (!cpData.ideas) cpData.ideas = [];
+  cpData.ideas.unshift({ id: uid(), title, notes: '' });
+  inp.value = '';
+  scheduleSave();
+  renderIdeas();
+}
+
+function deleteIdea(id) {
+  cpData.ideas = (cpData.ideas || []).filter(i => i.id !== id);
+  scheduleSave();
+  renderIdeas();
+}
+
+function planIdea(id) {
+  const idea = (cpData.ideas || []).find(i => i.id === id);
+  if (!idea) return;
+  openModal(null, null, idea.title);
+}
+
+function renderIdeas() {
+  const container = document.getElementById('ideasList');
+  const ideas = cpData.ideas || [];
+  if (!ideas.length) {
+    container.innerHTML = `<div class="ideas-empty">No ideas yet — add one above to build your content list.</div>`;
+    return;
+  }
+  container.innerHTML = ideas.map(i => `
+    <div class="idea-item">
+      <div class="idea-bullet"></div>
+      <div class="idea-text">${esc(i.title)}</div>
+      <div class="idea-actions">
+        <button class="btn-plan-it" onclick="planIdea('${i.id}')">→ Plan It</button>
+        <button class="btn-idea-del" onclick="deleteIdea('${i.id}')" title="Remove idea">&times;</button>
+      </div>
+    </div>`).join('');
+}
+
+/* ============================================================
+   POST MODAL
+   ============================================================ */
+function openModal(postId = null, preDate = null, preTitle = null) {
+  editingPostId = postId || null;
+  resetModal();
+
+  if (postId) {
+    // Editing existing
+    const p = (cpData.posts || []).find(x => x.id === postId);
+    if (!p) return;
+    document.getElementById('modalTitle').textContent = 'Edit Post';
+    document.getElementById('btnDeletePost').style.display = '';
+    document.getElementById('mTitle').value = p.title || '';
+    document.getElementById('mDate').value  = p.date  || '';
+    document.getElementById('mNotes').value = p.notes || '';
+    document.getElementById('mGHL').value   = p.ghlLink || '';
+    (p.platforms || []).forEach(pl => {
+      const cb = document.querySelector(`#mPlatforms input[value="${pl}"]`);
+      if (cb) { cb.checked = true; cb.closest('.plat-chip').classList.add('sel-' + pl); }
+    });
+    const statusCb = document.querySelector(`#mStatuses input[value="${p.status}"]`);
+    if (statusCb) { statusCb.checked = true; statusCb.closest('.stat-chip').classList.add('sel-' + p.status); }
+  } else {
+    // New post
+    document.getElementById('modalTitle').textContent = 'New Post';
+    document.getElementById('btnDeletePost').style.display = 'none';
+    if (preDate)  document.getElementById('mDate').value  = preDate;
+    if (preTitle) document.getElementById('mTitle').value = preTitle;
+    // Default status: drafting
+    const cb = document.querySelector('#mStatuses input[value="drafting"]');
+    if (cb) { cb.checked = true; cb.closest('.stat-chip').classList.add('sel-drafting'); }
+  }
+
+  document.getElementById('postModal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+  setTimeout(() => document.getElementById('mTitle').focus(), 50);
+}
+
+function resetModal() {
+  document.getElementById('mTitle').value = '';
+  document.getElementById('mDate').value  = '';
+  document.getElementById('mNotes').value = '';
+  document.getElementById('mGHL').value   = '';
+  document.querySelectorAll('#mPlatforms input').forEach(cb => {
+    cb.checked = false;
+    cb.closest('.plat-chip').className = 'plat-chip';
+  });
+  document.querySelectorAll('#mStatuses input').forEach(cb => {
+    cb.checked = false;
+    cb.closest('.stat-chip').className = 'stat-chip';
+  });
+}
+
+function closeModal() {
+  document.getElementById('postModal').classList.remove('open');
+  document.body.style.overflow = '';
+  editingPostId = null;
+}
+
+function togglePlat(cb, chipId, pl) {
+  document.getElementById(chipId).classList.toggle('sel-' + pl, cb.checked);
+}
+
+function toggleStat(cb, chipId, st) {
+  document.querySelectorAll('.stat-chip').forEach(el => {
+    el.className = 'stat-chip'; // reset all
+  });
+  if (cb.checked) document.getElementById(chipId).classList.add('sel-' + st);
+}
+
+function savePost() {
+  const title = document.getElementById('mTitle').value.trim();
+  if (!title) { document.getElementById('mTitle').style.borderColor = '#ef4444'; document.getElementById('mTitle').focus(); return; }
+  document.getElementById('mTitle').style.borderColor = '';
+
+  const platforms = [];
+  document.querySelectorAll('#mPlatforms input:checked').forEach(cb => platforms.push(cb.value));
+
+  const statusCb = document.querySelector('#mStatuses input:checked');
+  const status   = statusCb ? statusCb.value : 'drafting';
+
+  const post = {
+    id:        editingPostId || uid(),
+    title,
+    platforms,
+    status,
+    date:      document.getElementById('mDate').value || '',
+    notes:     document.getElementById('mNotes').value.trim(),
+    ghlLink:   document.getElementById('mGHL').value.trim(),
+  };
+
+  if (editingPostId) {
+    const idx = cpData.posts.findIndex(p => p.id === editingPostId);
+    if (idx > -1) cpData.posts[idx] = post;
+  } else {
+    if (!cpData.posts) cpData.posts = [];
+    cpData.posts.push(post);
+    // If promoted from idea, remove the idea with matching title
+    if (cpData.ideas) {
+      const iIdx = cpData.ideas.findIndex(i => i.title === title);
+      if (iIdx > -1) cpData.ideas.splice(iIdx, 1);
+    }
+  }
+
+  scheduleSave();
+  closeModal();
+  refreshAll();
+}
+
+function deletePost() {
+  if (!editingPostId) return;
+  if (!confirm('Delete this post?')) return;
+  cpData.posts = (cpData.posts || []).filter(p => p.id !== editingPostId);
+  scheduleSave();
+  closeModal();
+  refreshAll();
+}
+
+/* ---- Modal click-outside / Escape ---- */
+document.getElementById('postModal').addEventListener('click', e => {
+  if (e.target === e.currentTarget) closeModal();
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeModal();
+});
+
+/* ---- Utilities ---- */
+function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
+function esc(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function fmtDate(iso) {
+  if (!iso) return '';
+  return new Date(iso + 'T12:00:00').toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' });
+}
+</script>
+</body>
+</html>

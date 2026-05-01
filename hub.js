@@ -60,7 +60,8 @@ const HUB_NAV = [
   { label: '🟡 MARKETING', color: '#eab308', items: [
     { text: 'Marketing Avenues',     href: 'marketing.html' },
     { text: 'Website Page Tracker',  href: 'website-pages.html' },
-    { text: 'Content Planner',       href: 'coming-soon.html?page=Content+Planner' },
+    { text: 'Content Calendar',      href: 'content-calendar.html' },
+    { text: 'Content Planner',       href: 'content-planner.html' },
     { text: 'Citation Websites',     href: 'coming-soon.html?page=Citation+Websites' },
     { text: 'Affiliate Links',       href: 'marketing.html#affiliates' },
   ]},
