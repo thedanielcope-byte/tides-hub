@@ -250,9 +250,18 @@
   </style>
 </head>
 <body>
-  <!-- Sidebar injected by hub.js -->
-  <main class="content">
+
+<div class="main-content">
+  <div class="topbar">
+    <button class="topbar-hamburger" id="hubHamburger" aria-label="Open menu">&#9776;</button>
+    <span class="topbar-crumb">Tides Bookkeeping</span>
+    <span class="topbar-sep">/</span>
+    <span class="topbar-title">Content Calendar</span>
+  </div>
+
+  <div class="page-content">
     <div class="page-header">
+      <div class="page-icon">📅</div>
       <h1 class="page-title">Content Calendar</h1>
       <p class="page-subtitle">When to build what. 12 weeks of pre-scheduled pages, sortable by date. Check off as you ship.</p>
     </div>
@@ -317,7 +326,8 @@
 
     <!-- Weeks -->
     <div id="weeksContainer"></div>
-  </main>
+  </div><!-- /page-content -->
+</div><!-- /main-content -->
 
   <script src="hub.js"></script>
   <script>
