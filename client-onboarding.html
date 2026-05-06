@@ -415,7 +415,11 @@
          FORM
     ───────────────────────────────────── -->
     <div class="sop-card">
-      <h2 style="margin-bottom:18px;">Client Info</h2>
+      <h2 style="margin-bottom:8px;">Client Info</h2>
+      <p style="font-size:12.5px;color:var(--text-muted);margin-bottom:18px;background:#f9fafb;padding:10px 14px;border-radius:6px;border:1px solid var(--border);">
+        💡 <strong>Auto-hide:</strong> Leave any optional URL blank and that tile won't render on the client's hub.
+        <strong>Tile order:</strong> Reports → Upload → Payroll → Tax Documents → Puzzle → QuickBooks → Extras (in the order you add them).
+      </p>
 
       <div class="section-title">Identity</div>
       <div class="form-grid">
@@ -449,7 +453,7 @@
           <input type="url" id="f-payroll" placeholder="https://1drv.ms/f/s!..." autocomplete="off" />
         </div>
         <div class="form-field">
-          <label>Tax Documents folder <span class="hint">view-only share link</span></label>
+          <label>Tax Documents folder <span class="hint">view-only link, leave blank to hide tile</span></label>
           <input type="url" id="f-tax" placeholder="https://1drv.ms/f/s!..." autocomplete="off" />
         </div>
       </div>
