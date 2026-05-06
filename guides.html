@@ -398,12 +398,16 @@ function esc(s) {
 
 /* ---- Load / Save ---- */
 async function initGuides() {
-  const data = await loadHubContent(GUIDES_KEY);
+  let data = await loadHubContent(GUIDES_KEY);
+  // content_value may come back as a JSON string if the column is text type
+  if (typeof data === 'string') { try { data = JSON.parse(data); } catch { data = null; } }
   if (data && data.categories && Array.isArray(data.categories)) {
     guidesState = data;
   } else {
+    // Use defaults in memory only — never overwrite Supabase here,
+    // because null can mean a transient network error, not just "first run".
+    // Data will be written to Supabase on the first real user edit.
     guidesState = JSON.parse(JSON.stringify(DEFAULT_STATE));
-    await saveHubContent(GUIDES_KEY, guidesState);
   }
   render();
 }
