@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>New Client Onboarding — Tides Hub</title>
+  <link rel="stylesheet" href="hub.css">
+  <style>
+    /* Page-specific styles */
+    .sop-card {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 22px 26px;
+      box-shadow: var(--shadow-sm);
+      margin-bottom: 22px;
+    }
+    .sop-card h2 {
+      font-size: 16px;
+      margin-bottom: 14px;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .sop-card .step-num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px; height: 24px;
+      background: var(--primary);
+      color: var(--white);
+      border-radius: 50%;
+      font-size: 12px;
+      font-weight: 800;
+    }
+    .sop-card p, .sop-card li {
+      font-size: 13.5px;
+      color: var(--text-2);
+      line-height: 1.7;
+    }
+    .sop-card ul, .sop-card ol {
+      padding-left: 22px;
+      margin: 8px 0;
+    }
+    .sop-card li { margin-bottom: 4px; }
+    .sop-card strong { color: var(--text); }
+    .sop-card code {
+      background: #f3f4f6;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: 'SF Mono', Menlo, monospace;
+      font-size: 12px;
+    }
+
+    /* Folder structure visual */
+    .folder-tree {
+      background: #f9fafb;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 12px 18px;
+      font-family: 'SF Mono', Menlo, monospace;
+      font-size: 12px;
+      color: var(--text-2);
+      line-height: 1.7;
+      margin: 10px 0;
+    }
+    .folder-tree .folder { color: var(--primary); font-weight: 600; }
+
+    /* Share-type table */
+    .share-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 10px 0;
+      font-size: 13px;
+    }
+    .share-table th, .share-table td {
+      text-align: left;
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--border);
+    }
+    .share-table th {
+      background: #f9fafb;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+      color: var(--text-muted);
+      font-weight: 700;
+    }
+    .share-table tr:last-child td { border-bottom: none; }
+    .share-table .pill {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+    .pill-view { background: #d1fae5; color: #065f46; }
+    .pill-upload { background: #fef3c7; color: #92400e; }
+
+    /* Form */
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px 18px;
+    }
+    .form-grid.full { grid-template-columns: 1fr; }
+    .form-field {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+    .form-field.span-2 { grid-column: span 2; }
+    .form-field label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .form-field label .req { color: #ef4444; }
+    .form-field label .hint { color: var(--text-muted); font-weight: 400; font-size: 11px; }
+    .form-field input,
+    .form-field textarea {
+      width: 100%;
+      padding: 9px 12px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 13px;
+      font-family: var(--font);
+      color: var(--text);
+      transition: border-color .15s, box-shadow .15s;
+      background: var(--white);
+    }
+    .form-field input:focus,
+    .form-field textarea:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(33,81,151,.1);
+    }
+    .form-field input::placeholder,
+    .form-field textarea::placeholder {
+      color: #c7cdd6;
+      font-size: 12.5px;
+    }
+    .form-field textarea {
+      resize: vertical;
+      min-height: 60px;
+      font-family: 'SF Mono', Menlo, monospace;
+      font-size: 12px;
+    }
+
+    .form-section-divider {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 22px 0 18px;
+    }
+    .section-title {
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+    }
+
+    /* Buttons */
+    .actions-row {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-top: 22px;
+      padding-top: 22px;
+      border-top: 1px solid var(--border);
+    }
+    .btn {
+      padding: 10px 18px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      border: 1px solid transparent;
+      cursor: pointer;
+      transition: all .15s;
+      font-family: var(--font);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .btn-primary {
+      background: var(--primary);
+      color: var(--white);
+      border-color: var(--primary);
+    }
+    .btn-primary:hover { background: #1c4683; }
+    .btn-primary:disabled {
+      background: #c7cdd6;
+      border-color: #c7cdd6;
+      cursor: not-allowed;
+    }
+    .btn-primary.copied {
+      background: #10b981;
+      border-color: #10b981;
+    }
+    .btn-secondary {
+      background: var(--white);
+      color: var(--text);
+      border-color: var(--border);
+    }
+    .btn-secondary:hover { border-color: var(--text-muted); color: var(--text); }
+    .btn-danger {
+      background: var(--white);
+      color: #ef4444;
+      border-color: var(--border);
+    }
+    .btn-danger:hover { border-color: #ef4444; }
+
+    .save-status {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .save-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: #10b981;
+    }
+
+    /* Generated prompt preview */
+    .preview-card {
+      background: #0f172a;
+      color: #e2e8f0;
+      border-radius: var(--radius);
+      padding: 22px;
+      margin-top: 22px;
+      box-shadow: var(--shadow-sm);
+    }
+    .preview-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+    }
+    .preview-header h3 {
+      font-size: 13px;
+      font-weight: 600;
+      color: #cbd5e1;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+    }
+    .preview-text {
+      font-family: 'SF Mono', Menlo, monospace;
+      font-size: 12.5px;
+      line-height: 1.7;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .preview-text .empty-tag {
+      background: rgba(239,68,68,.18);
+      color: #fca5a5;
+      padding: 1px 5px;
+      border-radius: 3px;
+    }
+
+    /* Extra links rows */
+    .extra-link-row {
+      display: grid;
+      grid-template-columns: 1fr 2fr 32px;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    .extra-link-row input {
+      padding: 7px 10px;
+      font-size: 12.5px;
+    }
+    .remove-link {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      cursor: pointer;
+      color: var(--text-muted);
+      font-size: 14px;
+      transition: all .15s;
+    }
+    .remove-link:hover { color: #ef4444; border-color: #ef4444; }
+    .add-link {
+      background: none;
+      border: 1px dashed var(--border);
+      color: var(--text-muted);
+      padding: 7px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 600;
+      transition: all .15s;
+      width: 100%;
+    }
+    .add-link:hover { border-color: var(--primary); color: var(--primary); }
+
+    /* Field validation */
+    .form-field.invalid input { border-color: #ef4444; }
+    .form-field.invalid label .req { animation: shake .3s; }
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-3px); }
+      75% { transform: translateX(3px); }
+    }
+
+    @media (max-width: 768px) {
+      .form-grid, .form-grid.full { grid-template-columns: 1fr; }
+      .form-field.span-2 { grid-column: 1; }
+      .extra-link-row { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="main-content">
+  <div class="topbar">
+    <button class="topbar-hamburger" id="hubHamburger" aria-label="Open menu">&#9776;</button>
+    <span class="topbar-crumb">Tides Bookkeeping</span>
+    <span class="topbar-sep">/</span>
+    <span class="topbar-title">New Client Onboarding</span>
+  </div>
+
+  <div class="page-content">
+    <div class="page-header">
+      <div class="page-icon">🚀</div>
+      <h1 class="page-title">New Client Onboarding</h1>
+      <p class="page-subtitle">Standard operating procedure + a form that builds your Claude prompt automatically. Fill it out top-to-bottom, then click <strong>Copy Claude Prompt</strong>.</p>
+    </div>
+
+    <!-- ─────────────────────────────────────
+         STEP 1 — OneDrive folders
+    ───────────────────────────────────── -->
+    <div class="sop-card">
+      <h2><span class="step-num">1</span> Set up OneDrive folders</h2>
+      <p>Create one top-level folder per client with this structure:</p>
+      <div class="folder-tree">
+📁 <span class="folder">Tides Bookkeeping Clients/</span>
+  📁 <span class="folder">[Client Name]/</span>          ← top-level for this client
+    📁 <span class="folder">Reports/</span>              ← monthly P&amp;L, balance sheet, cash flow
+       📁 <span class="folder">2026/</span>
+          January/, February/, March/...
+    📁 <span class="folder">Uploads/</span>              ← client drops receipts/invoices here
+    📁 <span class="folder">Payroll/</span>              ← optional — only if you do their payroll
+    📁 <span class="folder">Tax Documents/</span>        ← year-end packages, 1099s, etc.
+      </div>
+      <p><strong>Pro tip:</strong> Keep an empty <code>Client Template/</code> folder. When onboarding new clients, right-click → copy the template, rename it. Saves 2 min of folder creation each time.</p>
+    </div>
+
+    <!-- ─────────────────────────────────────
+         STEP 2 — Grab share links
+    ───────────────────────────────────── -->
+    <div class="sop-card">
+      <h2><span class="step-num">2</span> Grab share links from each folder</h2>
+      <p><strong>Two different share types matter</strong> — get this right or clients can see/edit things they shouldn't:</p>
+      <table class="share-table">
+        <thead>
+          <tr>
+            <th>Folder</th>
+            <th>How to share</th>
+            <th>Type</th>
+            <th>Used as</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Reports</strong></td>
+            <td>Right-click → Share → "Anyone with link can view"</td>
+            <td><span class="pill pill-view">View only</span></td>
+            <td><code>reports_url</code></td>
+          </tr>
+          <tr>
+            <td><strong>Uploads</strong></td>
+            <td>Right-click → <strong>Request Files</strong> → title: "Upload to Tides"</td>
+            <td><span class="pill pill-upload">Upload only</span></td>
+            <td><code>upload_url</code></td>
+          </tr>
+          <tr>
+            <td><strong>Payroll</strong> <em>(optional)</em></td>
+            <td>Right-click → Share → "Anyone with link can view"</td>
+            <td><span class="pill pill-view">View only</span></td>
+            <td><code>payroll_url</code></td>
+          </tr>
+          <tr>
+            <td><strong>Tax Documents</strong></td>
+            <td>Right-click → Share → "Anyone with link can view"</td>
+            <td><span class="pill pill-view">View only</span></td>
+            <td>Quick Link</td>
+          </tr>
+        </tbody>
+      </table>
+      <p><strong>Why two share types?</strong> Regular share = client can VIEW (download) but not modify. <strong>Request Files</strong> = client can UPLOAD but can't see other files in the folder. Critical for security: prevents one client from accidentally seeing another's docs.</p>
+    </div>
+
+    <!-- ─────────────────────────────────────
+         STEP 3 — Fill out the form below
+    ───────────────────────────────────── -->
+    <div class="sop-card">
+      <h2><span class="step-num">3</span> Fill out the form below</h2>
+      <p>Paste the share links you grabbed in Step 2 + add any extra dashboard URLs. The form auto-saves as you type. When done, click <strong>Copy Claude Prompt</strong> at the bottom.</p>
+    </div>
+
+    <!-- ─────────────────────────────────────
+         FORM
+    ───────────────────────────────────── -->
+    <div class="sop-card">
+      <h2 style="margin-bottom:18px;">Client Info</h2>
+
+      <div class="section-title">Identity</div>
+      <div class="form-grid">
+        <div class="form-field" data-required>
+          <label>Client name <span class="req">*</span> <span class="hint">e.g., Smith &amp; Co</span></label>
+          <input type="text" id="f-client-name" placeholder="Smith & Co" autocomplete="off" />
+        </div>
+        <div class="form-field" data-required>
+          <label>URL slug <span class="req">*</span> <span class="hint">auto-fills from name</span></label>
+          <input type="text" id="f-slug" placeholder="smith-co" autocomplete="off" />
+        </div>
+        <div class="form-field span-2" data-required>
+          <label>Login email <span class="req">*</span> <span class="hint">client uses this to log in</span></label>
+          <input type="email" id="f-email" placeholder="john@smithco.com" autocomplete="off" />
+        </div>
+      </div>
+
+      <hr class="form-section-divider" />
+      <div class="section-title">OneDrive Links</div>
+      <div class="form-grid full">
+        <div class="form-field" data-required>
+          <label>Reports folder <span class="req">*</span> <span class="hint">View-only share link</span></label>
+          <input type="url" id="f-reports" placeholder="https://1drv.ms/f/s!..." autocomplete="off" />
+        </div>
+        <div class="form-field" data-required>
+          <label>Uploads folder <span class="req">*</span> <span class="hint">Request Files link</span></label>
+          <input type="url" id="f-upload" placeholder="https://onedrive.live.com/request-files/..." autocomplete="off" />
+        </div>
+        <div class="form-field">
+          <label>Payroll folder <span class="hint">leave blank if no payroll service</span></label>
+          <input type="url" id="f-payroll" placeholder="https://1drv.ms/f/s!..." autocomplete="off" />
+        </div>
+        <div class="form-field">
+          <label>Tax Documents folder <span class="hint">view-only share link</span></label>
+          <input type="url" id="f-tax" placeholder="https://1drv.ms/f/s!..." autocomplete="off" />
+        </div>
+      </div>
+
+      <hr class="form-section-divider" />
+      <div class="section-title">Dashboard Quick Links</div>
+      <div class="form-grid full">
+        <div class="form-field">
+          <label>QuickBooks Online URL <span class="hint">leave blank to skip</span></label>
+          <input type="url" id="f-qbo" placeholder="https://qbo.intuit.com/app/homepage" autocomplete="off" />
+        </div>
+        <div class="form-field">
+          <label>Puzzle Dashboard URL <span class="hint">leave blank to skip</span></label>
+          <input type="url" id="f-puzzle" placeholder="https://app.puzzle.io/a/client-slug" autocomplete="off" />
+        </div>
+      </div>
+
+      <hr class="form-section-divider" />
+      <div class="section-title">Extra Quick Links (optional)</div>
+      <p style="font-size:13px;color:var(--text-muted);margin-bottom:12px;">Add custom links — bank portal, insurance, internal docs, etc.</p>
+      <div id="extra-links-container"></div>
+      <button type="button" class="add-link" id="btn-add-link">+ Add another link</button>
+
+      <!-- Actions -->
+      <div class="actions-row">
+        <button type="button" class="btn btn-primary" id="btn-copy" disabled>📋 Copy Claude Prompt</button>
+        <button type="button" class="btn btn-secondary" id="btn-clear">Clear Form</button>
+        <span class="save-status" id="save-status">
+          <span class="save-dot"></span> Auto-saved locally
+        </span>
+      </div>
+    </div>
+
+    <!-- ─────────────────────────────────────
+         GENERATED PROMPT PREVIEW
+    ───────────────────────────────────── -->
+    <div class="preview-card">
+      <div class="preview-header">
+        <h3>📝 Generated Claude Prompt (live preview)</h3>
+        <span style="font-size:11px;color:#94a3b8;">Updates as you type</span>
+      </div>
+      <div class="preview-text" id="preview"></div>
+    </div>
+
+    <!-- ─────────────────────────────────────
+         AFTER YOU PUSH
+    ───────────────────────────────────── -->
+    <div class="sop-card" style="margin-top:22px;">
+      <h2><span class="step-num">4</span> After Claude generates the hub</h2>
+      <p>Claude will reply with a confirmation. Then run these commands in Terminal:</p>
+      <div class="folder-tree" style="background:#0f172a;color:#e2e8f0;">cd "/Users/danielcope/Library/Mobile Documents/com~apple~CloudDocs/Claude/tides-portal"
+git add -A
+git commit -m "Add client: <span style="color:#fbbf24;">[Client Name]</span>"
+git push</div>
+      <p><strong>Cloudflare Access:</strong> Don't forget to add the client's email to the allowlist policy:</p>
+      <ul>
+        <li>Cloudflare Dashboard → Zero Trust → Access → Policies → <strong>Allow Clients</strong> → Edit</li>
+        <li>Add email → Save</li>
+      </ul>
+      <p><strong>Email the client:</strong> Send them their portal URL: <code>https://portal.tidesbookkeeping.com</code> — they'll enter their email, get a 6-digit code, and land on their hub.</p>
+    </div>
+
+  </div><!-- /page-content -->
+</div><!-- /main-content -->
+
+<script src="hub.js"></script>
+<script>
+  /* ─────────────────────────────────────────────
+     STATE & STORAGE
+     ───────────────────────────────────────────── */
+  const STORAGE_KEY = 'tides_client_onboarding_draft_v1';
+
+  function defaultState() {
+    return {
+      client_name: '', slug: '', email: '',
+      reports: '', upload: '', payroll: '', tax: '',
+      qbo: '', puzzle: '',
+      extra: [], // [{label, url}]
+    };
+  }
+
+  let state = (() => {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) return Object.assign(defaultState(), JSON.parse(raw));
+    } catch {}
+    return defaultState();
+  })();
+
+  function save() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    flashSaveStatus();
+  }
+
+  let saveStatusTimer = null;
+  function flashSaveStatus() {
+    const el = document.getElementById('save-status');
+    if (!el) return;
+    el.style.opacity = '1';
+    clearTimeout(saveStatusTimer);
+    saveStatusTimer = setTimeout(() => { el.style.opacity = '0.6'; }, 1200);
+  }
+
+  /* ─────────────────────────────────────────────
+     DOM HOOKUPS
+     ───────────────────────────────────────────── */
+  function $(id) { return document.getElementById(id); }
+
+  function slugify(s) {
+    return s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+  }
+
+  // Bind simple text inputs
+  const inputs = {
+    'f-client-name': 'client_name',
+    'f-slug': 'slug',
+    'f-email': 'email',
+    'f-reports': 'reports',
+    'f-upload': 'upload',
+    'f-payroll': 'payroll',
+    'f-tax': 'tax',
+    'f-qbo': 'qbo',
+    'f-puzzle': 'puzzle',
+  };
+
+  // Initial render
+  Object.entries(inputs).forEach(([id, key]) => {
+    const el = $(id);
+    if (!el) return;
+    el.value = state[key] || '';
+    el.addEventListener('input', () => {
+      state[key] = el.value;
+      // Auto-fill slug from client name
+      if (id === 'f-client-name' && (!state.slug || state.slug === slugify(state.client_name.slice(0, -1)))) {
+        state.slug = slugify(el.value);
+        $('f-slug').value = state.slug;
+      }
+      save();
+      render();
+    });
+  });
+
+  // Extra links
+  function renderExtraLinks() {
+    const container = $('extra-links-container');
+    container.innerHTML = '';
+    state.extra.forEach((link, i) => {
+      const row = document.createElement('div');
+      row.className = 'extra-link-row';
+      row.innerHTML = `
+        <input type="text" placeholder="Label (e.g., Bank Portal)" value="${escapeHtml(link.label)}" data-idx="${i}" data-prop="label" />
+        <input type="url" placeholder="https://..." value="${escapeHtml(link.url)}" data-idx="${i}" data-prop="url" />
+        <button class="remove-link" data-remove="${i}" aria-label="Remove">×</button>
+      `;
+      container.appendChild(row);
+    });
+    container.querySelectorAll('input').forEach(inp => {
+      inp.addEventListener('input', e => {
+        const i = +e.target.dataset.idx;
+        const p = e.target.dataset.prop;
+        state.extra[i][p] = e.target.value;
+        save();
+        render();
+      });
+    });
+    container.querySelectorAll('.remove-link').forEach(btn => {
+      btn.addEventListener('click', () => {
+        state.extra.splice(+btn.dataset.remove, 1);
+        save();
+        renderExtraLinks();
+        render();
+      });
+    });
+  }
+
+  $('btn-add-link').addEventListener('click', () => {
+    state.extra.push({ label: '', url: '' });
+    save();
+    renderExtraLinks();
+    render();
+  });
+
+  function escapeHtml(s) {
+    return (s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
+  }
+
+  /* ─────────────────────────────────────────────
+     PROMPT BUILDER
+     ───────────────────────────────────────────── */
+  function buildPrompt() {
+    const safe = v => (v || '').trim();
+    const orNone = v => safe(v) || 'none';
+    const orSkip = v => safe(v) || 'skip';
+
+    let extraStr;
+    const realExtras = state.extra.filter(e => safe(e.label) && safe(e.url));
+    if (realExtras.length === 0) {
+      extraStr = 'none';
+    } else {
+      extraStr = realExtras.map(e => `${safe(e.label)} | ${safe(e.url)}`).join('; ');
+    }
+
+    return `Create a new client portal:
+
+Client name: ${safe(state.client_name)}
+URL slug: ${safe(state.slug)}
+Login email: ${safe(state.email)}
+
+OneDrive links:
+- Reports folder (view link): ${safe(state.reports)}
+- Uploads folder (Request Files link): ${safe(state.upload)}
+- Payroll folder (view link, or "none"): ${orNone(state.payroll)}
+- Tax Documents folder (view link, or "none"): ${orNone(state.tax)}
+
+Quick Links (in addition to Tax Documents):
+- QuickBooks Online URL: ${orSkip(state.qbo)}
+- Puzzle Dashboard URL: ${orSkip(state.puzzle)}
+- Any extra links (format: Label | URL): ${extraStr}`;
+  }
+
+  function isFormValid() {
+    return safe(state.client_name) && safe(state.slug) && safe(state.email)
+        && safe(state.reports) && safe(state.upload);
+  }
+  function safe(v) { return (v || '').trim(); }
+
+  function render() {
+    // Highlight empty required fields in preview
+    const promptText = buildPrompt();
+    const previewEl = $('preview');
+    // Simple <empty> marker for blank required values right after the colon
+    previewEl.innerHTML = escapeHtml(promptText).replace(
+      /(: )(?=\n|$)/g,
+      '$1<span class="empty-tag">[empty]</span>'
+    );
+
+    // Validation visuals
+    document.querySelectorAll('.form-field[data-required]').forEach(field => {
+      const input = field.querySelector('input');
+      const empty = !safe(input.value);
+      field.classList.toggle('invalid', empty);
+    });
+
+    // Enable/disable copy button
+    $('btn-copy').disabled = !isFormValid();
+  }
+
+  /* ─────────────────────────────────────────────
+     COPY + CLEAR
+     ───────────────────────────────────────────── */
+  $('btn-copy').addEventListener('click', () => {
+    const text = buildPrompt();
+    navigator.clipboard.writeText(text).then(() => {
+      const btn = $('btn-copy');
+      btn.textContent = '✓ Copied! Paste into Claude.';
+      btn.classList.add('copied');
+      setTimeout(() => {
+        btn.textContent = '📋 Copy Claude Prompt';
+        btn.classList.remove('copied');
+      }, 2400);
+    });
+  });
+
+  $('btn-clear').addEventListener('click', () => {
+    if (!confirm('Clear the entire form and start over? This cannot be undone.')) return;
+    state = defaultState();
+    save();
+    Object.entries(inputs).forEach(([id, key]) => { $(id).value = ''; });
+    renderExtraLinks();
+    render();
+  });
+
+  /* ─────────────────────────────────────────────
+     INIT
+     ───────────────────────────────────────────── */
+  renderExtraLinks();
+  render();
+</script>
+
+</body>
+</html>
