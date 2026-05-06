@@ -54,6 +54,7 @@ const HUB_NAV = [
   ]},
   { label: '🟢 OPERATIONS', color: '#22c55e', items: [
     { text: 'Team',          href: 'team.html' },
+    { text: 'SOPs',          href: 'sops.html' },
     { text: 'Tasks \u2197',  href: 'https://thedanielcope.com/tides-bookkeeping-tasks/', external: true },
     { text: 'Meetings',      href: 'coming-soon.html?page=Meetings' },
   ]},

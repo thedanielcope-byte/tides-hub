@@ -1,0 +1,882 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SOPs — Tides Hub</title>
+  <link rel="stylesheet" href="hub.css">
+  <style>
+    /* ---- Page header row ---- */
+    .sops-header-row {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 28px;
+    }
+    .sops-header-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding-top: 4px;
+      flex-shrink: 0;
+    }
+    .btn-edit-sops {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--primary-light);
+      color: var(--primary);
+      border: 1.5px solid var(--primary);
+      border-radius: var(--radius-sm);
+      padding: 7px 14px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: var(--font);
+      transition: background .15s;
+    }
+    .btn-edit-sops:hover { background: rgba(33,81,151,.15); }
+    .btn-edit-sops.active { background: var(--primary); color: #fff; }
+    .btn-edit-sops.active:hover { background: #1a3f78; }
+    .save-flash-sops {
+      font-size: 12px;
+      font-weight: 600;
+      color: #16a34a;
+      opacity: 0;
+      transition: opacity .3s;
+      white-space: nowrap;
+    }
+    .save-flash-sops.show { opacity: 1; }
+
+    /* ---- Category section ---- */
+    .sop-section { margin-bottom: 32px; }
+    .sop-section-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+    .sop-section-name {
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: var(--text-muted);
+    }
+    /* Inline rename input */
+    .cat-rename-input {
+      border: 1.5px solid var(--primary);
+      border-radius: var(--radius-sm);
+      padding: 4px 9px;
+      font-size: 13px;
+      font-family: var(--font);
+      color: var(--text);
+      min-width: 200px;
+    }
+    .cat-rename-input:focus { outline: none; }
+    .btn-cat-action {
+      background: none;
+      border: none;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      padding: 3px 8px;
+      border-radius: var(--radius-sm);
+      font-family: var(--font);
+    }
+    .btn-cat-rename { color: var(--primary); }
+    .btn-cat-rename:hover { background: var(--primary-light); }
+    .btn-cat-save   { background: var(--primary); color: #fff; }
+    .btn-cat-save:hover { background: #1a3f78; }
+    .btn-cat-cancel { color: var(--text-muted); border: 1px solid var(--border) !important; }
+    .btn-cat-cancel:hover { background: #f3f4f6; }
+    .btn-cat-delete { color: #ef4444; }
+    .btn-cat-delete:hover { background: #fef2f2; }
+
+    /* ---- SOP grid ---- */
+    .sop-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 10px;
+    }
+
+    /* ---- SOP tile (read-only) ---- */
+    .sop-tile {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+      box-shadow: var(--shadow-sm);
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      text-decoration: none;
+      color: var(--text-2);
+      transition: border-color .15s, box-shadow .15s;
+    }
+    a.sop-tile:hover {
+      border-color: var(--teal);
+      box-shadow: 0 2px 8px rgba(65,207,208,.18);
+    }
+    .sop-tile-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .sop-tile-title {
+      font-size: 13.5px;
+      font-weight: 600;
+      color: var(--text);
+      line-height: 1.35;
+    }
+    .sop-tile-desc {
+      font-size: 12px;
+      color: var(--text-muted);
+      line-height: 1.45;
+    }
+    .badge-sop-available {
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 20px;
+      background: rgba(65,207,208,.13);
+      color: #0b6b6c;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .badge-sop-coming {
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 20px;
+      background: #f3f4f6;
+      color: var(--text-muted);
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .badge-sop-internal {
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 20px;
+      background: var(--primary-light);
+      color: var(--primary);
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    /* ---- Edit mode tile (click-to-edit) ---- */
+    .sop-tile.editable {
+      cursor: pointer;
+      border-color: #c7d2fe;
+    }
+    .sop-tile.editable:hover {
+      border-color: var(--primary);
+      box-shadow: 0 2px 8px rgba(33,81,151,.15);
+    }
+    .edit-hint {
+      font-size: 10px;
+      color: var(--text-muted);
+      font-style: italic;
+      margin-top: 2px;
+    }
+
+    /* ---- Inline edit form (inside tile) ---- */
+    .sop-tile-editing {
+      background: var(--white);
+      border: 1.5px solid var(--primary);
+      border-radius: var(--radius);
+      padding: 12px 14px;
+      box-shadow: 0 2px 10px rgba(33,81,151,.12);
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      gap: 9px;
+    }
+    .te-label {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      color: var(--primary);
+      margin-bottom: 2px;
+    }
+    .te-input, .te-textarea {
+      width: 100%;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 6px 9px;
+      font-size: 13px;
+      font-family: var(--font);
+      color: var(--text);
+    }
+    .te-input:focus, .te-textarea:focus { outline: none; border-color: var(--primary); }
+    .te-input::placeholder, .te-textarea::placeholder { color: var(--text-muted); }
+    .te-textarea { resize: vertical; min-height: 54px; }
+    .te-link-type-row {
+      display: flex;
+      gap: 6px;
+    }
+    .link-type-btn {
+      flex: 1;
+      padding: 5px 8px;
+      font-size: 11px;
+      font-weight: 700;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      background: none;
+      color: var(--text-muted);
+      font-family: var(--font);
+      text-align: center;
+      transition: all .12s;
+    }
+    .link-type-btn.sel { border-color: var(--primary); background: var(--primary-light); color: var(--primary); }
+    .te-actions { display: flex; gap: 6px; margin-top: 2px; }
+    .btn-te-save {
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius-sm);
+      padding: 6px 13px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: var(--font);
+    }
+    .btn-te-save:hover { background: #1a3f78; }
+    .btn-te-cancel {
+      background: none;
+      color: var(--text-muted);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 6px 11px;
+      font-size: 12px;
+      cursor: pointer;
+      font-family: var(--font);
+    }
+    .btn-te-cancel:hover { background: #f3f4f6; }
+
+    /* ---- Delete (×) button on tile ---- */
+    .btn-del-sop {
+      position: absolute;
+      top: -7px; right: -7px;
+      width: 20px; height: 20px;
+      border-radius: 50%;
+      background: #ef4444;
+      color: #fff;
+      border: none;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      padding: 0;
+      box-shadow: 0 1px 4px rgba(0,0,0,.2);
+      z-index: 2;
+      transition: background .12s;
+      flex-shrink: 0;
+    }
+    .btn-del-sop:hover { background: #b91c1c; }
+
+    /* ---- + Add SOP button ---- */
+    .btn-add-sop-open {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      background: var(--primary-light);
+      color: var(--primary);
+      border: 1px dashed var(--primary);
+      border-radius: var(--radius-sm);
+      padding: 10px 14px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      width: 100%;
+      margin-top: 10px;
+      font-family: var(--font);
+    }
+    .btn-add-sop-open:hover { background: rgba(33,81,151,.13); }
+
+    /* ---- Add SOP inline form ---- */
+    .add-sop-form {
+      background: var(--white);
+      border: 1.5px solid var(--primary);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+      margin-top: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 9px;
+    }
+
+    /* ---- Add Category row ---- */
+    .add-cat-row {
+      display: flex;
+      gap: 8px;
+      margin-top: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .add-cat-input {
+      flex: 1;
+      min-width: 200px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 8px 11px;
+      font-size: 13px;
+      font-family: var(--font);
+      color: var(--text);
+    }
+    .add-cat-input:focus { outline: none; border-color: var(--primary); }
+    .add-cat-input::placeholder { color: var(--text-muted); }
+    .btn-add-cat-save {
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius-sm);
+      padding: 8px 16px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: var(--font);
+      white-space: nowrap;
+    }
+    .btn-add-cat-save:hover { background: #1a3f78; }
+    .btn-add-cat-cancel {
+      background: none;
+      color: var(--text-muted);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 8px 12px;
+      font-size: 13px;
+      cursor: pointer;
+      font-family: var(--font);
+    }
+    .btn-add-cat-cancel:hover { background: #f3f4f6; }
+    .btn-show-add-cat {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: none;
+      color: var(--primary);
+      border: 1.5px dashed var(--primary);
+      border-radius: var(--radius-sm);
+      padding: 10px 20px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: var(--font);
+      margin-top: 8px;
+    }
+    .btn-show-add-cat:hover { background: var(--primary-light); }
+
+    /* ---- Link note ---- */
+    .link-note {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+    .link-note a { color: var(--primary); }
+  </style>
+</head>
+<body>
+
+<div class="main-content">
+  <div class="topbar">
+    <button class="topbar-hamburger" id="hubHamburger" aria-label="Open menu">&#9776;</button>
+    <span class="topbar-crumb">Tides Bookkeeping</span>
+    <span class="topbar-sep">/</span>
+    <span class="topbar-title">SOPs</span>
+  </div>
+
+  <div class="page-content">
+    <div class="sops-header-row">
+      <div>
+        <div class="page-header" style="margin-bottom:0;">
+          <div class="page-icon">📋</div>
+          <h1 class="page-title">SOPs</h1>
+          <p class="page-subtitle">Standard Operating Procedures for the Tides Bookkeeping team. Click a tile to open the document.</p>
+        </div>
+      </div>
+      <div class="sops-header-right">
+        <span class="save-flash-sops" id="sopsSaveFlash">✓ Saved!</span>
+        <button class="btn-edit-sops" id="btnEditSops" onclick="toggleEditMode()">✏️ Edit SOPs</button>
+      </div>
+    </div>
+
+    <div id="sopsContainer"></div>
+  </div>
+</div>
+
+<script src="hub.js"></script>
+<script>
+/* ============================================================
+   SOPs Page — Dynamic categories & tiles
+   ============================================================ */
+
+const SOPS_KEY = 'sops-state';
+
+const DEFAULT_STATE = {
+  categories: [
+    {
+      id: 'client-ops',
+      name: '🤝 Client Operations',
+      sops: [
+        {
+          id: 'co1',
+          title: 'Client Onboarding SOP',
+          description: 'Step-by-step setup for new client portals — OneDrive folders, Cloudflare Access, hub generation, and welcome email.',
+          link: 'client-onboarding-sop.html',
+          linkType: 'internal'
+        },
+        { id: 'co2', title: 'Monthly Close Process',  description: '', link: null, linkType: 'external' },
+        { id: 'co3', title: 'Client Offboarding',     description: '', link: null, linkType: 'external' },
+      ]
+    },
+    {
+      id: 'team-hr',
+      name: '👥 Team & HR',
+      sops: [
+        { id: 'th1', title: 'New Team Member Onboarding', description: '', link: null, linkType: 'external' },
+        { id: 'th2', title: 'Performance Review Process',  description: '', link: null, linkType: 'external' },
+      ]
+    },
+    {
+      id: 'finance',
+      name: '💰 Finance & Billing',
+      sops: [
+        { id: 'fi1', title: 'Invoice & Payment Process', description: '', link: null, linkType: 'external' },
+        { id: 'fi2', title: 'Expense Reimbursement',      description: '', link: null, linkType: 'external' },
+      ]
+    },
+    {
+      id: 'software',
+      name: '💻 Software & Tools',
+      sops: [
+        { id: 'sw1', title: 'QuickBooks Setup Guide',  description: '', link: null, linkType: 'external' },
+        { id: 'sw2', title: 'GoHighLevel Workflow',    description: '', link: null, linkType: 'external' },
+      ]
+    },
+    {
+      id: 'marketing-ops',
+      name: '📢 Marketing',
+      sops: [
+        { id: 'mk1', title: 'Social Media Posting SOP', description: '', link: null, linkType: 'external' },
+      ]
+    },
+  ]
+};
+
+/* ---- State ---- */
+let sopsState    = null;
+let editMode     = false;
+let editingTile  = null;   /* { catId, sopId } */
+let addingIn     = null;   /* catId */
+let renamingCat  = null;   /* catId */
+let addingCat    = false;
+
+/* ---- Boot ---- */
+async function initSops() {
+  const data = await loadHubContent(SOPS_KEY);
+  if (data && data.categories && Array.isArray(data.categories)) {
+    sopsState = data;
+  } else {
+    sopsState = JSON.parse(JSON.stringify(DEFAULT_STATE));
+    await saveHubContent(SOPS_KEY, sopsState);
+  }
+  render();
+}
+
+async function persist() {
+  const ok = await saveHubContent(SOPS_KEY, sopsState);
+  if (ok) {
+    const el = document.getElementById('sopsSaveFlash');
+    el.classList.add('show');
+    setTimeout(() => el.classList.remove('show'), 2500);
+  }
+}
+
+/* ---- Edit mode toggle ---- */
+function toggleEditMode() {
+  editMode    = !editMode;
+  editingTile = null;
+  addingIn    = null;
+  renamingCat = null;
+  addingCat   = false;
+  const btn = document.getElementById('btnEditSops');
+  if (editMode) {
+    btn.textContent = '✕ Done Editing';
+    btn.classList.add('active');
+  } else {
+    btn.innerHTML = '✏️ Edit SOPs';
+    btn.classList.remove('active');
+  }
+  render();
+}
+
+/* ---- Utilities ---- */
+function uid() { return Math.random().toString(36).slice(2, 9); }
+function esc(s) {
+  return String(s || '')
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function badgeForSop(sop) {
+  if (!sop.link) return `<span class="badge-sop-coming">Coming Soon</span>`;
+  if (sop.linkType === 'internal') return `<span class="badge-sop-internal">📄 Hub Page</span>`;
+  return `<span class="badge-sop-available">🔗 Available</span>`;
+}
+
+/* ---- Main render ---- */
+function render() {
+  const container = document.getElementById('sopsContainer');
+  if (!sopsState) { container.innerHTML = '<p style="color:var(--text-muted);font-size:13px;">Loading…</p>'; return; }
+
+  let html = '';
+
+  sopsState.categories.forEach(cat => {
+    const isRenamingThis = renamingCat === cat.id;
+    const isAddingHere   = addingIn   === cat.id;
+
+    html += `<div class="sop-section">`;
+
+    /* ---- Category header ---- */
+    html += `<div class="sop-section-header">`;
+    if (editMode && isRenamingThis) {
+      html += `<input class="cat-rename-input" id="catRenameInput-${cat.id}" value="${esc(cat.name)}"
+        onkeydown="if(event.key==='Enter')saveCatRename('${cat.id}');if(event.key==='Escape')cancelCatRename();">
+        <button class="btn-cat-action btn-cat-save"   onclick="saveCatRename('${cat.id}')">Save</button>
+        <button class="btn-cat-action btn-cat-cancel" onclick="cancelCatRename()">Cancel</button>`;
+    } else {
+      html += `<span class="sop-section-name">${esc(cat.name)}</span>`;
+      if (editMode) {
+        html += `<button class="btn-cat-action btn-cat-rename" onclick="startCatRename('${cat.id}')">✏️ Rename</button>
+                 <button class="btn-cat-action btn-cat-delete" onclick="deleteCat('${cat.id}')">🗑️ Delete</button>`;
+      }
+    }
+    html += `</div>`; /* /sop-section-header */
+
+    /* ---- SOP grid ---- */
+    html += `<div class="sop-grid">`;
+
+    cat.sops.forEach(sop => {
+      const isEditingThis = editingTile && editingTile.catId === cat.id && editingTile.sopId === sop.id;
+
+      if (editMode && isEditingThis) {
+        /* Inline edit form */
+        const lt = sop.linkType || 'external';
+        html += `<div class="sop-tile-editing">
+          <button class="btn-del-sop" onclick="deleteSop('${cat.id}','${sop.id}')" title="Remove">&times;</button>
+          <div><div class="te-label">Title</div>
+            <input class="te-input" id="teTitle-${sop.id}" type="text" value="${esc(sop.title)}" placeholder="SOP title (required)">
+          </div>
+          <div><div class="te-label">Description <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--text-muted);">(optional)</span></div>
+            <textarea class="te-textarea" id="teDesc-${sop.id}" placeholder="Brief one-line summary of what this SOP covers…">${esc(sop.description)}</textarea>
+          </div>
+          <div>
+            <div class="te-label">Document Source</div>
+            <div class="te-link-type-row">
+              <button class="link-type-btn${lt==='external'?' sel':''}" id="ltExt-${sop.id}" onclick="setLinkType('${sop.id}','external')">🔗 External Link</button>
+              <button class="link-type-btn${lt==='internal'?' sel':''}" id="ltInt-${sop.id}" onclick="setLinkType('${sop.id}','internal')">📄 Hub Page</button>
+            </div>
+          </div>
+          <div>
+            <div class="te-label" id="teUrlLabel-${sop.id}">${lt==='internal'?'Hub Page Filename':'URL (OneDrive, SharePoint, Google Drive, etc.)'}</div>
+            <input class="te-input" id="teLink-${sop.id}" type="text"
+              value="${esc(sop.link||'')}"
+              placeholder="${lt==='internal'?'e.g. client-onboarding-sop.html':'Paste share link…'}">
+            <div class="link-note" id="teLinkNote-${sop.id}">${lt==='internal'
+              ? 'Type the filename of the hub page (e.g. <code>client-onboarding-sop.html</code>)'
+              : 'Upload to OneDrive → right-click → Share → "Anyone with link can view" → copy link'}</div>
+          </div>
+          <div class="te-actions">
+            <button class="btn-te-save" onclick="saveTileEdit('${cat.id}','${sop.id}')">Save</button>
+            <button class="btn-te-cancel" onclick="cancelTileEdit()">Cancel</button>
+          </div>
+        </div>`;
+
+      } else if (editMode) {
+        /* Normal tile in edit mode */
+        html += `<div class="sop-tile editable" onclick="openTileEdit('${cat.id}','${sop.id}')">
+          <button class="btn-del-sop" onclick="event.stopPropagation();deleteSop('${cat.id}','${sop.id}')" title="Remove">&times;</button>
+          <div class="sop-tile-top">
+            <div class="sop-tile-title">${esc(sop.title)}</div>
+            ${badgeForSop(sop)}
+          </div>
+          ${sop.description ? `<div class="sop-tile-desc">${esc(sop.description)}</div>` : ''}
+          <div class="edit-hint">Click to edit</div>
+        </div>`;
+
+      } else {
+        /* Read-only tile */
+        const hasLink = sop.link && sop.link.trim();
+        const tag     = hasLink ? 'a' : 'div';
+        const isInternal = sop.linkType === 'internal';
+        const href    = hasLink
+          ? ` href="${esc(sop.link)}"${isInternal ? '' : ' target="_blank" rel="noopener"'}`
+          : '';
+        html += `<${tag} class="sop-tile"${href}>
+          <div class="sop-tile-top">
+            <div class="sop-tile-title">${esc(sop.title)}</div>
+            ${badgeForSop(sop)}
+          </div>
+          ${sop.description ? `<div class="sop-tile-desc">${esc(sop.description)}</div>` : ''}
+        </${tag}>`;
+      }
+    });
+
+    html += `</div>`; /* /sop-grid */
+
+    /* Add SOP form / button */
+    if (editMode) {
+      if (isAddingHere) {
+        const lt = 'external';
+        html += `<div class="add-sop-form">
+          <div><div class="te-label">Title <span style="color:#ef4444;">*</span></div>
+            <input class="te-input" id="addTitle-${cat.id}" type="text" placeholder="SOP title" autocomplete="off">
+          </div>
+          <div><div class="te-label">Description <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--text-muted);">(optional)</span></div>
+            <input class="te-input" id="addDesc-${cat.id}" type="text" placeholder="Brief summary">
+          </div>
+          <div>
+            <div class="te-label">Document Source</div>
+            <div class="te-link-type-row">
+              <button class="link-type-btn sel" id="addLtExt-${cat.id}" onclick="setAddLinkType('${cat.id}','external')">🔗 External Link</button>
+              <button class="link-type-btn"     id="addLtInt-${cat.id}" onclick="setAddLinkType('${cat.id}','internal')">📄 Hub Page</button>
+            </div>
+          </div>
+          <div>
+            <div class="te-label" id="addUrlLabel-${cat.id}">URL (OneDrive, SharePoint, etc.)</div>
+            <input class="te-input" id="addLink-${cat.id}" type="text" placeholder="Paste share link (optional — can add later)" autocomplete="off">
+            <div class="link-note" id="addLinkNote-${cat.id}">Upload to OneDrive → Share → "Anyone with link can view" → copy link</div>
+          </div>
+          <div class="te-actions">
+            <button class="btn-te-save"   onclick="saveNewSop('${cat.id}')">Add SOP</button>
+            <button class="btn-te-cancel" onclick="cancelAdd()">Cancel</button>
+          </div>
+        </div>`;
+      } else {
+        html += `<button class="btn-add-sop-open" onclick="openAddForm('${cat.id}')">+ Add SOP</button>`;
+      }
+    }
+
+    html += `</div>`; /* /sop-section */
+  });
+
+  /* Add Category row (edit mode only) */
+  if (editMode) {
+    if (addingCat) {
+      html += `<div class="add-cat-row">
+        <input class="add-cat-input" id="addCatInput" placeholder="Category name with emoji, e.g. 🔒 Security" autocomplete="off">
+        <button class="btn-add-cat-save"   onclick="saveNewCat()">Add Category</button>
+        <button class="btn-add-cat-cancel" onclick="cancelAddCat()">Cancel</button>
+      </div>`;
+    } else {
+      html += `<button class="btn-show-add-cat" onclick="showAddCat()">+ Add Category</button>`;
+    }
+  }
+
+  container.innerHTML = html;
+
+  /* Auto-focus */
+  if (editingTile) {
+    const el = document.getElementById('teTitle-' + editingTile.sopId);
+    if (el) { el.focus(); el.select(); }
+  }
+  if (addingIn) {
+    const el = document.getElementById('addTitle-' + addingIn);
+    if (el) el.focus();
+  }
+  if (renamingCat) {
+    const el = document.getElementById('catRenameInput-' + renamingCat);
+    if (el) { el.focus(); el.select(); }
+  }
+  if (addingCat) {
+    const el = document.getElementById('addCatInput');
+    if (el) el.focus();
+  }
+}
+
+/* ============================================================
+   Category actions
+   ============================================================ */
+function startCatRename(catId) {
+  editingTile = null; addingIn = null; addingCat = false;
+  renamingCat = catId;
+  render();
+}
+function saveCatRename(catId) {
+  const inp = document.getElementById('catRenameInput-' + catId);
+  const val = inp ? inp.value.trim() : '';
+  if (!val) { if (inp) inp.style.borderColor = '#ef4444'; return; }
+  const cat = sopsState.categories.find(c => c.id === catId);
+  if (cat) cat.name = val;
+  renamingCat = null;
+  persist();
+  render();
+}
+function cancelCatRename() {
+  renamingCat = null;
+  render();
+}
+function deleteCat(catId) {
+  const cat = sopsState.categories.find(c => c.id === catId);
+  if (!cat) return;
+  const count = cat.sops ? cat.sops.length : 0;
+  const msg = count > 0
+    ? `Delete category "${cat.name}" and all ${count} SOP(s) inside it?`
+    : `Delete category "${cat.name}"?`;
+  if (!confirm(msg)) return;
+  sopsState.categories = sopsState.categories.filter(c => c.id !== catId);
+  persist();
+  render();
+}
+
+function showAddCat()    { addingCat = true; editingTile = null; addingIn = null; renamingCat = null; render(); }
+function cancelAddCat()  { addingCat = false; render(); }
+function saveNewCat() {
+  const inp = document.getElementById('addCatInput');
+  const val = inp ? inp.value.trim() : '';
+  if (!val) { if (inp) inp.style.borderColor = '#ef4444'; return; }
+  sopsState.categories.push({ id: uid(), name: val, sops: [] });
+  addingCat = false;
+  persist();
+  render();
+}
+
+/* ============================================================
+   Tile actions
+   ============================================================ */
+function openTileEdit(catId, sopId) {
+  addingIn = null; renamingCat = null; addingCat = false;
+  editingTile = { catId, sopId };
+  render();
+}
+function cancelTileEdit() { editingTile = null; render(); }
+
+function setLinkType(sopId, lt) {
+  document.getElementById('ltExt-' + sopId)?.classList.toggle('sel', lt === 'external');
+  document.getElementById('ltInt-' + sopId)?.classList.toggle('sel', lt === 'internal');
+  const label = document.getElementById('teUrlLabel-' + sopId);
+  const note  = document.getElementById('teLinkNote-' + sopId);
+  const inp   = document.getElementById('teLink-' + sopId);
+  if (lt === 'internal') {
+    if (label) label.textContent = 'Hub Page Filename';
+    if (note)  note.innerHTML = 'Type the filename of the hub page (e.g. <code>client-onboarding-sop.html</code>)';
+    if (inp)   inp.placeholder = 'e.g. client-onboarding-sop.html';
+  } else {
+    if (label) label.textContent = 'URL (OneDrive, SharePoint, Google Drive, etc.)';
+    if (note)  note.innerHTML = 'Upload to OneDrive → right-click → Share → "Anyone with link can view" → copy link';
+    if (inp)   inp.placeholder = 'Paste share link…';
+  }
+}
+
+function setAddLinkType(catId, lt) {
+  document.getElementById('addLtExt-' + catId)?.classList.toggle('sel', lt === 'external');
+  document.getElementById('addLtInt-' + catId)?.classList.toggle('sel', lt === 'internal');
+  const label = document.getElementById('addUrlLabel-' + catId);
+  const note  = document.getElementById('addLinkNote-' + catId);
+  const inp   = document.getElementById('addLink-' + catId);
+  if (lt === 'internal') {
+    if (label) label.textContent = 'Hub Page Filename';
+    if (note)  note.innerHTML = 'Type the filename of the hub page (e.g. <code>client-onboarding-sop.html</code>)';
+    if (inp)   inp.placeholder = 'e.g. my-sop.html';
+  } else {
+    if (label) label.textContent = 'URL (OneDrive, SharePoint, Google Drive, etc.)';
+    if (note)  note.innerHTML = 'Upload to OneDrive → right-click → Share → "Anyone with link can view" → copy link';
+    if (inp)   inp.placeholder = 'Paste share link (optional — can add later)';
+  }
+}
+
+function saveTileEdit(catId, sopId) {
+  const titleEl = document.getElementById('teTitle-' + sopId);
+  const descEl  = document.getElementById('teDesc-'  + sopId);
+  const linkEl  = document.getElementById('teLink-'  + sopId);
+  const title   = titleEl ? titleEl.value.trim() : '';
+  if (!title) { if (titleEl) { titleEl.style.borderColor = '#ef4444'; titleEl.focus(); } return; }
+
+  const lt = document.getElementById('ltInt-' + sopId)?.classList.contains('sel') ? 'internal' : 'external';
+
+  const cat = sopsState.categories.find(c => c.id === catId);
+  if (!cat) return;
+  const sop = cat.sops.find(s => s.id === sopId);
+  if (!sop) return;
+
+  sop.title       = title;
+  sop.description = descEl  ? descEl.value.trim()  : '';
+  sop.link        = linkEl  ? (linkEl.value.trim() || null)  : null;
+  sop.linkType    = lt;
+
+  editingTile = null;
+  persist();
+  render();
+}
+
+function deleteSop(catId, sopId) {
+  const cat = sopsState.categories.find(c => c.id === catId);
+  if (!cat) return;
+  cat.sops = cat.sops.filter(s => s.id !== sopId);
+  if (editingTile && editingTile.sopId === sopId) editingTile = null;
+  persist();
+  render();
+}
+
+function openAddForm(catId) {
+  editingTile = null; renamingCat = null; addingCat = false;
+  addingIn = catId;
+  render();
+}
+function cancelAdd() { addingIn = null; render(); }
+
+function saveNewSop(catId) {
+  const titleEl = document.getElementById('addTitle-' + catId);
+  const descEl  = document.getElementById('addDesc-'  + catId);
+  const linkEl  = document.getElementById('addLink-'  + catId);
+  const title   = titleEl ? titleEl.value.trim() : '';
+  if (!title) { if (titleEl) { titleEl.style.borderColor = '#ef4444'; titleEl.focus(); } return; }
+
+  const lt = document.getElementById('addLtInt-' + catId)?.classList.contains('sel') ? 'internal' : 'external';
+
+  const cat = sopsState.categories.find(c => c.id === catId);
+  if (!cat) return;
+
+  cat.sops.push({
+    id:          uid(),
+    title,
+    description: descEl ? descEl.value.trim() : '',
+    link:        linkEl ? (linkEl.value.trim() || null) : null,
+    linkType:    lt,
+  });
+
+  addingIn = null;
+  persist();
+  render();
+}
+
+/* ---- Keyboard shortcuts ---- */
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    if (editingTile) { cancelTileEdit(); return; }
+    if (addingIn)    { cancelAdd();      return; }
+    if (renamingCat) { cancelCatRename();return; }
+    if (addingCat)   { cancelAddCat();   return; }
+  }
+  if (e.key === 'Enter') {
+    if (editingTile) { saveTileEdit(editingTile.catId, editingTile.sopId); return; }
+    if (addingIn)    { saveNewSop(addingIn);    return; }
+    if (renamingCat) { saveCatRename(renamingCat); return; }
+    if (addingCat)   { saveNewCat();             return; }
+  }
+});
+
+document.addEventListener('DOMContentLoaded', initSops);
+</script>
+</body>
+</html>
