@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Client Onboarding SOP — Tides Bookkeeping</title>
+  <link rel="stylesheet" href="hub.css">
+  <style>
+    /* Document mode — clean print-friendly layout */
+    .sop-doc {
+      max-width: 780px;
+      margin: 0 auto;
+      background: var(--white);
+      padding: 60px 64px;
+      box-shadow: var(--shadow-sm);
+      border-radius: var(--radius);
+      color: var(--text);
+      line-height: 1.65;
+      font-size: 14px;
+    }
+    .sop-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      padding-bottom: 18px;
+      border-bottom: 2px solid var(--primary);
+      margin-bottom: 30px;
+    }
+    .sop-meta .left { flex: 1; }
+    .sop-meta .right { text-align: right; font-size: 11px; color: var(--text-muted); line-height: 1.6; }
+    .sop-title-block { display: flex; align-items: center; gap: 16px; }
+    .sop-title-block img { height: 44px; }
+    .sop-title-block h1 {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--primary);
+      margin: 0;
+      letter-spacing: -.01em;
+    }
+    .sop-subtitle { font-size: 13px; color: var(--text-muted); margin-top: 4px; font-weight: 500; }
+
+    .sop-doc h2 {
+      font-size: 17px;
+      color: var(--primary);
+      margin-top: 30px;
+      margin-bottom: 14px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .sop-doc h2 .num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 26px; height: 26px;
+      background: var(--primary);
+      color: var(--white);
+      border-radius: 50%;
+      font-size: 12px;
+      font-weight: 800;
+      flex-shrink: 0;
+    }
+    .sop-doc h3 {
+      font-size: 14px;
+      margin-top: 20px;
+      margin-bottom: 8px;
+      color: var(--text);
+      font-weight: 700;
+    }
+    .sop-doc p { margin-bottom: 12px; }
+    .sop-doc ul, .sop-doc ol { padding-left: 22px; margin-bottom: 14px; }
+    .sop-doc li { margin-bottom: 5px; }
+    .sop-doc strong { color: var(--text); }
+    .sop-doc em { color: var(--text-2); }
+    .sop-doc code {
+      background: #f3f4f6;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: 'SF Mono', Menlo, monospace;
+      font-size: 12px;
+      color: var(--primary);
+    }
+
+    /* Folder tree */
+    .folder-tree {
+      background: #f9fafb;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 14px 20px;
+      font-family: 'SF Mono', Menlo, monospace;
+      font-size: 12px;
+      line-height: 1.8;
+      color: var(--text-2);
+      margin: 12px 0 18px;
+      page-break-inside: avoid;
+    }
+    .folder-tree .folder { color: var(--primary); font-weight: 600; }
+
+    /* Share table */
+    .share-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 14px 0;
+      font-size: 12.5px;
+      page-break-inside: avoid;
+    }
+    .share-table th, .share-table td {
+      text-align: left;
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      vertical-align: top;
+    }
+    .share-table th {
+      background: #f9fafb;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+      color: var(--text-muted);
+      font-weight: 700;
+    }
+    .share-table .pill {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 10.5px;
+      font-weight: 700;
+    }
+    .pill-view { background: #d1fae5; color: #065f46; }
+    .pill-upload { background: #fef3c7; color: #92400e; }
+
+    /* Callout box */
+    .callout {
+      background: rgba(33,81,151,.05);
+      border-left: 3px solid var(--primary);
+      padding: 14px 18px;
+      border-radius: 6px;
+      margin: 14px 0;
+      font-size: 13px;
+      page-break-inside: avoid;
+    }
+    .callout.warn {
+      background: rgba(239,68,68,.05);
+      border-left-color: #ef4444;
+    }
+    .callout strong { color: var(--text); }
+
+    /* Code block */
+    .code-block {
+      background: #0f172a;
+      color: #e2e8f0;
+      padding: 14px 18px;
+      border-radius: 6px;
+      font-family: 'SF Mono', Menlo, monospace;
+      font-size: 12px;
+      line-height: 1.8;
+      margin: 12px 0;
+      white-space: pre-wrap;
+      page-break-inside: avoid;
+    }
+    .code-block .placeholder { color: #fbbf24; }
+
+    /* Action buttons (hidden when printing) */
+    .toolbar {
+      max-width: 780px;
+      margin: 0 auto 18px;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .toolbar .btn {
+      padding: 9px 16px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      border: 1px solid;
+      transition: all .15s;
+      font-family: var(--font);
+      display: inline-flex; align-items: center; gap: 6px;
+    }
+    .toolbar .btn-primary {
+      background: var(--primary); color: var(--white); border-color: var(--primary);
+    }
+    .toolbar .btn-primary:hover { background: #1c4683; }
+    .toolbar .btn-secondary {
+      background: var(--white); color: var(--text); border-color: var(--border);
+    }
+    .toolbar .btn-secondary:hover { border-color: var(--text-muted); }
+
+    .footer-meta {
+      margin-top: 40px;
+      padding-top: 18px;
+      border-top: 1px solid var(--border);
+      font-size: 11px;
+      color: var(--text-muted);
+      text-align: center;
+    }
+
+    /* PRINT STYLES */
+    @media print {
+      body { background: var(--white) !important; }
+      .sidebar, .topbar, .toolbar { display: none !important; }
+      .main-content { margin-left: 0 !important; }
+      .page-content { padding: 0 !important; }
+      .sop-doc {
+        box-shadow: none !important;
+        padding: 20px 0 !important;
+        max-width: 100% !important;
+      }
+      .sop-doc h2 { page-break-after: avoid; }
+      .sop-doc h3 { page-break-after: avoid; }
+      a { color: var(--text) !important; text-decoration: none; }
+    }
+
+    @media (max-width: 768px) {
+      .sop-doc { padding: 30px 22px; }
+      .sop-meta { flex-direction: column; align-items: flex-start; gap: 10px; }
+      .sop-meta .right { text-align: left; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="main-content">
+  <div class="topbar">
+    <button class="topbar-hamburger" id="hubHamburger" aria-label="Open menu">&#9776;</button>
+    <span class="topbar-crumb">Tides Bookkeeping</span>
+    <span class="topbar-sep">/</span>
+    <a href="client-onboarding.html" style="color:var(--text-muted);text-decoration:none;">New Client Onboarding</a>
+    <span class="topbar-sep">/</span>
+    <span class="topbar-title">SOP Document</span>
+  </div>
+
+  <div class="page-content">
+
+    <!-- Toolbar (hidden on print) -->
+    <div class="toolbar">
+      <button class="btn btn-primary" onclick="window.print()">📄 Save as PDF / Print</button>
+      <a href="client-onboarding.html" class="btn btn-secondary">← Back to Onboarding Form</a>
+      <span style="font-size:12px;color:var(--text-muted);margin-left:auto;">
+        Use Cmd+P (Mac) or Ctrl+P (PC) → "Save as PDF" to download.
+      </span>
+    </div>
+
+    <!-- The SOP Document itself -->
+    <article class="sop-doc">
+
+      <!-- Header -->
+      <div class="sop-meta">
+        <div class="left">
+          <div class="sop-title-block">
+            <img src="logo.png" alt="Tides Bookkeeping" />
+            <div>
+              <h1>Client Onboarding SOP</h1>
+              <div class="sop-subtitle">Standard Operating Procedure · Client Portal Setup</div>
+            </div>
+          </div>
+        </div>
+        <div class="right">
+          <strong>Tides Bookkeeping LLC</strong><br/>
+          Document Version 1.0<br/>
+          Last updated: May 2026
+        </div>
+      </div>
+
+      <!-- Purpose -->
+      <h2>Purpose</h2>
+      <p>This procedure documents how to set up a new client portal at <code>portal.tidesbookkeeping.com</code>. Following this SOP ensures secure, consistent onboarding in approximately 5–10 minutes per client. Each client receives a private, password-less hub for accessing financial reports, uploading documents, and quick-linking to their dashboards.</p>
+
+      <h3>Tools Required</h3>
+      <ul>
+        <li>Microsoft OneDrive (Tides admin account)</li>
+        <li>Cloudflare Zero Trust dashboard access (admin)</li>
+        <li>Tides Hub (<code>hub.tidesbookkeeping.com/client-onboarding.html</code>)</li>
+        <li>Terminal access on admin computer (for git push)</li>
+      </ul>
+
+      <h3>Estimated Time</h3>
+      <p>5–10 minutes per client (after first-time setup is complete).</p>
+
+      <!-- Step 1 -->
+      <h2><span class="num">1</span> Set up OneDrive folders</h2>
+      <p>Create one top-level folder per client. Use the standard structure below — consistency makes future audits and team handoffs easier.</p>
+
+      <div class="folder-tree">
+📁 <span class="folder">Tides Bookkeeping Clients/</span>
+  📁 <span class="folder">[Client Name]/</span>          ← top-level for this client
+    📁 <span class="folder">Reports/</span>              ← monthly P&amp;L, balance sheet, cash flow
+       📁 <span class="folder">2026/</span>
+          January/, February/, March/...
+    📁 <span class="folder">Uploads/</span>              ← client drops receipts/invoices here
+    📁 <span class="folder">Payroll/</span>              ← optional — only if you do their payroll
+    📁 <span class="folder">Tax Documents/</span>        ← year-end packages, 1099s, etc.
+      </div>
+
+      <div class="callout">
+        <strong>Pro tip:</strong> Maintain an empty <code>Client Template/</code> folder with this structure pre-built. When onboarding a new client, right-click → Copy → Rename. Saves ~2 minutes per client.
+      </div>
+
+      <!-- Step 2 -->
+      <h2><span class="num">2</span> Grab share links from each folder</h2>
+      <p>Two distinct share types are required, depending on whether the client should view files or upload them. <strong>Getting this wrong is a security risk</strong> — clients could potentially modify or see others' files.</p>
+
+      <table class="share-table">
+        <thead>
+          <tr>
+            <th style="width:24%;">Folder</th>
+            <th style="width:38%;">How to share</th>
+            <th style="width:18%;">Type</th>
+            <th style="width:20%;">Used as</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Reports</strong> <em>(parent only — one URL covers all months)</em></td>
+            <td>Right-click folder → <strong>Share</strong> → set "Anyone with the link can view"</td>
+            <td><span class="pill pill-view">View only</span></td>
+            <td><code>reports_url</code></td>
+          </tr>
+          <tr>
+            <td><strong>Uploads</strong></td>
+            <td>Right-click folder → <strong>Request Files</strong> → set title: "Upload to Tides"</td>
+            <td><span class="pill pill-upload">Upload only</span></td>
+            <td><code>upload_url</code></td>
+          </tr>
+          <tr>
+            <td><strong>Payroll</strong> <em>(if applicable)</em></td>
+            <td>Right-click folder → <strong>Share</strong> → "Anyone with the link can view"</td>
+            <td><span class="pill pill-view">View only</span></td>
+            <td><code>payroll_url</code></td>
+          </tr>
+          <tr>
+            <td><strong>Tax Documents</strong></td>
+            <td>Right-click folder → <strong>Share</strong> → "Anyone with the link can view"</td>
+            <td><span class="pill pill-view">View only</span></td>
+            <td>Quick Link</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="callout warn">
+        <strong>Why two share types?</strong> A standard share link allows the client to <strong>view (download)</strong> files but not modify or upload. A <strong>Request Files</strong> link allows the client to <strong>upload only</strong> — they cannot see other files in the folder. This prevents one client from accidentally seeing another client's documents.
+      </div>
+
+      <h3>Other URLs to Gather</h3>
+      <ul>
+        <li><strong>QuickBooks Online URL</strong> — log into QBO, copy the URL of their company dashboard. Use <code>https://qbo.intuit.com/app/homepage</code> as fallback.</li>
+        <li><strong>Puzzle.io Dashboard URL</strong> — log into Puzzle, copy their workspace URL.</li>
+        <li><strong>Optional extras:</strong> bank portal, insurance portal, internal docs — any URL the client should have quick access to.</li>
+      </ul>
+
+      <!-- Step 3 -->
+      <h2><span class="num">3</span> Add the client's email to Cloudflare Access</h2>
+      <p>This grants the client permission to log in. Without this step, the client cannot access their portal — even with the correct email.</p>
+      <ol>
+        <li>Go to Cloudflare Dashboard → <strong>Zero Trust</strong> → <strong>Access</strong> → <strong>Policies</strong></li>
+        <li>Click <strong>Allow Clients</strong> policy → <strong>Edit</strong></li>
+        <li>Add the client's email address as an allowed identity</li>
+        <li>Save changes</li>
+      </ol>
+
+      <!-- Step 4 -->
+      <h2><span class="num">4</span> Generate the client hub via the onboarding form</h2>
+      <p>Use the interactive form at <code>hub.tidesbookkeeping.com/client-onboarding.html</code> to compile all the client information. The form auto-saves your progress and generates a complete prompt for Claude.</p>
+      <ol>
+        <li>Open <strong>CLIENTS → New Client Onboarding</strong> in the Tides Hub</li>
+        <li>Fill in client identity (name, slug, email)</li>
+        <li>Paste the OneDrive share links you gathered in Step 2</li>
+        <li>Add Quick Link URLs (QuickBooks, Puzzle, any extras)</li>
+        <li>Click <strong>📋 Copy Claude Prompt</strong></li>
+        <li>Paste into a Claude conversation</li>
+      </ol>
+      <p>Claude will update the client database (<code>_scripts/clients.csv</code>), generate the client's hub HTML, and update the routing map automatically.</p>
+
+      <!-- Step 5 -->
+      <h2><span class="num">5</span> Push the changes to deploy</h2>
+      <p>Run the following commands in Terminal:</p>
+      <div class="code-block">cd "/Users/danielcope/Library/Mobile Documents/com~apple~CloudDocs/Claude/tides-portal"
+git add -A
+git commit -m "Add client: <span class="placeholder">[Client Name]</span>"
+git push</div>
+      <p>Cloudflare Pages auto-deploys within 2 minutes.</p>
+
+      <!-- Step 6 -->
+      <h2><span class="num">6</span> Send the welcome email</h2>
+      <p>Send the client this email template (substitute their information):</p>
+
+      <div class="code-block" style="color:#cbd5e1;">Subject: Your Tides Bookkeeping Portal is Ready
+
+Hi <span class="placeholder">[First Name]</span>,
+
+Your secure client portal is now live at:
+https://portal.tidesbookkeeping.com
+
+To sign in, just enter your email (<span class="placeholder">[their email]</span>).
+We'll send you a 6-digit code — no password to remember.
+
+Inside your portal you'll find:
+• Monthly financial reports (P&L, balance sheet, cash flow)
+• Secure document upload (for receipts, invoices, etc.)
+• Quick links to your dashboards and tax documents
+• Direct chat with your bookkeeper
+
+Let us know if you need anything!
+
+— Tides Bookkeeping</div>
+
+      <!-- Step 7 -->
+      <h2><span class="num">7</span> Verify (recommended)</h2>
+      <p>Before notifying the client, verify the setup yourself:</p>
+      <ol>
+        <li>Open <code>https://portal.tidesbookkeeping.com</code> in an incognito browser</li>
+        <li>Enter the client's email address</li>
+        <li>Confirm a code arrives at the client's email (check with them)</li>
+        <li>Enter the code → confirm it routes to <code>/clients/[their-slug]/</code></li>
+        <li>Click each button (Reports, Upload, Quick Links, Email Bookkeeper) to confirm all links work</li>
+      </ol>
+
+      <h2>Troubleshooting</h2>
+
+      <h3>Client doesn't receive a login code</h3>
+      <ul>
+        <li>Verify their email is in the Cloudflare Access "Allow Clients" policy</li>
+        <li>Ask them to check spam / junk folder for emails from <code>noreply@notify.cloudflare.com</code></li>
+        <li>Check Cloudflare service status at <code>cloudflarestatus.com</code></li>
+      </ul>
+
+      <h3>Client logs in but sees "No portal configured"</h3>
+      <ul>
+        <li>Confirm the email in <code>_scripts/clients.csv</code> matches exactly what the client typed</li>
+        <li>Confirm <code>git push</code> completed successfully</li>
+        <li>Confirm Cloudflare Pages deployment status is "Success" in the dashboard</li>
+      </ul>
+
+      <h3>Reports / Upload links don't work</h3>
+      <ul>
+        <li>Open the OneDrive share link directly in incognito to verify it's still active</li>
+        <li>Check OneDrive sharing permissions haven't expired or been revoked</li>
+      </ul>
+
+      <h2>Offboarding a Client</h2>
+      <p>When a client relationship ends:</p>
+      <ol>
+        <li>Remove their email from the Cloudflare Access "Allow Clients" policy (this immediately revokes access)</li>
+        <li>Remove their row from <code>_scripts/clients.csv</code></li>
+        <li>Run <code>python3 _scripts/add-client.py --csv</code> to regenerate the routing map</li>
+        <li>Optionally archive their OneDrive folder (move to <code>Archived Clients/</code>)</li>
+        <li>Commit and push</li>
+      </ol>
+
+      <!-- Footer -->
+      <div class="footer-meta">
+        Tides Bookkeeping LLC · Internal Document · Not for distribution<br/>
+        Questions? Contact <a href="mailto:dan@tidesbookkeeping.com" style="color:var(--primary);">dan@tidesbookkeeping.com</a>
+      </div>
+    </article>
+
+  </div><!-- /page-content -->
+</div><!-- /main-content -->
+
+<script src="hub.js"></script>
+</body>
+</html>

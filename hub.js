@@ -68,6 +68,7 @@ const HUB_NAV = [
   { label: '🟠 CLIENTS', color: '#f97316', items: [
     { text: 'CRM \u2197', href: 'https://app.gohighlevel.com/v2/location/MbY1ICQ6HdzVOrgFncoI/dashboard', external: true },
     { text: 'New Client Onboarding',       href: 'client-onboarding.html' },
+    { text: 'Client Onboarding SOP',     href: 'client-onboarding-sop.html' },
   ]},
   { label: '🔴 FINANCE', color: '#ef4444', items: [
     { text: 'Passwords \u2197', href: 'https://keepersecurity.com', external: true },
