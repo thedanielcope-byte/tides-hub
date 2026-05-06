@@ -383,6 +383,70 @@
       margin-top: 2px;
     }
     .link-note a { color: var(--primary); }
+
+    /* ---- File upload area ---- */
+    .upload-drop-area {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius-sm);
+      padding: 16px 12px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color .15s, background .15s;
+      background: #fafafa;
+      margin-top: 2px;
+    }
+    .upload-drop-area:hover, .upload-drop-area.dragover {
+      border-color: var(--primary);
+      background: var(--primary-light);
+    }
+    .upload-drop-area input[type="file"] { display: none; }
+    .upload-drop-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+    .upload-drop-label span { color: var(--primary); text-decoration: underline; }
+    .upload-sub { font-size: 10px; color: var(--text-muted); margin-top: 3px; }
+
+    /* Progress bar */
+    .upload-progress-wrap {
+      margin-top: 6px;
+      display: none;
+    }
+    .upload-progress-wrap.show { display: block; }
+    .upload-progress-bar {
+      height: 5px;
+      background: #e5e7eb;
+      border-radius: 99px;
+      overflow: hidden;
+    }
+    .upload-progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--primary), var(--teal));
+      border-radius: 99px;
+      width: 0%;
+      transition: width .2s;
+    }
+    .upload-status {
+      font-size: 11px;
+      font-weight: 600;
+      margin-top: 4px;
+    }
+    .upload-status.ok  { color: #16a34a; }
+    .upload-status.err { color: #ef4444; }
+
+    /* Uploaded file badge on tile */
+    .badge-sop-uploaded {
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 20px;
+      background: #f0fdf4;
+      color: #15803d;
+      border: 1px solid #bbf7d0;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
   </style>
 </head>
 <body>
@@ -420,7 +484,10 @@
    SOPs Page — Dynamic categories & tiles
    ============================================================ */
 
-const SOPS_KEY = 'sops-state';
+const SOPS_KEY    = 'sops-state';
+const SB_URL      = 'https://khhfkxfxefjgunhrihyx.supabase.co';
+const SB_KEY      = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtoaGZreGZ4ZWZqZ3VuaHJpaHl4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU3NzYwMjcsImV4cCI6MjA5MTM1MjAyN30.bYW68xMDUEXBRC1bxOLdj77xCcjXb3wIuHbPAPFdSGo';
+const SB_BUCKET   = 'sop-files';
 
 const DEFAULT_STATE = {
   categories: [
@@ -530,8 +597,54 @@ function esc(s) {
 
 function badgeForSop(sop) {
   if (!sop.link) return `<span class="badge-sop-coming">Coming Soon</span>`;
-  if (sop.linkType === 'internal') return `<span class="badge-sop-internal">📄 Hub Page</span>`;
-  return `<span class="badge-sop-available">🔗 Available</span>`;
+  if (sop.linkType === 'internal')  return `<span class="badge-sop-internal">📄 Hub Page</span>`;
+  if (sop.linkType === 'uploaded')  return `<span class="badge-sop-uploaded">📎 File</span>`;
+  return `<span class="badge-sop-available">🔗 Link</span>`;
+}
+
+/* ---- Supabase file upload ---- */
+async function uploadSopFile(file, linkInputId, progressWrapId, statusId, fillId) {
+  const wrap   = document.getElementById(progressWrapId);
+  const fill   = document.getElementById(fillId);
+  const status = document.getElementById(statusId);
+  const linkIn = document.getElementById(linkInputId);
+
+  if (wrap)   wrap.classList.add('show');
+  if (status) { status.textContent = 'Uploading…'; status.className = 'upload-status'; }
+  if (fill)   fill.style.width = '10%';
+
+  const safeName = Date.now() + '-' + file.name.replace(/[^a-zA-Z0-9.\-_]/g, '_');
+  const uploadUrl = `${SB_URL}/storage/v1/object/${SB_BUCKET}/${safeName}`;
+
+  try {
+    const xhr = new XMLHttpRequest();
+    await new Promise((resolve, reject) => {
+      xhr.upload.addEventListener('progress', e => {
+        if (e.lengthComputable && fill) {
+          fill.style.width = Math.round((e.loaded / e.total) * 90) + '%';
+        }
+      });
+      xhr.addEventListener('load', () => {
+        if (xhr.status >= 200 && xhr.status < 300) resolve();
+        else reject(new Error('Upload failed: ' + xhr.status + ' ' + xhr.responseText));
+      });
+      xhr.addEventListener('error', () => reject(new Error('Network error')));
+      xhr.open('POST', uploadUrl);
+      xhr.setRequestHeader('Authorization', `Bearer ${SB_KEY}`);
+      xhr.setRequestHeader('Content-Type', file.type || 'application/octet-stream');
+      xhr.setRequestHeader('x-upsert', 'true');
+      xhr.send(file);
+    });
+
+    const publicUrl = `${SB_URL}/storage/v1/object/public/${SB_BUCKET}/${safeName}`;
+    if (fill)   fill.style.width = '100%';
+    if (status) { status.textContent = '✓ Uploaded — ' + file.name; status.className = 'upload-status ok'; }
+    if (linkIn) linkIn.value = publicUrl;
+
+  } catch (err) {
+    if (fill)   fill.style.width = '0%';
+    if (status) { status.textContent = '✕ ' + err.message; status.className = 'upload-status err'; }
+  }
 }
 
 /* ---- Main render ---- */
@@ -585,9 +698,10 @@ function render() {
             <div class="te-link-type-row">
               <button class="link-type-btn${lt==='external'?' sel':''}" id="ltExt-${sop.id}" onclick="setLinkType('${sop.id}','external')">🔗 External Link</button>
               <button class="link-type-btn${lt==='internal'?' sel':''}" id="ltInt-${sop.id}" onclick="setLinkType('${sop.id}','internal')">📄 Hub Page</button>
+              <button class="link-type-btn${lt==='uploaded'?' sel':''}" id="ltUp-${sop.id}"  onclick="setLinkType('${sop.id}','uploaded')">📁 Upload File</button>
             </div>
           </div>
-          <div>
+          <div id="teUrlRow-${sop.id}" style="${lt==='uploaded'?'display:none':''}">
             <div class="te-label" id="teUrlLabel-${sop.id}">${lt==='internal'?'Hub Page Filename':'URL (OneDrive, SharePoint, Google Drive, etc.)'}</div>
             <input class="te-input" id="teLink-${sop.id}" type="text"
               value="${esc(sop.link||'')}"
@@ -595,6 +709,22 @@ function render() {
             <div class="link-note" id="teLinkNote-${sop.id}">${lt==='internal'
               ? 'Type the filename of the hub page (e.g. <code>client-onboarding-sop.html</code>)'
               : 'Upload to OneDrive → right-click → Share → "Anyone with link can view" → copy link'}</div>
+          </div>
+          <div id="teUpArea-${sop.id}" style="${lt==='uploaded'?'':'display:none'}">
+            <div class="upload-drop-area"
+              onclick="document.getElementById('teFileIn-${sop.id}').click()"
+              ondragover="event.preventDefault();this.classList.add('dragover')"
+              ondragleave="this.classList.remove('dragover')"
+              ondrop="event.preventDefault();this.classList.remove('dragover');uploadSopFile(event.dataTransfer.files[0],'teLink-${sop.id}','teProg-${sop.id}','teStatus-${sop.id}','teFill-${sop.id}')">
+              <input type="file" id="teFileIn-${sop.id}" accept=".pdf,.png,.jpg,.jpeg,.gif,.webp,.doc,.docx"
+                onchange="uploadSopFile(this.files[0],'teLink-${sop.id}','teProg-${sop.id}','teStatus-${sop.id}','teFill-${sop.id}')">
+              <div class="upload-drop-label"><span>Choose a file</span> or drag &amp; drop</div>
+              <div class="upload-sub">PDF, image, Word doc — max 50 MB</div>
+            </div>
+            <div class="upload-progress-wrap" id="teProg-${sop.id}">
+              <div class="upload-progress-bar"><div class="upload-progress-fill" id="teFill-${sop.id}"></div></div>
+              <div class="upload-status" id="teStatus-${sop.id}"></div>
+            </div>
           </div>
           <div class="te-actions">
             <button class="btn-te-save" onclick="saveTileEdit('${cat.id}','${sop.id}')">Save</button>
@@ -650,12 +780,29 @@ function render() {
             <div class="te-link-type-row">
               <button class="link-type-btn sel" id="addLtExt-${cat.id}" onclick="setAddLinkType('${cat.id}','external')">🔗 External Link</button>
               <button class="link-type-btn"     id="addLtInt-${cat.id}" onclick="setAddLinkType('${cat.id}','internal')">📄 Hub Page</button>
+              <button class="link-type-btn"     id="addLtUp-${cat.id}"  onclick="setAddLinkType('${cat.id}','uploaded')">📁 Upload File</button>
             </div>
           </div>
-          <div>
+          <div id="addUrlRow-${cat.id}">
             <div class="te-label" id="addUrlLabel-${cat.id}">URL (OneDrive, SharePoint, etc.)</div>
             <input class="te-input" id="addLink-${cat.id}" type="text" placeholder="Paste share link (optional — can add later)" autocomplete="off">
             <div class="link-note" id="addLinkNote-${cat.id}">Upload to OneDrive → Share → "Anyone with link can view" → copy link</div>
+          </div>
+          <div id="addUpArea-${cat.id}" style="display:none">
+            <div class="upload-drop-area"
+              onclick="document.getElementById('addFileIn-${cat.id}').click()"
+              ondragover="event.preventDefault();this.classList.add('dragover')"
+              ondragleave="this.classList.remove('dragover')"
+              ondrop="event.preventDefault();this.classList.remove('dragover');uploadSopFile(event.dataTransfer.files[0],'addLink-${cat.id}','addProg-${cat.id}','addStatus-${cat.id}','addFill-${cat.id}')">
+              <input type="file" id="addFileIn-${cat.id}" accept=".pdf,.png,.jpg,.jpeg,.gif,.webp,.doc,.docx"
+                onchange="uploadSopFile(this.files[0],'addLink-${cat.id}','addProg-${cat.id}','addStatus-${cat.id}','addFill-${cat.id}')">
+              <div class="upload-drop-label"><span>Choose a file</span> or drag &amp; drop</div>
+              <div class="upload-sub">PDF, image, Word doc — max 50 MB</div>
+            </div>
+            <div class="upload-progress-wrap" id="addProg-${cat.id}">
+              <div class="upload-progress-bar"><div class="upload-progress-fill" id="addFill-${cat.id}"></div></div>
+              <div class="upload-status" id="addStatus-${cat.id}"></div>
+            </div>
           </div>
           <div class="te-actions">
             <button class="btn-te-save"   onclick="saveNewSop('${cat.id}')">Add SOP</button>
@@ -762,36 +909,66 @@ function openTileEdit(catId, sopId) {
 function cancelTileEdit() { editingTile = null; render(); }
 
 function setLinkType(sopId, lt) {
-  document.getElementById('ltExt-' + sopId)?.classList.toggle('sel', lt === 'external');
-  document.getElementById('ltInt-' + sopId)?.classList.toggle('sel', lt === 'internal');
-  const label = document.getElementById('teUrlLabel-' + sopId);
-  const note  = document.getElementById('teLinkNote-' + sopId);
-  const inp   = document.getElementById('teLink-' + sopId);
+  ['ltExt','ltInt','ltUp'].forEach(pfx => {
+    const el = document.getElementById(`${pfx}-${sopId}`);
+    if (el) el.classList.remove('sel');
+  });
+  const activeBtn = document.getElementById((lt==='internal'?'ltInt':lt==='uploaded'?'ltUp':'ltExt') + '-' + sopId);
+  if (activeBtn) activeBtn.classList.add('sel');
+
+  const label    = document.getElementById('teUrlLabel-'    + sopId);
+  const note     = document.getElementById('teLinkNote-'    + sopId);
+  const inp      = document.getElementById('teLink-'        + sopId);
+  const urlRow   = document.getElementById('teUrlRow-'      + sopId);
+  const upArea   = document.getElementById('teUpArea-'      + sopId);
+
   if (lt === 'internal') {
-    if (label) label.textContent = 'Hub Page Filename';
-    if (note)  note.innerHTML = 'Type the filename of the hub page (e.g. <code>client-onboarding-sop.html</code>)';
-    if (inp)   inp.placeholder = 'e.g. client-onboarding-sop.html';
+    if (urlRow)  urlRow.style.display  = '';
+    if (upArea)  upArea.style.display  = 'none';
+    if (label)   label.textContent = 'Hub Page Filename';
+    if (note)    note.innerHTML = 'Type the filename of the hub page (e.g. <code>client-onboarding-sop.html</code>)';
+    if (inp)     inp.placeholder = 'e.g. client-onboarding-sop.html';
+  } else if (lt === 'uploaded') {
+    if (urlRow)  urlRow.style.display  = 'none';
+    if (upArea)  upArea.style.display  = '';
   } else {
-    if (label) label.textContent = 'URL (OneDrive, SharePoint, Google Drive, etc.)';
-    if (note)  note.innerHTML = 'Upload to OneDrive → right-click → Share → "Anyone with link can view" → copy link';
-    if (inp)   inp.placeholder = 'Paste share link…';
+    if (urlRow)  urlRow.style.display  = '';
+    if (upArea)  upArea.style.display  = 'none';
+    if (label)   label.textContent = 'URL (OneDrive, SharePoint, Google Drive, etc.)';
+    if (note)    note.innerHTML = 'Upload to OneDrive → Share → "Anyone with link can view" → copy link';
+    if (inp)     inp.placeholder = 'Paste share link…';
   }
 }
 
 function setAddLinkType(catId, lt) {
-  document.getElementById('addLtExt-' + catId)?.classList.toggle('sel', lt === 'external');
-  document.getElementById('addLtInt-' + catId)?.classList.toggle('sel', lt === 'internal');
-  const label = document.getElementById('addUrlLabel-' + catId);
-  const note  = document.getElementById('addLinkNote-' + catId);
-  const inp   = document.getElementById('addLink-' + catId);
+  ['addLtExt','addLtInt','addLtUp'].forEach(pfx => {
+    const el = document.getElementById(`${pfx}-${catId}`);
+    if (el) el.classList.remove('sel');
+  });
+  const activeBtn = document.getElementById((lt==='internal'?'addLtInt':lt==='uploaded'?'addLtUp':'addLtExt') + '-' + catId);
+  if (activeBtn) activeBtn.classList.add('sel');
+
+  const label  = document.getElementById('addUrlLabel-' + catId);
+  const note   = document.getElementById('addLinkNote-' + catId);
+  const inp    = document.getElementById('addLink-'     + catId);
+  const urlRow = document.getElementById('addUrlRow-'   + catId);
+  const upArea = document.getElementById('addUpArea-'   + catId);
+
   if (lt === 'internal') {
-    if (label) label.textContent = 'Hub Page Filename';
-    if (note)  note.innerHTML = 'Type the filename of the hub page (e.g. <code>client-onboarding-sop.html</code>)';
-    if (inp)   inp.placeholder = 'e.g. my-sop.html';
+    if (urlRow)  urlRow.style.display  = '';
+    if (upArea)  upArea.style.display  = 'none';
+    if (label)   label.textContent = 'Hub Page Filename';
+    if (note)    note.innerHTML = 'Type the filename of the hub page (e.g. <code>client-onboarding-sop.html</code>)';
+    if (inp)     inp.placeholder = 'e.g. my-sop.html';
+  } else if (lt === 'uploaded') {
+    if (urlRow)  urlRow.style.display  = 'none';
+    if (upArea)  upArea.style.display  = '';
   } else {
-    if (label) label.textContent = 'URL (OneDrive, SharePoint, Google Drive, etc.)';
-    if (note)  note.innerHTML = 'Upload to OneDrive → right-click → Share → "Anyone with link can view" → copy link';
-    if (inp)   inp.placeholder = 'Paste share link (optional — can add later)';
+    if (urlRow)  urlRow.style.display  = '';
+    if (upArea)  upArea.style.display  = 'none';
+    if (label)   label.textContent = 'URL (OneDrive, SharePoint, Google Drive, etc.)';
+    if (note)    note.innerHTML = 'Paste a share link from OneDrive, SharePoint, or Google Drive';
+    if (inp)     inp.placeholder = 'Paste share link (optional — can add later)';
   }
 }
 
@@ -802,7 +979,9 @@ function saveTileEdit(catId, sopId) {
   const title   = titleEl ? titleEl.value.trim() : '';
   if (!title) { if (titleEl) { titleEl.style.borderColor = '#ef4444'; titleEl.focus(); } return; }
 
-  const lt = document.getElementById('ltInt-' + sopId)?.classList.contains('sel') ? 'internal' : 'external';
+  const ltUpBtn  = document.getElementById('ltUp-'  + sopId);
+  const ltIntBtn = document.getElementById('ltInt-' + sopId);
+  const lt = ltUpBtn?.classList.contains('sel') ? 'uploaded' : ltIntBtn?.classList.contains('sel') ? 'internal' : 'external';
 
   const cat = sopsState.categories.find(c => c.id === catId);
   if (!cat) return;
@@ -842,7 +1021,9 @@ function saveNewSop(catId) {
   const title   = titleEl ? titleEl.value.trim() : '';
   if (!title) { if (titleEl) { titleEl.style.borderColor = '#ef4444'; titleEl.focus(); } return; }
 
-  const lt = document.getElementById('addLtInt-' + catId)?.classList.contains('sel') ? 'internal' : 'external';
+  const ltUpBtn  = document.getElementById('addLtUp-'  + catId);
+  const ltIntBtn = document.getElementById('addLtInt-' + catId);
+  const lt = ltUpBtn?.classList.contains('sel') ? 'uploaded' : ltIntBtn?.classList.contains('sel') ? 'internal' : 'external';
 
   const cat = sopsState.categories.find(c => c.id === catId);
   if (!cat) return;
