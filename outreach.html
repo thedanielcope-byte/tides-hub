@@ -12,6 +12,7 @@
       --call-grn:  #16a34a;
       --email-yel: #ca8a04;
       --cpa-org:   #ea580c;
+      --bk-purple: #7c3aed;
       --won-grn:   #15803d;
       --lost-red:  #dc2626;
     }
@@ -29,6 +30,7 @@
     .badge-call     { background: #dcfce7; color: var(--call-grn); }
     .badge-email    { background: #fef9c3; color: var(--email-yel); }
     .badge-cpa      { background: #ffedd5; color: var(--cpa-org); }
+    .badge-bk       { background: #ede9fe; color: var(--bk-purple); }
 
     /* Stage badges */
     .badge-to-connect  { background: #f3f4f6; color: #6b7280; }
@@ -742,6 +744,10 @@
               <div id="checklistAdmin"></div>
             </div>
 
+          </div>
+
+          <!-- RIGHT: logger + due today + pace -->
+          <div class="right-col">
             <!-- Quick logger -->
             <div class="activity-form">
               <h4>⚡ Quick Activity Logger</h4>
@@ -750,6 +756,7 @@
                   <label>Channel</label>
                   <select id="logChannel">
                     <option value="linkedin">LinkedIn</option>
+                    <option value="bk-referral">BK Referral</option>
                     <option value="cold-call">Cold Call</option>
                     <option value="cold-email">Cold Email</option>
                     <option value="cpa">CPA Referral</option>
@@ -796,10 +803,6 @@
                 <span class="flash-msg" id="logFlash">Logged ✓</span>
               </div>
             </div>
-          </div>
-
-          <!-- RIGHT: due today + pace -->
-          <div class="right-col">
             <div>
               <div class="section-title">📋 Due Today</div>
               <div id="dueTodayList"></div>
@@ -826,6 +829,7 @@
             <select class="filter-select" id="pipelineChannelFilter" onchange="renderPipeline()">
               <option value="">All Channels</option>
               <option value="linkedin">LinkedIn</option>
+              <option value="bk-referral">BK Referral</option>
               <option value="cold-call">Cold Call</option>
               <option value="cold-email">Cold Email</option>
               <option value="cpa">CPA</option>
@@ -902,6 +906,7 @@
           <select class="filter-select" id="logChannelFilter" onchange="renderAnalytics()">
             <option value="">All Channels</option>
             <option value="linkedin">LinkedIn</option>
+            <option value="bk-referral">BK Referral</option>
             <option value="cold-call">Cold Call</option>
             <option value="cold-email">Cold Email</option>
             <option value="cpa">CPA</option>
@@ -956,7 +961,7 @@ let prospects = [];
 let activityLog = [];
 let nurtureList = [];
 let dailyChecks = {};
-let kpiGoals = { li: 50, calls: 50, emails: 25, dms: 15, booked: 3 };
+let kpiGoals = { li: 50, calls: 50, emails: 25, dms: 15, booked: 3, bk: 5 };
 
 const CHECKLIST_DEFS = {
   linkedin: [
@@ -972,8 +977,7 @@ const CHECKLIST_DEFS = {
     { id: 'ca-4', text: 'Log each call outcome below' },
   ],
   email: [
-    { id: 'em-1', text: 'Send 5 cold emails' },
-    { id: 'em-2', text: 'Follow up on emails 3+ days old' },
+    { id: 'em-1', text: 'Check Instantly.com for responses' },
   ],
   admin: [
     { id: 'ad-1', text: 'Update pipeline for all yesterday\'s activity' },
@@ -1233,10 +1237,11 @@ let pipelineStageFilter = '';
 
 function channelBadge(ch) {
   const map = {
-    'linkedin': '<span class="badge badge-li">🔵 LinkedIn</span>',
-    'cold-call': '<span class="badge badge-call">🟢 Call</span>',
-    'cold-email': '<span class="badge badge-email">🟡 Email</span>',
-    'cpa': '<span class="badge badge-cpa">🟠 CPA</span>',
+    'linkedin':    '<span class="badge badge-li">🔵 LinkedIn</span>',
+    'cold-call':   '<span class="badge badge-call">🟢 Call</span>',
+    'cold-email':  '<span class="badge badge-email">🟡 Email</span>',
+    'cpa':         '<span class="badge badge-cpa">🟠 CPA</span>',
+    'bk-referral': '<span class="badge badge-bk">💜 BK Referral</span>',
   };
   return map[ch] || `<span class="badge">${esc(ch)}</span>`;
 }
@@ -1364,6 +1369,7 @@ function prospectEditForm(p, isNew = false) {
         <div class="form-field"><label>Channel</label>
           <select id="pf-channel-${esc(id)}">
             <option value="linkedin"${sel('channel','linkedin')}>LinkedIn</option>
+            <option value="bk-referral"${sel('channel','bk-referral')}>BK Referral</option>
             <option value="cold-call"${sel('channel','cold-call')}>Cold Call</option>
             <option value="cold-email"${sel('channel','cold-email')}>Cold Email</option>
             <option value="cpa"${sel('channel','cpa')}>CPA</option>
@@ -1633,6 +1639,7 @@ function showAddNurtureForm() {
       <div class="form-field"><label>Channel</label>
         <select id="nf-channel">
           <option value="linkedin">LinkedIn</option>
+          <option value="bk-referral">BK Referral</option>
           <option value="cold-call">Cold Call</option>
           <option value="cold-email">Cold Email</option>
           <option value="cpa">CPA</option>
@@ -1741,11 +1748,12 @@ function countActivity(entries, opts = {}) {
 
 function buildKpiTableHtml(entries, prefix) {
   const metrics = [
-    { label: 'LinkedIn Connections Sent', actual: countActivity(entries, { channel: 'linkedin', action: 'connection-sent' }), goalKey: 'li' },
-    { label: 'Cold Calls Made',           actual: countActivity(entries, { channel: 'cold-call', action: 'call-made' }),       goalKey: 'calls' },
-    { label: 'Cold Emails Sent',          actual: countActivity(entries, { channel: 'cold-email', action: 'email-sent' }),     goalKey: 'emails' },
-    { label: 'DMs Sent',                  actual: countActivity(entries, { action: 'dm-sent' }),                               goalKey: 'dms' },
-    { label: 'Calls Booked',              actual: countActivity(entries, { action: 'call-booked' }),                           goalKey: 'booked' },
+    { label: 'LinkedIn Connections Sent', actual: countActivity(entries, { channel: 'linkedin',    action: 'connection-sent' }), goalKey: 'li' },
+    { label: 'Cold Calls Made',           actual: countActivity(entries, { channel: 'cold-call',   action: 'call-made' }),       goalKey: 'calls' },
+    { label: 'Cold Emails Sent',          actual: countActivity(entries, { channel: 'cold-email',  action: 'email-sent' }),      goalKey: 'emails' },
+    { label: 'BK Referrals Received',     actual: countActivity(entries, { channel: 'bk-referral' }),                            goalKey: 'bk' },
+    { label: 'DMs Sent',                  actual: countActivity(entries, { action: 'dm-sent' }),                                  goalKey: 'dms' },
+    { label: 'Calls Booked',              actual: countActivity(entries, { action: 'call-booked' }),                              goalKey: 'booked' },
   ];
 
   return `<thead>
