@@ -1,0 +1,2027 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Outreach Hub — Tides Hub</title>
+  <link rel="stylesheet" href="hub.css">
+  <style>
+    /* ---- Outreach-specific tokens ---- */
+    :root {
+      --li-blue:   #0A66C2;
+      --call-grn:  #16a34a;
+      --email-yel: #ca8a04;
+      --cpa-org:   #ea580c;
+      --won-grn:   #15803d;
+      --lost-red:  #dc2626;
+    }
+
+    /* ---- Channel badges ---- */
+    .badge {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 99px;
+      white-space: nowrap;
+    }
+    .badge-li       { background: #dbeafe; color: var(--li-blue); }
+    .badge-call     { background: #dcfce7; color: var(--call-grn); }
+    .badge-email    { background: #fef9c3; color: var(--email-yel); }
+    .badge-cpa      { background: #ffedd5; color: var(--cpa-org); }
+
+    /* Stage badges */
+    .badge-to-connect  { background: #f3f4f6; color: #6b7280; }
+    .badge-requested   { background: #e0e7ff; color: #4338ca; }
+    .badge-connected   { background: #cffafe; color: #0e7490; }
+    .badge-dm-sent     { background: #e0f2fe; color: #0369a1; }
+    .badge-replied     { background: #d1fae5; color: #047857; }
+    .badge-call-booked { background: #ede9fe; color: #6d28d9; }
+    .badge-proposal    { background: #fce7f3; color: #be185d; }
+    .badge-won         { background: #dcfce7; color: var(--won-grn); }
+    .badge-lost        { background: #fee2e2; color: var(--lost-red); }
+    .badge-nurture     { background: #fef3c7; color: #92400e; }
+
+    /* ---- Today tab ---- */
+    .today-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      align-items: start;
+    }
+    @media (max-width: 860px) { .today-grid { grid-template-columns: 1fr; } }
+
+    .checklist-section {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      box-shadow: var(--shadow-sm);
+    }
+    .checklist-section + .checklist-section { margin-top: 16px; }
+
+    .checklist-group-label {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .checklist-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 6px 0;
+      border-bottom: 1px solid #f3f4f6;
+      cursor: pointer;
+    }
+    .checklist-item:last-child { border-bottom: none; }
+    .checklist-item input[type="checkbox"] {
+      width: 16px;
+      height: 16px;
+      margin-top: 2px;
+      flex-shrink: 0;
+      accent-color: var(--primary);
+      cursor: pointer;
+    }
+    .checklist-item label {
+      font-size: 13.5px;
+      color: var(--text-2);
+      cursor: pointer;
+      line-height: 1.45;
+    }
+    .checklist-item.done label {
+      text-decoration: line-through;
+      color: var(--text-muted);
+    }
+
+    /* Daily progress bar */
+    .daily-progress-wrap {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px 20px 16px;
+      box-shadow: var(--shadow-sm);
+      margin-bottom: 16px;
+    }
+    .daily-progress-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 8px;
+    }
+    .dp-track {
+      height: 8px;
+      background: #e5e7eb;
+      border-radius: 99px;
+      overflow: hidden;
+    }
+    .dp-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--primary) 0%, var(--teal) 100%);
+      border-radius: 99px;
+      transition: width .4s ease;
+      min-width: 4px;
+    }
+
+    /* Quick activity logger */
+    .activity-form {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      box-shadow: var(--shadow-sm);
+      margin-top: 16px;
+    }
+    .activity-form h4 {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 14px;
+    }
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    .form-row-3 {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    @media (max-width: 680px) {
+      .form-row, .form-row-3 { grid-template-columns: 1fr; }
+    }
+    .form-field {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .form-field label {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+      color: var(--text-muted);
+    }
+    .form-field input,
+    .form-field select,
+    .form-field textarea {
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 7px 10px;
+      font-size: 13px;
+      font-family: var(--font);
+      color: var(--text);
+      background: var(--white);
+      transition: border-color .15s;
+    }
+    .form-field input:focus,
+    .form-field select:focus,
+    .form-field textarea:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+    .form-field textarea { resize: vertical; min-height: 60px; }
+
+    /* Buttons */
+    .btn-primary {
+      background: var(--primary);
+      color: var(--white);
+      border: none;
+      border-radius: var(--radius-sm);
+      padding: 8px 18px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity .15s;
+    }
+    .btn-primary:hover { opacity: .88; }
+    .btn-sm {
+      padding: 5px 12px;
+      font-size: 12px;
+    }
+    .btn-ghost {
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 6px 14px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-2);
+      cursor: pointer;
+      transition: background .1s;
+    }
+    .btn-ghost:hover { background: #f3f4f6; }
+    .btn-danger {
+      background: none;
+      border: 1px solid #fca5a5;
+      color: var(--lost-red);
+      border-radius: var(--radius-sm);
+      padding: 5px 11px;
+      font-size: 12px;
+      cursor: pointer;
+      transition: background .1s;
+    }
+    .btn-danger:hover { background: #fee2e2; }
+    .btn-teal {
+      background: var(--teal);
+      color: var(--white);
+      border: none;
+      border-radius: var(--radius-sm);
+      padding: 6px 14px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity .15s;
+    }
+    .btn-teal:hover { opacity: .88; }
+
+    .flash-msg {
+      display: inline-block;
+      font-size: 12px;
+      color: var(--call-grn);
+      font-weight: 600;
+      margin-left: 10px;
+      opacity: 0;
+      transition: opacity .2s;
+    }
+    .flash-msg.show { opacity: 1; }
+
+    /* Due-today cards */
+    .right-col {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .due-card {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    .due-card-info { flex: 1; }
+    .due-card-name { font-size: 13.5px; font-weight: 700; color: var(--text); }
+    .due-card-action { font-size: 12.5px; color: var(--text-2); margin-top: 3px; }
+    .empty-state {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 22px;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 13.5px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    /* Pace meters */
+    .pace-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    .pace-card {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+      box-shadow: var(--shadow-sm);
+    }
+    .pace-label { font-size: 12px; font-weight: 600; color: var(--text-2); margin-bottom: 6px; }
+    .pace-nums { font-size: 20px; font-weight: 700; color: var(--primary); margin-bottom: 6px; }
+    .pace-nums span { font-size: 13px; font-weight: 400; color: var(--text-muted); }
+    .pace-track { height: 6px; background: #e5e7eb; border-radius: 99px; overflow: hidden; }
+    .pace-fill { height: 100%; border-radius: 99px; transition: width .4s ease; min-width: 2px; }
+    .pace-fill-li    { background: var(--li-blue); }
+    .pace-fill-call  { background: var(--call-grn); }
+    .pace-fill-email { background: var(--email-yel); }
+    .pace-fill-dm    { background: var(--primary); }
+
+    /* ---- Pipeline tab ---- */
+    .funnel-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 18px;
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+      box-shadow: var(--shadow-sm);
+    }
+    .funnel-chip {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      padding: 5px 12px;
+      border-radius: 99px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      border: 2px solid transparent;
+      transition: border-color .15s, background .15s;
+    }
+    .funnel-chip:hover { border-color: var(--primary); }
+    .funnel-chip.active-filter { border-color: var(--primary); }
+    .funnel-chip .chip-count {
+      background: rgba(0,0,0,.1);
+      border-radius: 99px;
+      padding: 1px 6px;
+      font-size: 10px;
+    }
+
+    .pipeline-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+    .pipeline-filters {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .filter-select {
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 6px 10px;
+      font-size: 12px;
+      font-family: var(--font);
+      background: var(--white);
+      color: var(--text);
+    }
+    .filter-search {
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 6px 10px;
+      font-size: 12px;
+      font-family: var(--font);
+      background: var(--white);
+      color: var(--text);
+      width: 180px;
+    }
+
+    /* Prospect cards */
+    .prospect-list { display: flex; flex-direction: column; gap: 8px; }
+    .prospect-card {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-sm);
+      overflow: hidden;
+    }
+    .prospect-card-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      cursor: pointer;
+      transition: background .1s;
+    }
+    .prospect-card-header:hover { background: #f9fafb; }
+    .prospect-card-info { flex: 1; min-width: 0; }
+    .prospect-name { font-size: 14px; font-weight: 700; color: var(--text); }
+    .prospect-sub {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .prospect-badges { display: flex; gap: 5px; flex-wrap: wrap; align-items: center; }
+    .prospect-notes-preview {
+      font-size: 11.5px;
+      color: var(--text-muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 180px;
+    }
+    .prospect-card-expand {
+      border-top: 1px solid var(--border);
+      padding: 16px;
+      background: #fafafa;
+    }
+
+    /* Inline modal/form */
+    .inline-form-wrap {
+      background: var(--white);
+      border: 1px solid var(--primary);
+      border-radius: var(--radius);
+      padding: 20px;
+      margin-bottom: 16px;
+      box-shadow: 0 4px 16px rgba(33,81,151,.12);
+    }
+    .inline-form-wrap h4 {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 14px;
+    }
+    .form-actions { display: flex; gap: 8px; margin-top: 12px; }
+
+    /* ---- Sequences tab ---- */
+    .seq-card {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+      box-shadow: var(--shadow-sm);
+      margin-bottom: 8px;
+    }
+    .seq-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .seq-info { flex: 1; }
+    .seq-name { font-size: 14px; font-weight: 700; color: var(--text); }
+    .seq-meta { font-size: 12px; color: var(--text-muted); margin-top: 3px; }
+    .seq-next {
+      font-size: 12.5px;
+      font-weight: 600;
+      margin-top: 4px;
+    }
+    .seq-next.overdue { color: var(--lost-red); }
+    .seq-next.due-today { color: var(--call-grn); }
+    .seq-next.upcoming { color: var(--text-2); }
+
+    .dm-script-card {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      margin-bottom: 10px;
+      box-shadow: var(--shadow-sm);
+      overflow: hidden;
+    }
+    .dm-script-header {
+      padding: 13px 16px;
+      font-weight: 700;
+      font-size: 13.5px;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      background: #fafafa;
+      border-bottom: 1px solid var(--border);
+    }
+    .dm-script-body {
+      padding: 14px 16px;
+      font-size: 13.5px;
+      color: var(--text-2);
+      line-height: 1.65;
+      white-space: pre-line;
+    }
+    .dm-script-actions {
+      padding: 8px 16px 14px;
+      display: flex;
+      justify-content: flex-end;
+    }
+    .script-expand {
+      padding: 0 16px 14px;
+    }
+
+    /* ---- Nurture tab ---- */
+    .nurture-card {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+      box-shadow: var(--shadow-sm);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+    .nurture-info { flex: 1; min-width: 0; }
+    .nurture-name { font-size: 14px; font-weight: 700; color: var(--text); }
+    .nurture-reason { font-size: 12px; color: var(--text-muted); margin-top: 3px; }
+    .nurture-actions { display: flex; gap: 6px; flex-shrink: 0; }
+
+    .countdown-badge {
+      display: inline-block;
+      font-size: 11.5px;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 99px;
+    }
+    .countdown-safe   { background: #dcfce7; color: #15803d; }
+    .countdown-warn   { background: #fef9c3; color: #92400e; }
+    .countdown-danger { background: #fee2e2; color: var(--lost-red); }
+
+    /* ---- Analytics tab ---- */
+    .kpi-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13.5px;
+    }
+    .kpi-table th {
+      text-align: left;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      color: var(--text-muted);
+      padding: 8px 12px;
+      border-bottom: 2px solid var(--border);
+    }
+    .kpi-table td {
+      padding: 9px 12px;
+      border-bottom: 1px solid var(--border);
+      color: var(--text);
+    }
+    .kpi-table tr:last-child td { border-bottom: none; }
+    .kpi-actual { font-weight: 700; font-size: 15px; }
+    .kpi-goal-cell { display: flex; align-items: center; gap: 6px; }
+    .goal-inline-input {
+      width: 55px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 3px 7px;
+      font-size: 13px;
+      font-family: var(--font);
+      text-align: center;
+    }
+    .goal-inline-input:focus { outline: none; border-color: var(--primary); }
+
+    .log-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    .log-table th {
+      text-align: left;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      padding: 8px 10px;
+      border-bottom: 2px solid var(--border);
+      white-space: nowrap;
+    }
+    .log-table td {
+      padding: 8px 10px;
+      border-bottom: 1px solid var(--border);
+      color: var(--text-2);
+      vertical-align: top;
+    }
+    .log-table tr:hover td { background: #f9fafb; }
+    .log-table-wrap {
+      overflow-x: auto;
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-sm);
+    }
+
+    /* ---- Scripts tab ---- */
+    .script-card {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px 20px;
+      box-shadow: var(--shadow-sm);
+      margin-bottom: 12px;
+    }
+    .script-card h4 {
+      font-size: 13.5px;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 10px;
+    }
+    .script-text {
+      font-size: 13.5px;
+      color: var(--text-2);
+      line-height: 1.7;
+      white-space: pre-line;
+      background: #f9fafb;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 14px 16px;
+      margin-bottom: 10px;
+    }
+    .script-section-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text);
+      margin: 24px 0 12px;
+      padding-bottom: 8px;
+      border-bottom: 2px solid var(--border);
+    }
+    .copy-btn {
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 5px 12px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: background .1s, color .1s;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .copy-btn:hover { background: var(--primary-light); color: var(--primary); }
+    .copy-btn.copied { color: var(--call-grn); border-color: var(--call-grn); }
+
+    /* Misc */
+    .section-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 12px;
+    }
+    .card-block {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px 20px;
+      box-shadow: var(--shadow-sm);
+      margin-bottom: 16px;
+    }
+    .muted-tip {
+      font-size: 12px;
+      color: var(--text-muted);
+      font-style: italic;
+      margin-bottom: 10px;
+    }
+    .filter-bar {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center;
+      margin-bottom: 14px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="main-content">
+
+  <!-- Topbar -->
+  <div class="topbar">
+    <button class="topbar-hamburger" id="hubHamburger" aria-label="Open menu">&#9776;</button>
+    <span class="topbar-title">Tides Bookkeeping / Outreach Hub</span>
+  </div>
+
+  <div class="page-content">
+
+    <div class="page-header">
+      <span class="page-icon">📡</span>
+      <div>
+        <h1 class="page-title">Outreach Hub</h1>
+        <p class="page-subtitle">LinkedIn, cold calls, cold email — track everything in one place.</p>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div data-tabs>
+      <div data-tab-bar>
+        <button class="tab-btn active" data-tab="tab-today">⚡ Today</button>
+        <button class="tab-btn" data-tab="tab-pipeline">🎯 Pipeline</button>
+        <button class="tab-btn" data-tab="tab-sequences">📬 Sequences</button>
+        <button class="tab-btn" data-tab="tab-nurture">🌱 Nurture</button>
+        <button class="tab-btn" data-tab="tab-analytics">📊 Analytics</button>
+        <button class="tab-btn" data-tab="tab-scripts">📝 Scripts</button>
+      </div>
+
+      <!-- ===================== TAB 1: TODAY ===================== -->
+      <div class="tab-pane active" id="tab-today">
+
+        <!-- Daily progress bar -->
+        <div class="daily-progress-wrap">
+          <div class="daily-progress-label" id="dailyProgressLabel">Loading checklist...</div>
+          <div class="dp-track"><div class="dp-fill" id="dpFill" style="width:0%"></div></div>
+        </div>
+
+        <div class="today-grid">
+          <!-- LEFT: checklist + logger -->
+          <div>
+            <!-- LinkedIn -->
+            <div class="checklist-section">
+              <div class="checklist-group-label" style="color:var(--li-blue)">🔵 LinkedIn</div>
+              <div id="checklistLinkedIn"></div>
+            </div>
+
+            <!-- Cold Calling -->
+            <div class="checklist-section">
+              <div class="checklist-group-label" style="color:var(--call-grn)">🟢 Cold Calling <small style="font-weight:400;font-size:10px;color:var(--text-muted);text-transform:none;letter-spacing:0">&nbsp;Best: 8–10 AM or 4–6 PM SC time</small></div>
+              <div id="checklistCalling"></div>
+            </div>
+
+            <!-- Cold Email -->
+            <div class="checklist-section">
+              <div class="checklist-group-label" style="color:var(--email-yel)">🟡 Cold Email</div>
+              <div id="checklistEmail"></div>
+            </div>
+
+            <!-- Admin -->
+            <div class="checklist-section">
+              <div class="checklist-group-label" style="color:var(--text-muted)">⚪ Admin</div>
+              <div id="checklistAdmin"></div>
+            </div>
+
+            <!-- Quick logger -->
+            <div class="activity-form">
+              <h4>⚡ Quick Activity Logger</h4>
+              <div class="form-row-3">
+                <div class="form-field">
+                  <label>Channel</label>
+                  <select id="logChannel">
+                    <option value="linkedin">LinkedIn</option>
+                    <option value="cold-call">Cold Call</option>
+                    <option value="cold-email">Cold Email</option>
+                    <option value="cpa">CPA Referral</option>
+                  </select>
+                </div>
+                <div class="form-field">
+                  <label>Action</label>
+                  <select id="logAction">
+                    <option value="connection-sent">Connection Sent</option>
+                    <option value="dm-sent">DM Sent</option>
+                    <option value="call-made">Call Made</option>
+                    <option value="voicemail">Voicemail Left</option>
+                    <option value="email-sent">Email Sent</option>
+                    <option value="replied">Got Reply</option>
+                    <option value="call-booked">Call Booked</option>
+                  </select>
+                </div>
+                <div class="form-field">
+                  <label>Name (optional)</label>
+                  <input type="text" id="logName" placeholder="Contact name">
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-field">
+                  <label>Outcome</label>
+                  <select id="logOutcome">
+                    <option value="">—</option>
+                    <option value="no-answer">No Answer</option>
+                    <option value="voicemail">Voicemail</option>
+                    <option value="callback">Callback Requested</option>
+                    <option value="interested">Interested</option>
+                    <option value="not-interested">Not Interested</option>
+                    <option value="referral">Referral Given</option>
+                    <option value="booked">Booked</option>
+                  </select>
+                </div>
+                <div class="form-field">
+                  <label>Notes (optional)</label>
+                  <input type="text" id="logNotes" placeholder="Quick note...">
+                </div>
+              </div>
+              <div style="display:flex;align-items:center;gap:12px">
+                <button class="btn-primary btn-sm" onclick="logActivity()">Log Activity</button>
+                <span class="flash-msg" id="logFlash">Logged ✓</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- RIGHT: due today + pace -->
+          <div class="right-col">
+            <div>
+              <div class="section-title">📋 Due Today</div>
+              <div id="dueTodayList"></div>
+            </div>
+            <div>
+              <div class="section-title">📈 Today's Pace</div>
+              <div class="pace-grid" id="paceGrid"></div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /tab-today -->
+
+
+      <!-- ===================== TAB 2: PIPELINE ===================== -->
+      <div class="tab-pane" id="tab-pipeline">
+
+        <!-- Funnel bar -->
+        <div class="funnel-bar" id="funnelBar"></div>
+
+        <!-- Header + filters -->
+        <div class="pipeline-header">
+          <div class="pipeline-filters">
+            <select class="filter-select" id="pipelineChannelFilter" onchange="renderPipeline()">
+              <option value="">All Channels</option>
+              <option value="linkedin">LinkedIn</option>
+              <option value="cold-call">Cold Call</option>
+              <option value="cold-email">Cold Email</option>
+              <option value="cpa">CPA</option>
+            </select>
+            <input class="filter-search" type="text" id="pipelineSearch" placeholder="Search name, company..." oninput="renderPipeline()">
+          </div>
+          <button class="btn-primary btn-sm" onclick="showAddProspectForm()">+ Add Prospect</button>
+        </div>
+
+        <!-- Add form (hidden by default) -->
+        <div id="addProspectForm" style="display:none"></div>
+
+        <!-- Prospect list -->
+        <div class="prospect-list" id="prospectList"></div>
+
+      </div><!-- /tab-pipeline -->
+
+
+      <!-- ===================== TAB 3: SEQUENCES ===================== -->
+      <div class="tab-pane" id="tab-sequences">
+
+        <div class="section-title">🔄 Active DM Sequences</div>
+        <div id="activeSeqList"></div>
+
+        <div class="section-title" style="margin-top:28px">📖 DM Scripts Reference</div>
+        <div id="dmScriptsRef"></div>
+
+      </div><!-- /tab-sequences -->
+
+
+      <!-- ===================== TAB 4: NURTURE ===================== -->
+      <div class="tab-pane" id="tab-nurture">
+
+        <p class="muted-tip">Contacts who said "not now" or went cold — re-engage when timing is right.</p>
+
+        <div style="margin-bottom:16px">
+          <button class="btn-primary btn-sm" onclick="showAddNurtureForm()">+ Add to Nurture</button>
+        </div>
+        <div id="addNurtureForm" style="display:none;margin-bottom:16px"></div>
+
+        <div id="nurtureList"></div>
+
+      </div><!-- /tab-nurture -->
+
+
+      <!-- ===================== TAB 5: ANALYTICS ===================== -->
+      <div class="tab-pane" id="tab-analytics">
+
+        <!-- Weekly KPIs -->
+        <div class="card-block">
+          <div class="section-title">📅 Weekly KPIs (Mon–Sun, this week)</div>
+          <table class="kpi-table" id="weeklyKpiTable"></table>
+        </div>
+
+        <!-- Monthly KPIs -->
+        <div class="card-block">
+          <div class="section-title">📆 Monthly KPIs (this calendar month)</div>
+          <table class="kpi-table" id="monthlyKpiTable"></table>
+          <div style="margin-top:16px">
+            <div style="font-size:12px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Pipeline by Stage</div>
+            <table class="kpi-table" id="stageCountTable"></table>
+          </div>
+        </div>
+
+        <!-- Activity log -->
+        <div class="section-title">📋 Activity Log</div>
+        <div class="filter-bar">
+          <select class="filter-select" id="logDateRange" onchange="renderAnalytics()">
+            <option value="week">This Week</option>
+            <option value="month">This Month</option>
+            <option value="30">Last 30 Days</option>
+            <option value="all">All Time</option>
+          </select>
+          <select class="filter-select" id="logChannelFilter" onchange="renderAnalytics()">
+            <option value="">All Channels</option>
+            <option value="linkedin">LinkedIn</option>
+            <option value="cold-call">Cold Call</option>
+            <option value="cold-email">Cold Email</option>
+            <option value="cpa">CPA</option>
+          </select>
+        </div>
+        <div class="log-table-wrap">
+          <table class="log-table">
+            <thead>
+              <tr>
+                <th>Date</th><th>Channel</th><th>Action</th><th>Name</th><th>Outcome</th><th>Notes</th><th></th>
+              </tr>
+            </thead>
+            <tbody id="logTableBody"></tbody>
+          </table>
+        </div>
+
+      </div><!-- /tab-analytics -->
+
+
+      <!-- ===================== TAB 6: SCRIPTS ===================== -->
+      <div class="tab-pane" id="tab-scripts">
+        <div id="scriptsContent"></div>
+      </div>
+
+    </div><!-- /data-tabs -->
+
+  </div><!-- /page-content -->
+</div><!-- /main-content -->
+
+<script src="hub.js"></script>
+<script>
+/* ============================================================
+   Outreach Hub — outreach.html
+   ============================================================ */
+
+/* ---- Helpers ---- */
+function uid() { return Math.random().toString(36).slice(2, 9); }
+function esc(s) {
+  if (s == null) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function todayStr() { return new Date().toISOString().slice(0, 10); }
+function daysBetween(a, b) { return Math.floor((new Date(b) - new Date(a)) / 86400000); }
+function addDays(dateStr, n) {
+  const d = new Date(dateStr);
+  d.setDate(d.getDate() + n);
+  return d.toISOString().slice(0, 10);
+}
+
+/* ---- State ---- */
+let prospects = [];
+let activityLog = [];
+let nurtureList = [];
+let dailyChecks = {};
+let kpiGoals = { li: 50, calls: 50, emails: 25, dms: 15, booked: 3 };
+
+const CHECKLIST_DEFS = {
+  linkedin: [
+    { id: 'li-1', text: 'Send 10 connection requests' },
+    { id: 'li-2', text: 'Post or engage with content (like/comment 3+ posts)' },
+    { id: 'li-3', text: 'Review accepted connections → log in Pipeline' },
+    { id: 'li-4', text: 'Check DM sequence: who needs follow-up today?' },
+  ],
+  calling: [
+    { id: 'ca-1', text: 'Set 45-min calling block' },
+    { id: 'ca-2', text: 'Pull 10 names to call today' },
+    { id: 'ca-3', text: 'Work through call list using script (Scripts tab)' },
+    { id: 'ca-4', text: 'Log each call outcome below' },
+  ],
+  email: [
+    { id: 'em-1', text: 'Send 5 cold emails' },
+    { id: 'em-2', text: 'Follow up on emails 3+ days old' },
+  ],
+  admin: [
+    { id: 'ad-1', text: 'Update pipeline for all yesterday\'s activity' },
+    { id: 'ad-2', text: 'Log any referrals received' },
+    { id: 'ad-3', text: 'Check GHL for leads to follow up' },
+  ],
+};
+
+const DM_SCRIPTS = [
+  {
+    day: 'Day 1',
+    title: 'Day 1 — Welcome (within 24h of connecting)',
+    text: `Hey [Name], thanks for connecting! I noticed you're in [real estate / travel] in SC — I specialize in bookkeeping for [agents / travel businesses] here. Let me know if you ever want to chat about the financial side of things. No pressure at all!`
+  },
+  {
+    day: 'Day 3',
+    title: 'Day 3 — Value Add',
+    text: `Hey [Name], quick thought — a lot of [agents / travel pros] I work with say the hardest part isn't the sales, it's keeping track of [commissions, splits, and expenses / deposits, vendor costs, and seasonal cash flow] throughout the year. Happy to share how I handle that if it's ever useful. Hope you're having a great week!`
+  },
+  {
+    day: 'Day 7',
+    title: 'Day 7 — Soft Ask',
+    text: `Hey [Name], I know you're probably slammed — just wanted to check in briefly. If keeping your books in order is ever something on your radar, I'd love a quick 15-min chat to see if I could help. Totally no pressure either way. Hope business is going well!`
+  },
+  {
+    day: 'Day 10',
+    title: 'Day 10 — Referral Pivot',
+    text: `Hey [Name], last thing from me for a while — do you happen to know any other [agents / travel pros] who've been struggling to stay on top of their books? I'm always happy to be a resource. No worries at all if not. Hope things are going great!`
+  },
+  {
+    day: 'Day 14',
+    title: 'Day 14 — Final',
+    text: `Hey [Name], hope things are going well! This is my last outreach for now. If bookkeeping ever becomes something you want off your plate, I'd love to help. Thanks for connecting and best of luck with your business! 🌊`
+  },
+];
+
+const DM_DAY_SEQUENCE = [0, 1, 3, 7, 10, 14];
+const STAGE_ORDER = ['to-connect','requested','connected','dm-sent','replied','call-booked','proposal','won','lost','nurture'];
+
+/* ---- Init ---- */
+async function initOutreach() {
+  const [rawProspects, rawActivity, rawNurture, rawDaily] = await Promise.all([
+    loadHubContent('outreach-prospects'),
+    loadHubContent('outreach-activity'),
+    loadHubContent('outreach-nurture'),
+    loadHubContent('outreach-daily-' + todayStr()),
+  ]);
+
+  // Prospects
+  let p = rawProspects;
+  if (typeof p === 'string') { try { p = JSON.parse(p); } catch { p = null; } }
+  prospects = (p && Array.isArray(p)) ? p : [];
+
+  // Activity
+  let a = rawActivity;
+  if (typeof a === 'string') { try { a = JSON.parse(a); } catch { a = null; } }
+  activityLog = (a && Array.isArray(a)) ? a : [];
+
+  // Nurture
+  let n = rawNurture;
+  if (typeof n === 'string') { try { n = JSON.parse(n); } catch { n = null; } }
+  nurtureList = (n && Array.isArray(n)) ? n : [];
+
+  // Daily checks
+  let d = rawDaily;
+  if (typeof d === 'string') { try { d = JSON.parse(d); } catch { d = null; } }
+  dailyChecks = (d && typeof d === 'object' && !Array.isArray(d)) ? d : {};
+
+  // KPI goals from localStorage
+  const savedGoals = localStorage.getItem('outreach-kpi-goals');
+  if (savedGoals) { try { Object.assign(kpiGoals, JSON.parse(savedGoals)); } catch {} }
+
+  renderToday();
+  renderPipeline();
+  renderSequences();
+  renderNurture();
+  renderAnalytics();
+  renderScripts();
+}
+
+/* ============================================================
+   TAB 1 — TODAY
+   ============================================================ */
+
+function renderToday() {
+  renderChecklist();
+  renderDueToday();
+  renderPace();
+}
+
+function buildChecklistItems(group, items) {
+  const container = document.getElementById('checklist' + group.charAt(0).toUpperCase() + group.slice(1));
+  if (!container) return;
+  container.innerHTML = items.map(item => {
+    const checked = !!dailyChecks[item.id];
+    return `<div class="checklist-item${checked ? ' done' : ''}" id="ci-${esc(item.id)}">
+      <input type="checkbox" id="cb-${esc(item.id)}" ${checked ? 'checked' : ''} onchange="toggleCheck('${esc(item.id)}', this.checked)">
+      <label for="cb-${esc(item.id)}">${esc(item.text)}</label>
+    </div>`;
+  }).join('');
+}
+
+function renderChecklist() {
+  buildChecklistItems('linkedin', CHECKLIST_DEFS.linkedin);
+  buildChecklistItems('calling', CHECKLIST_DEFS.calling);
+  buildChecklistItems('email', CHECKLIST_DEFS.email);
+  buildChecklistItems('admin', CHECKLIST_DEFS.admin);
+  updateDailyProgress();
+}
+
+function updateDailyProgress() {
+  const allItems = [
+    ...CHECKLIST_DEFS.linkedin,
+    ...CHECKLIST_DEFS.calling,
+    ...CHECKLIST_DEFS.email,
+    ...CHECKLIST_DEFS.admin,
+  ];
+  const total = allItems.length;
+  const done = allItems.filter(i => !!dailyChecks[i.id]).length;
+  const pct = total ? Math.round((done / total) * 100) : 0;
+  const label = document.getElementById('dailyProgressLabel');
+  const fill = document.getElementById('dpFill');
+  if (label) label.textContent = `${done} of ${total} tasks complete today`;
+  if (fill) fill.style.width = pct + '%';
+}
+
+async function toggleCheck(id, checked) {
+  dailyChecks[id] = checked;
+  // Update item style
+  const item = document.getElementById('ci-' + id);
+  if (item) item.classList.toggle('done', checked);
+  updateDailyProgress();
+  await saveHubContent('outreach-daily-' + todayStr(), JSON.stringify(dailyChecks));
+}
+
+function renderDueToday() {
+  const container = document.getElementById('dueTodayList');
+  if (!container) return;
+  const today = todayStr();
+  const yesterday = addDays(today, -1);
+  const cards = [];
+
+  prospects.forEach(p => {
+    if (!p.dateConnected) return;
+    const daysSince = daysBetween(p.dateConnected, today);
+
+    // Stage: connected, dmDay=0, connected yesterday or today
+    if (p.stage === 'connected' && p.dmDay === 0 && (p.dateConnected === today || p.dateConnected === yesterday)) {
+      cards.push({ p, action: '📬 Send Day 1 DM' });
+      return;
+    }
+
+    // Next DM day due
+    const nextDayMap = { 0: 1, 1: 3, 3: 7, 7: 10, 10: 14 };
+    if ((p.stage === 'connected' || p.stage === 'dm-sent') && nextDayMap[p.dmDay] !== undefined) {
+      const nextDay = nextDayMap[p.dmDay];
+      if (daysSince >= nextDay) {
+        cards.push({ p, action: `📬 Send Day ${nextDay} DM` });
+      }
+    }
+
+    // Call booked today
+    if (p.stage === 'call-booked' && p.lastContact === today) {
+      cards.push({ p, action: '✅ Call today' });
+    }
+  });
+
+  if (!cards.length) {
+    container.innerHTML = `<div class="empty-state">🎉 Nothing due right now!</div>`;
+    return;
+  }
+
+  container.innerHTML = cards.map(({ p, action }) => `
+    <div class="due-card" id="due-${esc(p.id)}">
+      <div class="due-card-info">
+        <div class="due-card-name">${esc(p.name)}</div>
+        <div class="due-card-action">${esc(action)}</div>
+      </div>
+      <button class="btn-teal" onclick="markDueDone('${esc(p.id)}')">Mark Done</button>
+    </div>
+  `).join('');
+}
+
+async function markDueDone(id) {
+  const p = prospects.find(x => x.id === id);
+  if (!p) return;
+  const today = todayStr();
+  p.lastContact = today;
+  const nextDayMap = { 0: 1, 1: 3, 3: 7, 7: 10, 10: 14 };
+  if (nextDayMap[p.dmDay] !== undefined) {
+    p.dmDay = nextDayMap[p.dmDay];
+    p.stage = 'dm-sent';
+  }
+  await saveHubContent('outreach-prospects', JSON.stringify(prospects));
+  renderDueToday();
+  renderSequences();
+}
+
+function renderPace() {
+  const container = document.getElementById('paceGrid');
+  if (!container) return;
+  const today = todayStr();
+  const todayActivity = activityLog.filter(e => e.date === today);
+
+  const liCount = todayActivity.filter(e => e.channel === 'linkedin' && e.action === 'connection-sent').length;
+  const callCount = todayActivity.filter(e => e.channel === 'cold-call' && e.action === 'call-made').length;
+  const emailCount = todayActivity.filter(e => e.channel === 'cold-email' && e.action === 'email-sent').length;
+  const dmCount = todayActivity.filter(e => e.action === 'dm-sent').length;
+
+  const meters = [
+    { label: '🔵 LinkedIn Connections', count: liCount, goal: 10, fillClass: 'pace-fill-li' },
+    { label: '☎️ Cold Calls', count: callCount, goal: 10, fillClass: 'pace-fill-call' },
+    { label: '📧 Cold Emails', count: emailCount, goal: 5, fillClass: 'pace-fill-email' },
+    { label: '📬 DMs Sent', count: dmCount, goal: 3, fillClass: 'pace-fill-dm' },
+  ];
+
+  container.innerHTML = meters.map(m => {
+    const pct = Math.min(100, m.goal ? Math.round((m.count / m.goal) * 100) : 0);
+    return `<div class="pace-card">
+      <div class="pace-label">${esc(m.label)}</div>
+      <div class="pace-nums">${m.count} <span>/ ${m.goal}</span></div>
+      <div class="pace-track"><div class="pace-fill ${esc(m.fillClass)}" style="width:${pct}%"></div></div>
+    </div>`;
+  }).join('');
+}
+
+async function logActivity() {
+  const channel = document.getElementById('logChannel').value;
+  const action = document.getElementById('logAction').value;
+  const name = document.getElementById('logName').value.trim();
+  const outcome = document.getElementById('logOutcome').value;
+  const notes = document.getElementById('logNotes').value.trim();
+
+  const entry = { id: uid(), date: todayStr(), channel, action, name, notes, outcome };
+  activityLog.push(entry);
+  await saveHubContent('outreach-activity', JSON.stringify(activityLog));
+
+  // Clear
+  document.getElementById('logName').value = '';
+  document.getElementById('logNotes').value = '';
+  document.getElementById('logOutcome').value = '';
+
+  // Flash
+  const flash = document.getElementById('logFlash');
+  flash.classList.add('show');
+  setTimeout(() => flash.classList.remove('show'), 2000);
+
+  renderPace();
+  renderAnalytics();
+}
+
+/* ============================================================
+   TAB 2 — PIPELINE
+   ============================================================ */
+
+let pipelineStageFilter = '';
+
+function channelBadge(ch) {
+  const map = {
+    'linkedin': '<span class="badge badge-li">🔵 LinkedIn</span>',
+    'cold-call': '<span class="badge badge-call">🟢 Call</span>',
+    'cold-email': '<span class="badge badge-email">🟡 Email</span>',
+    'cpa': '<span class="badge badge-cpa">🟠 CPA</span>',
+  };
+  return map[ch] || `<span class="badge">${esc(ch)}</span>`;
+}
+
+function stageBadge(stage) {
+  const map = {
+    'to-connect':  ['badge-to-connect',  'To Connect'],
+    'requested':   ['badge-requested',   'Requested'],
+    'connected':   ['badge-connected',   'Connected'],
+    'dm-sent':     ['badge-dm-sent',     'DM Sent'],
+    'replied':     ['badge-replied',     'Replied'],
+    'call-booked': ['badge-call-booked', 'Call Booked'],
+    'proposal':    ['badge-proposal',    'Proposal'],
+    'won':         ['badge-won',         'Won'],
+    'lost':        ['badge-lost',        'Lost'],
+    'nurture':     ['badge-nurture',     'Nurture'],
+  };
+  const [cls, label] = map[stage] || ['badge-to-connect', stage];
+  return `<span class="badge ${esc(cls)}">${esc(label)}</span>`;
+}
+
+function renderFunnelBar() {
+  const bar = document.getElementById('funnelBar');
+  if (!bar) return;
+  const stageMeta = [
+    { key: 'to-connect',  label: 'To Connect',  bg: '#f3f4f6', color: '#6b7280' },
+    { key: 'requested',   label: 'Requested',   bg: '#e0e7ff', color: '#4338ca' },
+    { key: 'connected',   label: 'Connected',   bg: '#cffafe', color: '#0e7490' },
+    { key: 'dm-sent',     label: 'DM Sent',     bg: '#e0f2fe', color: '#0369a1' },
+    { key: 'replied',     label: 'Replied',     bg: '#d1fae5', color: '#047857' },
+    { key: 'call-booked', label: 'Call Booked', bg: '#ede9fe', color: '#6d28d9' },
+    { key: 'proposal',    label: 'Proposal',    bg: '#fce7f3', color: '#be185d' },
+    { key: 'won',         label: 'Won',         bg: '#dcfce7', color: '#15803d' },
+    { key: 'lost',        label: 'Lost',        bg: '#fee2e2', color: '#dc2626' },
+    { key: 'nurture',     label: 'Nurture',     bg: '#fef3c7', color: '#92400e' },
+  ];
+  bar.innerHTML = stageMeta.map(s => {
+    const count = prospects.filter(p => p.stage === s.key).length;
+    const active = pipelineStageFilter === s.key ? ' active-filter' : '';
+    return `<div class="funnel-chip${active}" style="background:${s.bg};color:${s.color}" onclick="filterByStage('${esc(s.key)}')">
+      ${esc(s.label)} <span class="chip-count">${count}</span>
+    </div>`;
+  }).join('');
+}
+
+function filterByStage(key) {
+  pipelineStageFilter = (pipelineStageFilter === key) ? '' : key;
+  renderPipeline();
+}
+
+function renderPipeline() {
+  renderFunnelBar();
+
+  const channelF = document.getElementById('pipelineChannelFilter')?.value || '';
+  const searchF = (document.getElementById('pipelineSearch')?.value || '').toLowerCase();
+
+  let filtered = prospects.filter(p => {
+    if (pipelineStageFilter && p.stage !== pipelineStageFilter) return false;
+    if (channelF && p.channel !== channelF) return false;
+    if (searchF) {
+      const hay = [(p.name||''), (p.company||''), (p.notes||''), (p.title||'')].join(' ').toLowerCase();
+      if (!hay.includes(searchF)) return false;
+    }
+    return true;
+  });
+
+  // Sort: stage order then dateAdded desc
+  filtered.sort((a, b) => {
+    const si = STAGE_ORDER.indexOf(a.stage) - STAGE_ORDER.indexOf(b.stage);
+    if (si !== 0) return si;
+    return (b.dateAdded || '').localeCompare(a.dateAdded || '');
+  });
+
+  const container = document.getElementById('prospectList');
+  if (!container) return;
+
+  if (!filtered.length) {
+    container.innerHTML = `<div class="empty-state">No prospects found. Add one above!</div>`;
+    return;
+  }
+
+  container.innerHTML = filtered.map(p => {
+    const dmLabel = (p.dmDay > 0) ? `<span style="font-size:11px;color:var(--text-muted);margin-left:4px">Day ${p.dmDay} sent</span>` : '';
+    const lastC = p.lastContact ? `<span style="font-size:11px;color:var(--text-muted)">Last: ${esc(p.lastContact)}</span>` : '';
+    return `<div class="prospect-card" id="pc-${esc(p.id)}">
+      <div class="prospect-card-header" onclick="toggleProspect('${esc(p.id)}')">
+        <div class="prospect-card-info">
+          <div class="prospect-name">${esc(p.name)}</div>
+          <div class="prospect-sub">${[p.title, p.company, p.city].filter(Boolean).map(esc).join(' · ')}</div>
+        </div>
+        <div class="prospect-badges">
+          ${channelBadge(p.channel)}
+          ${stageBadge(p.stage)}
+          ${dmLabel}
+          ${lastC}
+        </div>
+        ${p.notes ? `<div class="prospect-notes-preview">${esc(p.notes)}</div>` : ''}
+      </div>
+      <div class="prospect-card-expand" id="pce-${esc(p.id)}" style="display:none">
+        ${prospectEditForm(p)}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleProspect(id) {
+  const exp = document.getElementById('pce-' + id);
+  if (!exp) return;
+  exp.style.display = exp.style.display === 'none' ? 'block' : 'none';
+}
+
+function prospectEditForm(p, isNew = false) {
+  const id = p ? p.id : '';
+  const v = f => esc(p ? (p[f] || '') : '');
+  const sel = (f, val) => p && p[f] === val ? ' selected' : '';
+  return `
+    <div>
+      <div class="form-row-3">
+        <div class="form-field"><label>Name *</label><input type="text" id="pf-name-${esc(id)}" value="${v('name')}" placeholder="Full name"></div>
+        <div class="form-field"><label>Title</label><input type="text" id="pf-title-${esc(id)}" value="${v('title')}" placeholder="e.g. Real Estate Agent"></div>
+        <div class="form-field"><label>Company</label><input type="text" id="pf-company-${esc(id)}" value="${v('company')}" placeholder="Company name"></div>
+      </div>
+      <div class="form-row-3">
+        <div class="form-field"><label>City</label><input type="text" id="pf-city-${esc(id)}" value="${v('city')}" placeholder="City, SC"></div>
+        <div class="form-field"><label>Channel</label>
+          <select id="pf-channel-${esc(id)}">
+            <option value="linkedin"${sel('channel','linkedin')}>LinkedIn</option>
+            <option value="cold-call"${sel('channel','cold-call')}>Cold Call</option>
+            <option value="cold-email"${sel('channel','cold-email')}>Cold Email</option>
+            <option value="cpa"${sel('channel','cpa')}>CPA</option>
+          </select>
+        </div>
+        <div class="form-field"><label>Stage</label>
+          <select id="pf-stage-${esc(id)}">
+            ${STAGE_ORDER.map(s => `<option value="${esc(s)}"${sel('stage',s)}>${esc(s.replace(/-/g,' ').replace(/\b\w/g,c=>c.toUpperCase()))}</option>`).join('')}
+          </select>
+        </div>
+      </div>
+      <div class="form-row-3">
+        <div class="form-field"><label>LinkedIn URL</label><input type="text" id="pf-linkedinUrl-${esc(id)}" value="${v('linkedinUrl')}" placeholder="linkedin.com/in/..."></div>
+        <div class="form-field"><label>Phone</label><input type="text" id="pf-phone-${esc(id)}" value="${v('phone')}" placeholder="555-000-0000"></div>
+        <div class="form-field"><label>Email</label><input type="text" id="pf-email-${esc(id)}" value="${v('email')}" placeholder="email@example.com"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-field"><label>Date Connected</label><input type="date" id="pf-dateConnected-${esc(id)}" value="${v('dateConnected')}"></div>
+        <div class="form-field"><label>Notes</label><input type="text" id="pf-notes-${esc(id)}" value="${v('notes')}" placeholder="Quick note..."></div>
+      </div>
+      <div class="form-actions">
+        <button class="btn-primary btn-sm" onclick="saveProspect('${esc(id)}', ${isNew})">${isNew ? 'Save Prospect' : 'Save Changes'}</button>
+        ${isNew ? `<button class="btn-ghost" onclick="hideAddProspectForm()">Cancel</button>` : `<button class="btn-danger" onclick="deleteProspect('${esc(id)}')">Delete</button>`}
+      </div>
+    </div>`;
+}
+
+function showAddProspectForm() {
+  const form = document.getElementById('addProspectForm');
+  if (!form) return;
+  const tempId = uid();
+  form.style.display = 'block';
+  form.innerHTML = `<div class="inline-form-wrap"><h4>+ Add New Prospect</h4>${prospectEditForm({ id: tempId }, true)}</div>`;
+}
+
+function hideAddProspectForm() {
+  const form = document.getElementById('addProspectForm');
+  if (form) form.style.display = 'none';
+}
+
+async function saveProspect(id, isNew) {
+  const get = f => document.getElementById(`pf-${f}-${id}`)?.value?.trim() || '';
+  const name = get('name');
+  if (!name) { alert('Name is required.'); return; }
+
+  if (isNew) {
+    const np = {
+      id,
+      name,
+      title: get('title'),
+      company: get('company'),
+      city: get('city'),
+      channel: get('channel') || 'linkedin',
+      stage: get('stage') || 'to-connect',
+      linkedinUrl: get('linkedinUrl'),
+      phone: get('phone'),
+      email: get('email'),
+      dateConnected: get('dateConnected') || null,
+      notes: get('notes'),
+      dateAdded: todayStr(),
+      lastContact: null,
+      dmDay: 0,
+    };
+    prospects.push(np);
+    hideAddProspectForm();
+  } else {
+    const p = prospects.find(x => x.id === id);
+    if (!p) return;
+    p.name = name;
+    p.title = get('title');
+    p.company = get('company');
+    p.city = get('city');
+    p.channel = get('channel');
+    p.stage = get('stage');
+    p.linkedinUrl = get('linkedinUrl');
+    p.phone = get('phone');
+    p.email = get('email');
+    p.dateConnected = get('dateConnected') || null;
+    p.notes = get('notes');
+  }
+
+  await saveHubContent('outreach-prospects', JSON.stringify(prospects));
+  renderPipeline();
+  renderSequences();
+  renderDueToday();
+  renderAnalytics();
+}
+
+async function deleteProspect(id) {
+  if (!confirm('Delete this prospect?')) return;
+  prospects = prospects.filter(p => p.id !== id);
+  await saveHubContent('outreach-prospects', JSON.stringify(prospects));
+  renderPipeline();
+  renderSequences();
+  renderDueToday();
+  renderAnalytics();
+}
+
+/* ============================================================
+   TAB 3 — SEQUENCES
+   ============================================================ */
+
+function renderSequences() {
+  renderActiveSequences();
+  renderDmScriptsRef();
+}
+
+function renderActiveSequences() {
+  const container = document.getElementById('activeSeqList');
+  if (!container) return;
+  const today = todayStr();
+
+  const active = prospects
+    .filter(p => p.stage === 'connected' || p.stage === 'dm-sent')
+    .sort((a, b) => (a.dateConnected || '').localeCompare(b.dateConnected || ''));
+
+  if (!active.length) {
+    container.innerHTML = `<div class="empty-state">No active DM sequences. Add connected prospects in the Pipeline tab.</div>`;
+    return;
+  }
+
+  const nextDayMap = { 0: 1, 1: 3, 3: 7, 7: 10, 10: 14 };
+  const scriptIndexForDay = { 1: 0, 3: 1, 7: 2, 10: 3, 14: 4 };
+
+  container.innerHTML = active.map(p => {
+    const daysSince = p.dateConnected ? daysBetween(p.dateConnected, today) : 0;
+    const nextDay = nextDayMap[p.dmDay];
+    let nextLabel = '', nextClass = 'upcoming', scriptIdx = -1;
+
+    if (nextDay === undefined) {
+      nextLabel = '✅ Sequence complete';
+      nextClass = 'upcoming';
+    } else {
+      const daysLeft = nextDay - daysSince;
+      scriptIdx = scriptIndexForDay[nextDay] ?? -1;
+      if (daysLeft < 0) {
+        nextLabel = `⚠️ Day ${nextDay} DM overdue (${Math.abs(daysLeft)} days ago)`;
+        nextClass = 'overdue';
+      } else if (daysLeft === 0) {
+        nextLabel = `📬 Day ${nextDay} DM — due today`;
+        nextClass = 'due-today';
+      } else {
+        nextLabel = `Day ${nextDay} DM — due in ${daysLeft} day${daysLeft !== 1 ? 's' : ''}`;
+        nextClass = 'upcoming';
+      }
+    }
+
+    const expandId = 'seq-exp-' + p.id;
+    const scriptHtml = scriptIdx >= 0 ? `
+      <div id="${esc(expandId)}" style="display:none;margin-top:12px;padding:12px;background:#f9fafb;border:1px solid var(--border);border-radius:var(--radius-sm)">
+        <div style="font-size:12px;font-weight:700;color:var(--text-muted);margin-bottom:8px">${esc(DM_SCRIPTS[scriptIdx].title)}</div>
+        <div style="font-size:13.5px;color:var(--text-2);line-height:1.65;white-space:pre-line">${esc(DM_SCRIPTS[scriptIdx].text.replace(/\[Name\]/g, p.name || '[Name]'))}</div>
+        <div style="margin-top:10px;display:flex;gap:8px">
+          <button class="copy-btn" onclick="copyText(${JSON.stringify(DM_SCRIPTS[scriptIdx].text.replace(/\[Name\]/g, p.name || '[Name]'))}, this)">📋 Copy</button>
+          <button class="btn-teal" onclick="markSeqSent('${esc(p.id)}')">Mark Sent</button>
+        </div>
+      </div>` : '';
+
+    return `<div class="seq-card">
+      <div class="seq-card-header">
+        <div class="seq-info">
+          <div class="seq-name">${esc(p.name)}</div>
+          <div class="seq-meta">${p.dateConnected ? `Connected ${esc(p.dateConnected)} · ${daysSince} days ago` : 'No connect date'} · Day ${p.dmDay} sent</div>
+          <div class="seq-next ${nextClass}">${nextLabel}</div>
+        </div>
+        <div style="display:flex;gap:8px;flex-shrink:0">
+          ${scriptIdx >= 0 ? `<button class="btn-ghost" onclick="document.getElementById('${esc(expandId)}').style.display=document.getElementById('${esc(expandId)}').style.display==='none'?'block':'none'">View Script</button>` : ''}
+        </div>
+      </div>
+      ${scriptHtml}
+    </div>`;
+  }).join('');
+}
+
+async function markSeqSent(id) {
+  const p = prospects.find(x => x.id === id);
+  if (!p) return;
+  const nextDayMap = { 0: 1, 1: 3, 3: 7, 7: 10, 10: 14 };
+  if (nextDayMap[p.dmDay] !== undefined) {
+    p.dmDay = nextDayMap[p.dmDay];
+  }
+  p.lastContact = todayStr();
+  p.stage = 'dm-sent';
+  await saveHubContent('outreach-prospects', JSON.stringify(prospects));
+  renderSequences();
+  renderDueToday();
+  renderPipeline();
+}
+
+function renderDmScriptsRef() {
+  const container = document.getElementById('dmScriptsRef');
+  if (!container) return;
+  container.innerHTML = DM_SCRIPTS.map((s, i) => `
+    <div class="dm-script-card">
+      <div class="dm-script-header">${esc(s.title)}</div>
+      <div class="dm-script-body">${esc(s.text)}</div>
+      <div class="dm-script-actions">
+        <button class="copy-btn" onclick="copyText(${JSON.stringify(s.text)}, this)">📋 Copy</button>
+      </div>
+    </div>`).join('');
+}
+
+/* ============================================================
+   TAB 4 — NURTURE
+   ============================================================ */
+
+function renderNurture() {
+  const container = document.getElementById('nurtureList');
+  if (!container) return;
+  const today = todayStr();
+
+  const sorted = [...nurtureList].sort((a, b) => (a.reEngageDate || '').localeCompare(b.reEngageDate || ''));
+
+  if (!sorted.length) {
+    container.innerHTML = `<div class="empty-state">No nurture contacts yet. Add someone who said "not now."</div>`;
+    return;
+  }
+
+  container.innerHTML = sorted.map(n => {
+    const daysLeft = daysBetween(today, n.reEngageDate);
+    let badgeCls = 'countdown-safe', badgeLabel;
+    if (daysLeft < 0) {
+      badgeCls = 'countdown-danger';
+      badgeLabel = `Overdue ${Math.abs(daysLeft)}d`;
+    } else if (daysLeft === 0) {
+      badgeCls = 'countdown-danger';
+      badgeLabel = 'Today';
+    } else if (daysLeft <= 7) {
+      badgeCls = 'countdown-danger';
+      badgeLabel = `${daysLeft}d left`;
+    } else if (daysLeft <= 30) {
+      badgeCls = 'countdown-warn';
+      badgeLabel = `${daysLeft}d left`;
+    } else {
+      badgeCls = 'countdown-safe';
+      badgeLabel = `${daysLeft}d left`;
+    }
+
+    return `<div class="nurture-card">
+      <div class="nurture-info">
+        <div style="display:flex;align-items:center;gap:8px">
+          <div class="nurture-name">${esc(n.name)}</div>
+          ${channelBadge(n.channel)}
+          <span class="countdown-badge ${badgeCls}">${esc(badgeLabel)}</span>
+        </div>
+        ${n.reason ? `<div class="nurture-reason">Reason: ${esc(n.reason)}</div>` : ''}
+        ${n.notes ? `<div class="nurture-reason">${esc(n.notes)}</div>` : ''}
+        <div style="font-size:11px;color:var(--text-muted);margin-top:3px">Re-engage: ${esc(n.reEngageDate)}</div>
+      </div>
+      <div class="nurture-actions">
+        <button class="btn-teal" onclick="moveToPipeline('${esc(n.id)}')">Move to Pipeline</button>
+        <button class="btn-danger" onclick="deleteNurture('${esc(n.id)}')">×</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function showAddNurtureForm() {
+  const container = document.getElementById('addNurtureForm');
+  if (!container) return;
+  const defaultDate = addDays(todayStr(), 90);
+  container.style.display = 'block';
+  container.innerHTML = `<div class="inline-form-wrap">
+    <h4>+ Add to Nurture</h4>
+    <div class="form-row-3">
+      <div class="form-field"><label>Name *</label><input type="text" id="nf-name" placeholder="Full name"></div>
+      <div class="form-field"><label>Channel</label>
+        <select id="nf-channel">
+          <option value="linkedin">LinkedIn</option>
+          <option value="cold-call">Cold Call</option>
+          <option value="cold-email">Cold Email</option>
+          <option value="cpa">CPA</option>
+        </select>
+      </div>
+      <div class="form-field"><label>Re-engage Date</label><input type="date" id="nf-date" value="${esc(defaultDate)}"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-field"><label>Reason</label><input type="text" id="nf-reason" placeholder="Why nurturing?"></div>
+      <div class="form-field"><label>Notes</label><input type="text" id="nf-notes" placeholder="Any notes..."></div>
+    </div>
+    <div class="form-actions">
+      <button class="btn-primary btn-sm" onclick="saveNurture()">Save</button>
+      <button class="btn-ghost" onclick="document.getElementById('addNurtureForm').style.display='none'">Cancel</button>
+    </div>
+  </div>`;
+}
+
+async function saveNurture() {
+  const name = document.getElementById('nf-name')?.value?.trim();
+  if (!name) { alert('Name is required.'); return; }
+  const entry = {
+    id: uid(),
+    name,
+    channel: document.getElementById('nf-channel')?.value || 'linkedin',
+    reason: document.getElementById('nf-reason')?.value?.trim() || '',
+    reEngageDate: document.getElementById('nf-date')?.value || addDays(todayStr(), 90),
+    notes: document.getElementById('nf-notes')?.value?.trim() || '',
+    dateAdded: todayStr(),
+  };
+  nurtureList.push(entry);
+  await saveHubContent('outreach-nurture', JSON.stringify(nurtureList));
+  document.getElementById('addNurtureForm').style.display = 'none';
+  renderNurture();
+}
+
+async function moveToPipeline(id) {
+  const n = nurtureList.find(x => x.id === id);
+  if (!n) return;
+  const np = {
+    id: uid(),
+    name: n.name,
+    title: '',
+    company: '',
+    city: '',
+    channel: n.channel,
+    stage: 'to-connect',
+    linkedinUrl: '',
+    phone: '',
+    email: '',
+    notes: n.notes || n.reason || '',
+    dateAdded: todayStr(),
+    dateConnected: null,
+    lastContact: null,
+    dmDay: 0,
+  };
+  prospects.push(np);
+  nurtureList = nurtureList.filter(x => x.id !== id);
+  await Promise.all([
+    saveHubContent('outreach-prospects', JSON.stringify(prospects)),
+    saveHubContent('outreach-nurture', JSON.stringify(nurtureList)),
+  ]);
+  renderNurture();
+  renderPipeline();
+}
+
+async function deleteNurture(id) {
+  if (!confirm('Remove from nurture?')) return;
+  nurtureList = nurtureList.filter(x => x.id !== id);
+  await saveHubContent('outreach-nurture', JSON.stringify(nurtureList));
+  renderNurture();
+}
+
+/* ============================================================
+   TAB 5 — ANALYTICS
+   ============================================================ */
+
+function getWeekRange() {
+  const today = new Date();
+  const day = today.getDay(); // 0=Sun
+  const monday = new Date(today);
+  monday.setDate(today.getDate() - ((day + 6) % 7));
+  const sunday = new Date(monday);
+  sunday.setDate(monday.getDate() + 6);
+  return {
+    start: monday.toISOString().slice(0, 10),
+    end: sunday.toISOString().slice(0, 10),
+  };
+}
+
+function getMonthRange() {
+  const today = new Date();
+  const start = new Date(today.getFullYear(), today.getMonth(), 1).toISOString().slice(0, 10);
+  const end = new Date(today.getFullYear(), today.getMonth() + 1, 0).toISOString().slice(0, 10);
+  return { start, end };
+}
+
+function countActivity(entries, opts = {}) {
+  return entries.filter(e => {
+    if (opts.channel && e.channel !== opts.channel) return false;
+    if (opts.action && e.action !== opts.action) return false;
+    if (opts.outcome && e.outcome !== opts.outcome) return false;
+    return true;
+  }).length;
+}
+
+function buildKpiTableHtml(entries, prefix) {
+  const metrics = [
+    { label: 'LinkedIn Connections Sent', actual: countActivity(entries, { channel: 'linkedin', action: 'connection-sent' }), goalKey: 'li' },
+    { label: 'Cold Calls Made',           actual: countActivity(entries, { channel: 'cold-call', action: 'call-made' }),       goalKey: 'calls' },
+    { label: 'Cold Emails Sent',          actual: countActivity(entries, { channel: 'cold-email', action: 'email-sent' }),     goalKey: 'emails' },
+    { label: 'DMs Sent',                  actual: countActivity(entries, { action: 'dm-sent' }),                               goalKey: 'dms' },
+    { label: 'Calls Booked',              actual: countActivity(entries, { action: 'call-booked' }),                           goalKey: 'booked' },
+  ];
+
+  return `<thead>
+    <tr>
+      <th>Metric</th>
+      <th>Actual</th>
+      <th>Goal</th>
+    </tr>
+  </thead>
+  <tbody>
+    ${metrics.map(m => {
+      const goal = kpiGoals[m.goalKey] || 0;
+      const color = m.actual >= goal ? 'var(--call-grn)' : (m.actual >= goal * 0.6 ? 'var(--email-yel)' : 'var(--lost-red)');
+      return `<tr>
+        <td>${esc(m.label)}</td>
+        <td class="kpi-actual" style="color:${color}">${m.actual}</td>
+        <td><div class="kpi-goal-cell">
+          <input type="number" class="goal-inline-input" value="${goal}" min="0"
+            onchange="updateGoal('${esc(m.goalKey)}', this.value)" title="Click to edit goal">
+        </div></td>
+      </tr>`;
+    }).join('')}
+  </tbody>`;
+}
+
+function renderAnalytics() {
+  // Weekly
+  const week = getWeekRange();
+  const weekEntries = activityLog.filter(e => e.date >= week.start && e.date <= week.end);
+  const weekTable = document.getElementById('weeklyKpiTable');
+  if (weekTable) weekTable.innerHTML = buildKpiTableHtml(weekEntries, 'week');
+
+  // Monthly
+  const month = getMonthRange();
+  const monthEntries = activityLog.filter(e => e.date >= month.start && e.date <= month.end);
+  const monthTable = document.getElementById('monthlyKpiTable');
+  if (monthTable) monthTable.innerHTML = buildKpiTableHtml(monthEntries, 'month');
+
+  // Stage counts
+  const stageTable = document.getElementById('stageCountTable');
+  if (stageTable) {
+    stageTable.innerHTML = `<thead><tr><th>Stage</th><th>Count</th></tr></thead><tbody>
+      ${STAGE_ORDER.map(s => {
+        const count = prospects.filter(p => p.stage === s).length;
+        return `<tr><td>${stageBadge(s)}</td><td><strong>${count}</strong></td></tr>`;
+      }).join('')}
+    </tbody>`;
+  }
+
+  // Log table
+  const rangeF = document.getElementById('logDateRange')?.value || 'week';
+  const channelF = document.getElementById('logChannelFilter')?.value || '';
+  const today = todayStr();
+
+  let filtered = [...activityLog].reverse().filter(e => {
+    if (channelF && e.channel !== channelF) return false;
+    if (rangeF === 'week') { const w = getWeekRange(); return e.date >= w.start && e.date <= w.end; }
+    if (rangeF === 'month') { const m = getMonthRange(); return e.date >= m.start && e.date <= m.end; }
+    if (rangeF === '30') { return daysBetween(e.date, today) <= 30; }
+    return true;
+  });
+
+  const tbody = document.getElementById('logTableBody');
+  if (!tbody) return;
+
+  if (!filtered.length) {
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:20px">No activity logged yet for this period.</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = filtered.map(e => `
+    <tr>
+      <td style="white-space:nowrap">${esc(e.date)}</td>
+      <td>${channelBadge(e.channel)}</td>
+      <td style="white-space:nowrap">${esc(e.action.replace(/-/g,' ').replace(/\b\w/g,c=>c.toUpperCase()))}</td>
+      <td>${esc(e.name)}</td>
+      <td>${esc(e.outcome ? e.outcome.replace(/-/g,' ').replace(/\b\w/g,c=>c.toUpperCase()) : '—')}</td>
+      <td style="max-width:180px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(e.notes)}</td>
+      <td><button class="btn-danger" style="padding:3px 8px;font-size:11px" onclick="deleteActivity('${esc(e.id)}')">×</button></td>
+    </tr>`).join('');
+}
+
+async function deleteActivity(id) {
+  if (!confirm('Delete this activity entry?')) return;
+  activityLog = activityLog.filter(e => e.id !== id);
+  await saveHubContent('outreach-activity', JSON.stringify(activityLog));
+  renderAnalytics();
+  renderPace();
+}
+
+function updateGoal(key, val) {
+  kpiGoals[key] = parseInt(val) || 0;
+  localStorage.setItem('outreach-kpi-goals', JSON.stringify(kpiGoals));
+}
+
+/* ============================================================
+   TAB 6 — SCRIPTS
+   ============================================================ */
+
+const SCRIPTS_DATA = [
+  {
+    section: 'LinkedIn Connection Requests',
+    scripts: [
+      {
+        title: 'For Real Estate Agents',
+        text: `Hi [Name]! I specialize in bookkeeping for SC real estate agents — would love to connect and be a resource. No pitch, just a potential connection!`
+      },
+      {
+        title: 'For Travel Businesses',
+        text: `Hi [Name]! I do bookkeeping for travel businesses in SC — always great to connect with fellow SC pros. Hope to stay in touch!`
+      },
+      {
+        title: 'For CPAs / Accountants',
+        text: `Hi [Name], I run a bookkeeping firm in SC focused on real estate and travel clients — I'd love to connect with CPAs in the area for potential collaboration.`
+      },
+    ]
+  },
+  {
+    section: 'LinkedIn DM Sequences',
+    scripts: DM_SCRIPTS.map(s => ({ title: s.title, text: s.text }))
+  },
+  {
+    section: 'Cold Call Scripts',
+    scripts: [
+      {
+        title: '01 — Real Estate Agent — Cold Call',
+        text: `OPENER: Hi, is this [Name]? Hey [Name], this is [Your Name] — I run a small bookkeeping company here in South Carolina. Do you have just a second? → Pause. Casual and warm.
+
+THE SETUP: I specialize in bookkeeping for real estate agents — commission tracking, expense categorization, that kind of thing. I'm actually reaching out to a few agents in the area and wanted to ask — do you happen to know anyone in real estate who's been struggling to keep up with their books? → Pause and let them respond.
+
+IF THEY REFER SOMEONE: That's really helpful, I appreciate it. I'll reach out to them. And out of curiosity — is that something you've ever dealt with yourself, or do you have a system that works pretty well?
+
+IF THEY PAUSE / LAUGH: Ha — honestly I get that reaction a lot. A lot of agents tell me it's one of those things that either gets ignored until tax time or just never feels quite right. What does it look like for you right now?
+
+THE SOFT OFFER: I'm not trying to sell you anything today — but if it's something that's on your radar, I'd genuinely enjoy just a 15-minute chat to see if what I do might be useful. No pressure either way.
+
+CLOSE / WRAP: Either way, I appreciate you taking a second. What's the best way to stay in touch if something comes up?`
+      },
+      {
+        title: '02 — Real Estate Agent — Voicemail',
+        text: `VOICEMAIL: Hey [Name], this is [Your Name] — I run a bookkeeping company in South Carolina focused on real estate. I was actually calling to see if you might know anyone in the industry who's been looking for help with their books. I'll shoot you a text too. No rush at all — appreciate it. → Keep it under 20 seconds.
+
+PAIRED SMS: Hey [Name] — [Your Name] here, left a quick voicemail. I do bookkeeping for SC real estate agents. Do you know anyone who might be a good fit? Happy to chat if that's ever useful for you too.`
+      },
+      {
+        title: '03 — CPA / Accountant — Referral Outreach',
+        text: `OPENER: Hi [Name], this is [Your Name] — I run Tides Bookkeeping here in South Carolina. Do you have just a minute? → Peer-to-peer tone.
+
+THE CONTEXT: I specialize in real estate and travel clients, and I've been connecting with a few CPAs in the area. I wanted to ask — do you ever work with real estate agents who come to you at tax time without their books really in order?
+
+THE VALUE: That's actually where I come in — I keep everything clean throughout the year so by the time they get to you, it's already organized. Makes your job easier and the client's tax bill more accurate.
+
+THE SOFT ASK: I'm not pitching anything formal — I just thought it might be worth having each other's contact info in case something comes up on either end. Would that be useful to you?
+
+FOLLOW-UP: Great. I'll send you a quick email — what's the best address? I'll keep it short, just a one-pager so you have it on file.`
+      },
+      {
+        title: '04 — Travel Business — Cold Call',
+        text: `OPENER: Hi, is this [Name]? Hey [Name], this is [Your Name] — I run a bookkeeping company in South Carolina. Do you have just a second?
+
+THE SETUP: I actually specialize in bookkeeping for travel businesses — things like tracking client deposits, vendor costs, refunds, seasonal cash flow. I'm reaching out to a few travel pros in the area and wanted to ask — do you happen to know anyone in the travel space who's been struggling to keep up with their finances?
+
+IF THEY REFER SOMEONE: Really appreciate that — I'll follow up with them. And what about on your end? Is that an area that feels pretty under control, or is it one of those things that kind of piles up?
+
+IF THEY PAUSE / LAUGH: Ha — travel businesses have this really unique cash flow situation with deposits coming in way before the trip, refunds going back out, costs split across bookings. Most bookkeepers don't really get it. How are you handling that side of things right now?
+
+THE SOFT OFFER: I'm not here to make a hard pitch — but if it's ever something you'd want to talk through, I'd be happy to spend 15 minutes just to see if there's anything useful I can offer. Totally up to you.
+
+CLOSE / WRAP: Either way, really appreciate your time. What's the best way to reach you if something comes up?`
+      },
+      {
+        title: '05 — Travel Business — Voicemail',
+        text: `VOICEMAIL: Hey [Name], this is [Your Name] — I run a bookkeeping company in South Carolina focused on travel businesses. I was calling to see if you might know anyone in the travel space who could use some help on the financial side. I'll text you too. No pressure at all — appreciate it.
+
+PAIRED SMS: Hey [Name] — [Your Name] here, just left a voicemail. I do bookkeeping for SC travel businesses — deposits, vendor costs, seasonal cash flow. Know anyone who might find that useful? Happy to chat if it's ever relevant to you too.`
+      },
+      {
+        title: '06 — When They Bite: The Pivot',
+        text: `When someone starts talking about their own situation — slow down and listen. The goal is to guide them toward asking YOU for more info.
+
+"I've been meaning to deal with that..." → Yeah, it's one of those things that's easy to push off. What does your setup look like right now — are you handling it yourself or does someone help you? → Let them describe the problem.
+
+"I just use [software] and figure it out." → That works for a lot of people early on. What I usually find with real estate is that the categorization piece gets tricky — commission income, splits, deductible expenses. Is that something that feels clean or is it more of a best guess situation? → Curiosity, not correction.
+
+"How much do you charge?" → It really depends on what you need — I work with a range of clients. What I'd love to do is spend 15 minutes learning a bit about your business and then give you an honest number. Would that work? → Never give a number on the first call.
+
+"Send me some information." → Absolutely — what's the best email? I'll keep it short. And I'll follow up in a day or two just to make sure it landed. Would that be okay? → Always confirm follow-up permission. Log in CRM.`
+      },
+      {
+        title: '07 — Objection Handling Guide',
+        text: `"I already have an accountant / CPA." → That's great — I actually work alongside CPAs, not instead of them. I handle the day-to-day bookkeeping so everything's clean when it gets to them at tax time. Do you know anyone who might benefit from that kind of setup?
+
+"I do my own books." → A lot of people start that way. Totally makes sense. Do you know anyone else in real estate who's been looking for help with theirs?
+
+"I'm not interested right now." → Totally fair — no worries at all. Do you happen to know anyone in real estate or travel who might be looking for a bookkeeper? I'm always happy to be a resource.
+
+"How much do you charge?" → It depends on what someone needs, but it's pretty easy to budget for once I know more about the business. Would it make sense to set 15 minutes aside to figure that out together?
+
+"Send me some information." → Of course — what's the best email? I'll keep it short and relevant. And I'll follow up briefly in a day or two. Does that work?
+
+The Golden Rule: When in doubt, go back to the referral question. "Do you know anyone who might find this useful?" keeps the conversation open without pressure — and often brings them right back to themselves.`
+      },
+    ]
+  },
+  {
+    section: 'Cold Email Templates',
+    scripts: [
+      {
+        title: 'Subject: Quick question — bookkeeping for real estate agents',
+        text: `Hi [Name],
+
+I run Tides Bookkeeping in South Carolina — we specialize in bookkeeping for real estate agents here in SC.
+
+Commission tracking, expense categorization, keeping everything clean for your CPA at tax time — that's exactly what we do.
+
+I'm not looking to pitch you today, just wondering if you'd be open to a quick 15-minute call to see if there might be a fit?
+
+— Dan Cope | Tides Bookkeeping | 864-594-2446`
+      },
+      {
+        title: 'Subject: Quick question — bookkeeping for travel businesses',
+        text: `Hi [Name],
+
+I run Tides Bookkeeping in South Carolina, focused on travel businesses — deposits tracking, vendor costs, seasonal cash flow, refunds.
+
+Most bookkeepers don't really understand the travel business model. We do.
+
+If you'd ever want a quick 15-minute call to see if we might be a fit, I'd genuinely enjoy it.
+
+— Dan Cope | Tides Bookkeeping | 864-594-2446`
+      },
+    ]
+  },
+];
+
+function renderScripts() {
+  const container = document.getElementById('scriptsContent');
+  if (!container) return;
+  container.innerHTML = SCRIPTS_DATA.map(section => `
+    <div class="script-section-title">${esc(section.section)}</div>
+    ${section.scripts.map(s => `
+      <div class="script-card">
+        <h4>${esc(s.title)}</h4>
+        <div class="script-text">${esc(s.text)}</div>
+        <button class="copy-btn" onclick="copyText(${JSON.stringify(s.text)}, this)">📋 Copy</button>
+      </div>`).join('')}
+  `).join('');
+}
+
+/* ---- Copy helper ---- */
+function copyText(text, btn) {
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = '✓ Copied!';
+    btn.classList.add('copied');
+    setTimeout(() => {
+      btn.textContent = '📋 Copy';
+      btn.classList.remove('copied');
+    }, 2000);
+  }).catch(() => {
+    // fallback
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    btn.textContent = '✓ Copied!';
+    btn.classList.add('copied');
+    setTimeout(() => {
+      btn.textContent = '📋 Copy';
+      btn.classList.remove('copied');
+    }, 2000);
+  });
+}
+
+document.addEventListener('DOMContentLoaded', initOutreach);
+</script>
+</body>
+</html>

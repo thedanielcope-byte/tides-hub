@@ -65,6 +65,7 @@ const HUB_NAV = [
     { text: 'Content Planner',       href: 'content-planner.html' },
     { text: 'Citation Websites',     href: 'coming-soon.html?page=Citation+Websites' },
     { text: 'Affiliate Links',       href: 'marketing.html#affiliates' },
+    { text: 'Outreach Hub',          href: 'outreach.html' },
   ]},
   { label: '🟠 CLIENTS', color: '#f97316', items: [
     { text: 'CRM \u2197', href: 'https://app.gohighlevel.com/v2/location/MbY1ICQ6HdzVOrgFncoI/dashboard', external: true },
