@@ -306,7 +306,7 @@ const PAGE_DATA = {
     { id:'contact',           name:'Contact',                 file:'contact.html',            status:'built'            },
     { id:'pricing',           name:'Pricing',                 file:'pricing.html',            status:'built'            },
     { id:'blog',              name:'Blog / Resources',        file:'blog.html',               status:'built'            },
-    { id:'faq',               name:'FAQ',                     file:'faq-review.html',         status:'in-progress' },
+    { id:'faq',               name:'FAQ',                     file:'faq-review.html',         status:'' },
     { id:'glossary',          name:'Glossary',                file:'glossary.html',           status:'built' },
     { id:'privacy-policy',    name:'Privacy Policy',          file:'privacy.html',     status:'built'            },
     { id:'terms',             name:'Terms of Service',        file:'terms.html',              status:'built'            },
@@ -354,6 +354,7 @@ const PAGE_DATA = {
 
   blog: [
     { id:'blog-bookkeeper-cost', name:'How Much Does a Bookkeeper Cost in 2026?', file:'blog-how-much-does-a-bookkeeper-cost.html', status:'built' },
+    { id:'blog-bookkeeper-vs-cpa', name:'Bookkeeper vs CPA vs Accountant', file:'blog-bookkeeper-vs-cpa-vs-accountant.html', status:'built' },
   ],
 
   states: {
@@ -383,10 +384,15 @@ const PAGE_DATA = {
           counties:[{ id:'county-florence-sc',    name:'Florence County',    file:'county-florence-sc.html',    status:'' }] },
         { id:'city-hilton-head-sc',  name:'Hilton Head Island', file:'city-hilton-head-sc.html',  status:'built',
           counties:[{ id:'county-beaufort-sc',    name:'Beaufort County',    file:'county-beaufort-sc.html',    status:'built' }] },
+        { id:'city-aiken-sc',        name:'Aiken',              file:'city-aiken-sc.html',        status:'built',
+          counties:[{ id:'county-aiken-sc',       name:'Aiken County',       file:'county-aiken-sc.html',       status:'' }] },
+        { id:'city-mt-pleasant-sc',  name:'Mt. Pleasant',       file:'city-mt-pleasant-sc.html',  status:'built', counties:[] },
+        { id:'city-bluffton-sc',     name:'Bluffton',           file:'city-bluffton-sc.html',     status:'built', counties:[] },
+        { id:'city-north-charleston-sc', name:'North Charleston', file:'city-north-charleston-sc.html', status:'built', counties:[] },
       ]
     },
     nc: {
-      state: { id:'state-nc', name:'North Carolina', file:'state-north-carolina.html', status:'' },
+      state: { id:'state-nc', name:'North Carolina', file:'state-north-carolina.html', status:'built' },
       cities: [
         { id:'city-charlotte-nc',    name:'Charlotte',      file:'city-charlotte-nc.html',    status:'',
           counties:[{ id:'county-mecklenburg-nc', name:'Mecklenburg County', file:'county-mecklenburg-nc.html', status:'' }] },
