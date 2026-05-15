@@ -337,9 +337,24 @@
        Edit dates here, or check off via the UI.
        ============================================================ */
 
-    // Pages already shipped (cross-referenced from website-pages.html)
+    // Pages already shipped — matched against each item's cmd string.
+    // Update this list as batches ship; the calendar auto-marks them done.
     const ALREADY_SHIPPED = [
-      'blog-bookkeeper-cost'
+      'how-much-does-a-bookkeeper-cost',
+      // Week 1 (shipped)
+      '"Aiken" "SC"',
+      '"Mt Pleasant" "SC"',
+      '"Bluffton" "SC"',
+      '"North Charleston" "SC"',
+      '"North Carolina" "NC"',
+      'bookkeeper-vs-cpa-vs-accountant',
+      // Week 2 (shipped)
+      '"Goose Creek" "SC"',
+      '"Sumter" "SC"',
+      '"Florence" "SC"',
+      '"Lexington" "SC"',
+      '"Georgia" "GA"',
+      '7-bookkeeping-mistakes-real-estate-investors',
     ];
 
     // 12-week content plan starting next week
@@ -485,8 +500,10 @@
     const filters = { status: 'all', type: 'all' };
 
     function statusOf(item) {
-      // Auto-mark blog post as done if it's the one we already shipped
-      if (item.cmd.includes('how-much-does-a-bookkeeper-cost') || item.id.includes('how-much-does-a-bookkeeper-cost')) return 'done';
+      // Auto-mark as done if its command matches a shipped page
+      for (const frag of ALREADY_SHIPPED) {
+        if (item.cmd.includes(frag)) return 'done';
+      }
       return statusCache[item.id] || 'todo';
     }
 
